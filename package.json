@@ -20,7 +20,7 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright test",
-		"story:dev": "histoire dev",
+		"story": "histoire dev",
 		"story:build": "histoire build",
 		"story:preview": "histoire preview",
 		"release": "commit-and-tag-version",

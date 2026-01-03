@@ -93,7 +93,7 @@ src/
 - ✅ Run `npm run lint` with no errors
 - ✅ Make test commit, verify hooks run
 - ✅ Test commitlint with: `feat(ticket-001): test commit`
-- ✅ Run `npm run story:dev`, verify Histoire opens
+- ✅ Run `npm run story`, verify Histoire opens
 - ✅ Import and render a toast notification
 
 ## Accessibility

@@ -12,6 +12,9 @@ export default defineConfig({
 			fs: {
 				allow: ['.']
 			}
+		},
+		optimizeDeps: {
+			exclude: ['flexsearch', 'vscode-oniguruma', 'vscode-textmate']
 		}
 	}
 });

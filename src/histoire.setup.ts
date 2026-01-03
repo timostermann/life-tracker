@@ -1,1 +1,1 @@
-import '../src/routes/layout.css';
+import './routes/layout.css';
