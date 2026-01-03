@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -12,11 +13,15 @@ function tmpDbPath() {
 async function freshDb() {
 	const dbPath = tmpDbPath();
 	process.env.DATABASE_PATH = dbPath;
+	delete process.env.DB_LOG;
+	delete process.env.LOG;
+	delete process.env.LOG_SCOPES;
+	delete process.env.LOG_LEVEL;
 	vi.resetModules();
 	const dbMod = await import('$lib/server/db');
 	const queries = await import('$lib/server/db/queries');
 	const db = dbMod.getDb();
-	return { db, close: dbMod.closeDbForTests, queries };
+	return { db, close: dbMod.closeDbForTests, queries, dbPath };
 }
 
 describe('db queries', () => {
@@ -33,8 +38,8 @@ describe('db queries', () => {
 	it('creates user and category', async () => {
 		const { queries, close } = await freshDb();
 
-		const user = queries.createUser({ username: 'tim', password_hash: 'hash' });
-		expect(user.username).toBe('tim');
+		const user = queries.createUser({ username: `tim-${randomUUID()}`, password_hash: 'hash' });
+		expect(user.username.startsWith('tim-')).toBe(true);
 
 		const category = queries.createCategory({
 			user_id: user.id,
