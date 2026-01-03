@@ -17,14 +17,12 @@ Life Tracker is a server-first web application built with SvelteKit for managing
 ### Three Core Trackers
 
 1. **Tasks** - Action items with priorities
-
    - Priority: Urgent/High/Medium/Low
    - Optional: Assignee, Deadline, Time estimate
    - Can be one-off or recurring
    - Archived when completed
 
 2. **Chores** - Recurring maintenance
-
    - Always recurring (weekly, monthly, etc.)
    - Assignable to household members
    - Archived when completed

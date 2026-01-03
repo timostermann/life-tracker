@@ -50,8 +50,8 @@ Implement explicit category sharing between users with view/edit permissions usi
 
 ```typescript
 export const shareCategorySchema = z.object({
-  user_id: z.number().int().positive(),
-  permission: z.enum(["view", "edit"]),
+	user_id: z.number().int().positive(),
+	permission: z.enum(['view', 'edit'])
 });
 ```
 
@@ -59,11 +59,11 @@ export const shareCategorySchema = z.object({
 
 ```typescript
 async function checkCategoryAccess(
-  userId: number,
-  categoryId: number,
-  requiredPermission: "view" | "edit"
+	userId: number,
+	categoryId: number,
+	requiredPermission: 'view' | 'edit'
 ) {
-  // Check if owner or has required permission via shared_access
+	// Check if owner or has required permission via shared_access
 }
 ```
 
@@ -71,10 +71,10 @@ async function checkCategoryAccess(
 
 ```svelte
 {#if category.is_shared}
-  <Badge>Shared</Badge>
+	<Badge>Shared</Badge>
 {/if}
 {#if category.shared_with_me}
-  <Badge>Shared with me ({permission})</Badge>
+	<Badge>Shared with me ({permission})</Badge>
 {/if}
 ```
 

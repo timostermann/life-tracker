@@ -70,43 +70,39 @@ Implement category template system with pre-built templates for Tasks, Chores, a
 
 ```typescript
 export const applyTemplateSchema = z.object({
-  name: z.string().min(1).max(100),
+	name: z.string().min(1).max(100)
 });
 ```
 
 **Template application logic:**
 
 ```typescript
-async function applyTemplate(
-  templateId: number,
-  categoryName: string,
-  userId: number
-) {
-  const template = await db.getTemplate(templateId);
-  const config = JSON.parse(template.category_config);
+async function applyTemplate(templateId: number, categoryName: string, userId: number) {
+	const template = await db.getTemplate(templateId);
+	const config = JSON.parse(template.category_config);
 
-  // Create category
-  const category = await db.createCategory({
-    user_id: userId,
-    name: categoryName,
-    template_type: template.template_type,
-    icon: config.icon,
-    color: config.color,
-    is_private: true,
-  });
+	// Create category
+	const category = await db.createCategory({
+		user_id: userId,
+		name: categoryName,
+		template_type: template.template_type,
+		icon: config.icon,
+		color: config.color,
+		is_private: true
+	});
 
-  // Create fields from template
-  for (const field of config.fields) {
-    await db.createField({
-      category_id: category.id,
-      name: field.name,
-      field_type: field.field_type,
-      options: field.options,
-      field_order: field.field_order,
-    });
-  }
+	// Create fields from template
+	for (const field of config.fields) {
+		await db.createField({
+			category_id: category.id,
+			name: field.name,
+			field_type: field.field_type,
+			options: field.options,
+			field_order: field.field_order
+		});
+	}
 
-  return category;
+	return category;
 }
 ```
 

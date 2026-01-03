@@ -30,10 +30,10 @@ Login with username and password.
 
 ```json
 {
-  "user": {
-    "id": 1,
-    "username": "tim"
-  }
+	"user": {
+		"id": 1,
+		"username": "tim"
+	}
 }
 ```
 
@@ -41,8 +41,8 @@ Login with username and password.
 
 ```json
 {
-  "error": "Invalid username or password",
-  "toast": "error"
+	"error": "Invalid username or password",
+	"toast": "error"
 }
 ```
 
@@ -56,7 +56,7 @@ Logout and destroy session.
 
 ```json
 {
-  "success": true
+	"success": true
 }
 ```
 
@@ -70,10 +70,10 @@ Get current authenticated user.
 
 ```json
 {
-  "user": {
-    "id": 1,
-    "username": "tim"
-  }
+	"user": {
+		"id": 1,
+		"username": "tim"
+	}
 }
 ```
 
@@ -81,8 +81,8 @@ Get current authenticated user.
 
 ```json
 {
-  "error": "Not authenticated",
-  "toast": "error"
+	"error": "Not authenticated",
+	"toast": "error"
 }
 ```
 
@@ -137,33 +137,33 @@ Get category with fields and access info.
 
 ```json
 {
-  "category": {
-    "id": 1,
-    "name": "Household Chores",
-    "template_type": "chore",
-    "icon": "🧹",
-    "color": "#10b981",
-    "is_private": false,
-    "owner": {
-      "id": 1,
-      "username": "tim"
-    },
-    "shared_with": [
-      {
-        "user_id": 2,
-        "username": "girlfriend",
-        "permission": "edit"
-      }
-    ],
-    "fields": [
-      {
-        "id": 1,
-        "name": "Chore Name",
-        "field_type": "text",
-        "field_order": 1
-      }
-    ]
-  }
+	"category": {
+		"id": 1,
+		"name": "Household Chores",
+		"template_type": "chore",
+		"icon": "🧹",
+		"color": "#10b981",
+		"is_private": false,
+		"owner": {
+			"id": 1,
+			"username": "tim"
+		},
+		"shared_with": [
+			{
+				"user_id": 2,
+				"username": "girlfriend",
+				"permission": "edit"
+			}
+		],
+		"fields": [
+			{
+				"id": 1,
+				"name": "Chore Name",
+				"field_type": "text",
+				"field_order": 1
+			}
+		]
+	}
 }
 ```
 
@@ -224,8 +224,8 @@ Delete category and all items.
 
 ```json
 {
-  "success": true,
-  "toast": "success"
+	"success": true,
+	"toast": "success"
 }
 ```
 
@@ -248,8 +248,8 @@ Share category with another user.
 
 ```json
 {
-  "success": true,
-  "toast": "success"
+	"success": true,
+	"toast": "success"
 }
 ```
 
@@ -263,8 +263,8 @@ Revoke access.
 
 ```json
 {
-  "success": true,
-  "toast": "success"
+	"success": true,
+	"toast": "success"
 }
 ```
 
@@ -286,34 +286,34 @@ Get items for category.
 
 ```json
 {
-  "items": [
-    {
-      "id": 1,
-      "category_id": 1,
-      "user_id": 1,
-      "assigned_to": {
-        "id": 2,
-        "username": "girlfriend"
-      },
-      "priority": "high",
-      "deadline": "2026-01-15T00:00:00Z",
-      "time_estimate": 30,
-      "is_archived": false,
-      "completed_at": null,
-      "recurring_config": {
-        "frequency": "weekly",
-        "interval": 1
-      },
-      "created_at": "2026-01-02T10:00:00Z",
-      "values": {
-        "1": "Clean kitchen",
-        "2": "Deep clean"
-      }
-    }
-  ],
-  "total": 5,
-  "limit": 50,
-  "offset": 0
+	"items": [
+		{
+			"id": 1,
+			"category_id": 1,
+			"user_id": 1,
+			"assigned_to": {
+				"id": 2,
+				"username": "girlfriend"
+			},
+			"priority": "high",
+			"deadline": "2026-01-15T00:00:00Z",
+			"time_estimate": 30,
+			"is_archived": false,
+			"completed_at": null,
+			"recurring_config": {
+				"frequency": "weekly",
+				"interval": 1
+			},
+			"created_at": "2026-01-02T10:00:00Z",
+			"values": {
+				"1": "Clean kitchen",
+				"2": "Deep clean"
+			}
+		}
+	],
+	"total": 5,
+	"limit": 50,
+	"offset": 0
 }
 ```
 
@@ -403,8 +403,8 @@ Delete item.
 
 ```json
 {
-  "success": true,
-  "toast": "success"
+	"success": true,
+	"toast": "success"
 }
 ```
 
@@ -425,23 +425,23 @@ Get habit entries with calculated stats.
 
 ```json
 {
-  "entries": [
-    {
-      "id": 1,
-      "item_id": 1,
-      "logged_date": "2026-01-03",
-      "status": "done",
-      "notes": "Morning run completed!",
-      "created_at": "2026-01-03T08:00:00Z"
-    }
-  ],
-  "stats": {
-    "current_streak": 5,
-    "longest_streak": 12,
-    "total_entries": 45,
-    "completion_rate": 0.75,
-    "last_7_days": 6
-  }
+	"entries": [
+		{
+			"id": 1,
+			"item_id": 1,
+			"logged_date": "2026-01-03",
+			"status": "done",
+			"notes": "Morning run completed!",
+			"created_at": "2026-01-03T08:00:00Z"
+		}
+	],
+	"stats": {
+		"current_streak": 5,
+		"longest_streak": 12,
+		"total_entries": 45,
+		"completion_rate": 0.75,
+		"last_7_days": 6
+	}
 }
 ```
 
@@ -475,8 +475,8 @@ Log a habit entry for a specific date.
 
 ```json
 {
-  "error": "Entry already exists for this date",
-  "toast": "error"
+	"error": "Entry already exists for this date",
+	"toast": "error"
 }
 ```
 
@@ -506,8 +506,8 @@ Delete entry.
 
 ```json
 {
-  "success": true,
-  "toast": "success"
+	"success": true,
+	"toast": "success"
 }
 ```
 
@@ -556,7 +556,7 @@ Create category from template.
 
 ```typescript
 {
-  name: z.string().min(1).max(100);
+	name: z.string().min(1).max(100);
 }
 ```
 
@@ -605,8 +605,8 @@ Health check for monitoring.
 
 ```json
 {
-  "status": "ok",
-  "timestamp": "2026-01-03T16:00:00Z"
+	"status": "ok",
+	"timestamp": "2026-01-03T16:00:00Z"
 }
 ```
 
@@ -618,11 +618,11 @@ All errors follow this format for toast notifications:
 
 ```json
 {
-  "error": "Human-readable error message",
-  "toast": "error", // or "warning"
-  "details": {
-    "field_name": "Specific error"
-  }
+	"error": "Human-readable error message",
+	"toast": "error", // or "warning"
+	"details": {
+		"field_name": "Specific error"
+	}
 }
 ```
 
@@ -643,20 +643,20 @@ All errors follow this format for toast notifications:
 ### Task Creation Schema
 
 ```typescript
-import { z } from "zod";
+import { z } from 'zod';
 
 export const createTaskSchema = z.object({
-  priority: z.enum(["urgent", "high", "medium", "low"]).optional(),
-  deadline: z.string().datetime().optional(),
-  time_estimate: z.number().int().min(1).optional(),
-  assigned_to_user_id: z.number().int().positive().optional(),
-  recurring_config: z
-    .object({
-      frequency: z.enum(["daily", "weekly", "monthly"]),
-      interval: z.number().int().min(1),
-    })
-    .optional(),
-  values: z.record(z.string(), z.string()),
+	priority: z.enum(['urgent', 'high', 'medium', 'low']).optional(),
+	deadline: z.string().datetime().optional(),
+	time_estimate: z.number().int().min(1).optional(),
+	assigned_to_user_id: z.number().int().positive().optional(),
+	recurring_config: z
+		.object({
+			frequency: z.enum(['daily', 'weekly', 'monthly']),
+			interval: z.number().int().min(1)
+		})
+		.optional(),
+	values: z.record(z.string(), z.string())
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
@@ -666,9 +666,9 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 
 ```typescript
 export const habitEntrySchema = z.object({
-  logged_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  status: z.enum(["done", "skipped", "failed"]),
-  notes: z.string().max(500).optional(),
+	logged_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+	status: z.enum(['done', 'skipped', 'failed']),
+	notes: z.string().max(500).optional()
 });
 ```
 
@@ -676,21 +676,21 @@ export const habitEntrySchema = z.object({
 
 ```typescript
 export const createCategorySchema = z.object({
-  name: z.string().min(1).max(100),
-  template_type: z.enum(["task", "chore", "habit"]),
-  icon: z.string().emoji().optional(),
-  color: z
-    .string()
-    .regex(/^#[0-9A-F]{6}$/i)
-    .optional(),
-  fields: z.array(
-    z.object({
-      name: z.string().min(1).max(50),
-      field_type: z.enum(["text", "number", "date", "boolean", "select"]),
-      options: z.string().optional(),
-      field_order: z.number().int(),
-    })
-  ),
+	name: z.string().min(1).max(100),
+	template_type: z.enum(['task', 'chore', 'habit']),
+	icon: z.string().emoji().optional(),
+	color: z
+		.string()
+		.regex(/^#[0-9A-F]{6}$/i)
+		.optional(),
+	fields: z.array(
+		z.object({
+			name: z.string().min(1).max(50),
+			field_type: z.enum(['text', 'number', 'date', 'boolean', 'select']),
+			options: z.string().optional(),
+			field_order: z.number().int()
+		})
+	)
 });
 ```
 
@@ -707,8 +707,8 @@ Configured in Caddy:
 
 ```json
 {
-  "error": "Too many requests. Please try again later.",
-  "toast": "warning"
+	"error": "Too many requests. Please try again later.",
+	"toast": "warning"
 }
 ```
 

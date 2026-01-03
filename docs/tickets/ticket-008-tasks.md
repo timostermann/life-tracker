@@ -67,8 +67,8 @@ Implement full task management with priority, assignment, deadlines, time estima
 
 ```typescript
 export const recurringConfigSchema = z.object({
-  frequency: z.enum(["daily", "weekly", "monthly"]),
-  interval: z.number().int().min(1), // e.g., every 2 weeks
+	frequency: z.enum(['daily', 'weekly', 'monthly']),
+	interval: z.number().int().min(1) // e.g., every 2 weeks
 });
 ```
 
@@ -76,26 +76,26 @@ export const recurringConfigSchema = z.object({
 
 ```typescript
 async function completeTask(taskId: number) {
-  const task = await db.getItem(taskId);
+	const task = await db.getItem(taskId);
 
-  // Archive current
-  await db.updateItem(taskId, {
-    is_archived: true,
-    completed_at: new Date(),
-  });
+	// Archive current
+	await db.updateItem(taskId, {
+		is_archived: true,
+		completed_at: new Date()
+	});
 
-  // If recurring, create next
-  if (task.recurring_config) {
-    const nextDate = calculateNextDate(task.recurring_config);
-    await db.createItem({
-      ...task,
-      id: undefined,
-      is_archived: false,
-      completed_at: null,
-      next_show_date: nextDate,
-      created_at: new Date(),
-    });
-  }
+	// If recurring, create next
+	if (task.recurring_config) {
+		const nextDate = calculateNextDate(task.recurring_config);
+		await db.createItem({
+			...task,
+			id: undefined,
+			is_archived: false,
+			completed_at: null,
+			next_show_date: nextDate,
+			created_at: new Date()
+		});
+	}
 }
 ```
 

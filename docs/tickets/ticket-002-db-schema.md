@@ -65,9 +65,9 @@ Implement SQLite database schema for tasks, chores, and habits with migration sy
 
 ```typescript
 export const userSchema = z.object({
-  id: z.number().int().positive(),
-  username: z.string().min(1),
-  created_at: z.string().datetime(),
+	id: z.number().int().positive(),
+	username: z.string().min(1),
+	created_at: z.string().datetime()
 });
 
 export type User = z.infer<typeof userSchema>;
@@ -84,9 +84,9 @@ export type User = z.infer<typeof userSchema>;
 
 ```typescript
 export const db = {
-  getUser: (id: number) => User,
-  createCategory: (data) => Category,
-  // etc.
+	getUser: (id: number) => User,
+	createCategory: (data) => Category
+	// etc.
 };
 ```
 

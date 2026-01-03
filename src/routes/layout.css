@@ -1,3 +1,64 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@theme {
+	/* Custom absolute unit (au) spacing - values that don't change with text zoom */
+	--spacing-0\.5au: 2px;
+	--spacing-1au: 4px;
+	--spacing-1\.5au: 6px;
+	--spacing-2au: 8px;
+	--spacing-2\.5au: 10px;
+	--spacing-3au: 12px;
+	--spacing-3\.5au: 14px;
+	--spacing-4au: 16px;
+	--spacing-4\.5au: 18px;
+	--spacing-5au: 20px;
+	--spacing-6au: 24px;
+	--spacing-7au: 28px;
+	--spacing-7\.5au: 30px;
+	--spacing-8au: 32px;
+	--spacing-9au: 36px;
+	--spacing-10au: 40px;
+	--spacing-11au: 44px;
+	--spacing-12au: 48px;
+	--spacing-14au: 56px;
+	--spacing-16au: 64px;
+	--spacing-18au: 72px;
+	--spacing-20au: 80px;
+	--spacing-24au: 96px;
+	--spacing-28au: 112px;
+	--spacing-32au: 128px;
+	--spacing-36au: 144px;
+	--spacing-40au: 160px;
+	--spacing-48au: 192px;
+	--spacing-56au: 224px;
+	--spacing-64au: 256px;
+	--spacing-72au: 288px;
+	--spacing-80au: 320px;
+	--spacing-96au: 384px;
+}
+
+/* Custom relative breakpoint variants */
+@custom-variant rel-xs (min-width: 26.25rem);
+@custom-variant rel-sm (min-width: 40rem);
+@custom-variant rel-md (min-width: 48rem);
+@custom-variant rel-lg (min-width: 64rem);
+@custom-variant rel-xl (min-width: 84rem);
+@custom-variant rel-xxl (min-width: 105rem);
+
+body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-smooth: never;
+}
+
+@layer base {
+	:focus-visible {
+		outline-style: solid;
+		outline-width: 2px;
+		border-radius: 4px;
+		outline-offset: 2px;
+		outline-color: theme('colors.blue.500');
+	}
+}

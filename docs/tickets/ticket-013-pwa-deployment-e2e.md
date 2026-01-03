@@ -93,16 +93,16 @@ Configure PWA functionality, set up Docker deployment pipeline, Caddy configurat
 
 ```json
 {
-  "name": "Life Tracker",
-  "short_name": "Tracker",
-  "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ],
-  "theme_color": "#3b82f6",
-  "background_color": "#ffffff",
-  "display": "standalone",
-  "start_url": "/"
+	"name": "Life Tracker",
+	"short_name": "Tracker",
+	"icons": [
+		{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+		{ "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+	],
+	"theme_color": "#3b82f6",
+	"background_color": "#ffffff",
+	"display": "standalone",
+	"start_url": "/"
 }
 ```
 
@@ -131,19 +131,19 @@ tracker.timostermann.io {
 **E2E test example:**
 
 ```typescript
-test("create and complete task", async ({ page, user }) => {
-  await page.goto("/categories/1");
-  await page.click("text=New Task");
+test('create and complete task', async ({ page, user }) => {
+	await page.goto('/categories/1');
+	await page.click('text=New Task');
 
-  await page.fill('[name="title"]', "Buy groceries");
-  await page.selectOption('[name="priority"]', "high");
-  await page.click('button:has-text("Create")');
+	await page.fill('[name="title"]', 'Buy groceries');
+	await page.selectOption('[name="priority"]', 'high');
+	await page.click('button:has-text("Create")');
 
-  await expect(page.locator("text=Buy groceries")).toBeVisible();
-  await expect(page.locator("text=Task created")).toBeVisible();
+	await expect(page.locator('text=Buy groceries')).toBeVisible();
+	await expect(page.locator('text=Task created')).toBeVisible();
 
-  await page.click('button:has-text("Complete")');
-  await expect(page.locator("text=Task completed")).toBeVisible();
+	await page.click('button:has-text("Complete")');
+	await expect(page.locator('text=Task completed')).toBeVisible();
 });
 ```
 

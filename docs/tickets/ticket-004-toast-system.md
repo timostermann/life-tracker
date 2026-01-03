@@ -37,16 +37,13 @@ Set up global toast notification system using svelte-sonner for consistent error
 
 ```typescript
 // src/lib/utils/toast.ts
-import { toast as sonnerToast } from "svelte-sonner";
+import { toast as sonnerToast } from 'svelte-sonner';
 
 export const toast = {
-  success: (message: string) =>
-    sonnerToast.success(message, { duration: 3000 }),
-  error: (message: string) =>
-    sonnerToast.error(message, { duration: Infinity }),
-  warning: (message: string) =>
-    sonnerToast.warning(message, { duration: 5000 }),
-  info: (message: string) => sonnerToast.info(message, { duration: 3000 }),
+	success: (message: string) => sonnerToast.success(message, { duration: 3000 }),
+	error: (message: string) => sonnerToast.error(message, { duration: Infinity }),
+	warning: (message: string) => sonnerToast.warning(message, { duration: 5000 }),
+	info: (message: string) => sonnerToast.info(message, { duration: 3000 })
 };
 ```
 
@@ -54,24 +51,24 @@ export const toast = {
 
 ```typescript
 export async function apiCall<T>(fn: () => Promise<Response>): Promise<T> {
-  try {
-    const response = await fn();
-    const data = await response.json();
+	try {
+		const response = await fn();
+		const data = await response.json();
 
-    if (!response.ok) {
-      toast.error(data.error || "Something went wrong");
-      throw new Error(data.error);
-    }
+		if (!response.ok) {
+			toast.error(data.error || 'Something went wrong');
+			throw new Error(data.error);
+		}
 
-    if (data.toast === "success") {
-      toast.success(data.message || "Success");
-    }
+		if (data.toast === 'success') {
+			toast.success(data.message || 'Success');
+		}
 
-    return data;
-  } catch (error) {
-    toast.error("Network error. Please try again.");
-    throw error;
-  }
+		return data;
+	} catch (error) {
+		toast.error('Network error. Please try again.');
+		throw error;
+	}
 }
 ```
 

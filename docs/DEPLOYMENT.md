@@ -45,7 +45,7 @@ CMD ["node", "build"]
 ### docker-compose.yml (VPS)
 
 ```yaml
-version: "3.8"
+version: '3.8'
 
 services:
   life-tracker:
@@ -61,13 +61,7 @@ services:
     networks:
       - caddy_network
     healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "require('http').get('http://localhost:3000/api/health')",
-        ]
+      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:3000/api/health')"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -116,7 +110,7 @@ jobs:
         with:
           image-ref: local/${{ github.repository }}:scan
           format: table
-          exit-code: "1"
+          exit-code: '1'
           ignore-unfixed: true
           severity: CRITICAL,HIGH
 
@@ -287,8 +281,8 @@ Expected response:
 
 ```json
 {
-  "status": "ok",
-  "timestamp": "2026-01-02T16:00:00Z"
+	"status": "ok",
+	"timestamp": "2026-01-02T16:00:00Z"
 }
 ```
 

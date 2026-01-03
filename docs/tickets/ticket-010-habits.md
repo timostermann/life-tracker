@@ -52,9 +52,9 @@ Implement habit tracking with daily entries, streaks, frequency goals, and notes
 
 ```typescript
 export const habitEntrySchema = z.object({
-  logged_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  status: z.enum(["done", "skipped", "failed"]),
-  notes: z.string().max(500).optional(),
+	logged_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+	status: z.enum(['done', 'skipped', 'failed']),
+	notes: z.string().max(500).optional()
 });
 ```
 
@@ -62,48 +62,42 @@ export const habitEntrySchema = z.object({
 
 ```typescript
 function calculateStreak(entries: HabitEntry[]): number {
-  const sorted = entries
-    .filter((e) => e.status === "done")
-    .sort(
-      (a, b) =>
-        new Date(b.logged_date).getTime() - new Date(a.logged_date).getTime()
-    );
+	const sorted = entries
+		.filter((e) => e.status === 'done')
+		.sort((a, b) => new Date(b.logged_date).getTime() - new Date(a.logged_date).getTime());
 
-  let streak = 0;
-  let currentDate = new Date();
+	let streak = 0;
+	let currentDate = new Date();
 
-  for (const entry of sorted) {
-    const entryDate = new Date(entry.logged_date);
-    const daysDiff = Math.floor(
-      (currentDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+	for (const entry of sorted) {
+		const entryDate = new Date(entry.logged_date);
+		const daysDiff = Math.floor(
+			(currentDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)
+		);
 
-    if (daysDiff === streak) {
-      streak++;
-      currentDate = entryDate;
-    } else {
-      break;
-    }
-  }
+		if (daysDiff === streak) {
+			streak++;
+			currentDate = entryDate;
+		} else {
+			break;
+		}
+	}
 
-  return streak;
+	return streak;
 }
 ```
 
 **Frequency calculation:**
 
 ```typescript
-function calculateFrequency(
-  entries: HabitEntry[],
-  days: number
-): { done: number; total: number } {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
+function calculateFrequency(entries: HabitEntry[], days: number): { done: number; total: number } {
+	const cutoff = new Date();
+	cutoff.setDate(cutoff.getDate() - days);
 
-  const recent = entries.filter((e) => new Date(e.logged_date) >= cutoff);
-  const done = recent.filter((e) => e.status === "done").length;
+	const recent = entries.filter((e) => new Date(e.logged_date) >= cutoff);
+	const done = recent.filter((e) => e.status === 'done').length;
 
-  return { done, total: days };
+	return { done, total: days };
 }
 ```
 

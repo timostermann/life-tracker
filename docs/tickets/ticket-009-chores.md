@@ -43,9 +43,9 @@ Implement recurring chores with assignment and archiving. Chores are always recu
 
 ```typescript
 export const createChoreSchema = z.object({
-  values: z.record(z.string(), z.string()),
-  assigned_to_user_id: z.number().int().positive().optional(),
-  recurring_config: recurringConfigSchema, // REQUIRED
+	values: z.record(z.string(), z.string()),
+	assigned_to_user_id: z.number().int().positive().optional(),
+	recurring_config: recurringConfigSchema // REQUIRED
 });
 ```
 
@@ -58,20 +58,17 @@ export const createChoreSchema = z.object({
 **Next date calculation:**
 
 ```typescript
-function calculateNextDate(
-  config: RecurringConfig,
-  from: Date = new Date()
-): Date {
-  const { frequency, interval } = config;
+function calculateNextDate(config: RecurringConfig, from: Date = new Date()): Date {
+	const { frequency, interval } = config;
 
-  switch (frequency) {
-    case "daily":
-      return addDays(from, interval);
-    case "weekly":
-      return addWeeks(from, interval);
-    case "monthly":
-      return addMonths(from, interval);
-  }
+	switch (frequency) {
+		case 'daily':
+			return addDays(from, interval);
+		case 'weekly':
+			return addWeeks(from, interval);
+		case 'monthly':
+			return addMonths(from, interval);
+	}
 }
 ```
 

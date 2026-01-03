@@ -60,14 +60,14 @@ Set up shadcn-svelte components and Histoire for component development. Create b
 ```typescript
 // .histoire/config.ts
 export default defineConfig({
-  plugins: [SveltePlugin()],
-  setupFile: "/src/histoire.setup.ts",
-  tree: {
-    groups: [
-      { title: "shadcn-svelte", id: "shadcn" },
-      { title: "Custom", id: "custom" },
-    ],
-  },
+	plugins: [SveltePlugin()],
+	setupFile: '/src/histoire.setup.ts',
+	tree: {
+		groups: [
+			{ title: 'shadcn-svelte', id: 'shadcn' },
+			{ title: 'Custom', id: 'custom' }
+		]
+	}
 });
 ```
 
@@ -76,17 +76,12 @@ export default defineConfig({
 ```svelte
 <!-- CategoryCard.story.svelte -->
 <script>
-  import { Hst } from '@histoire/plugin-svelte';
-  import CategoryCard from './CategoryCard.svelte';
+	import { Hst } from '@histoire/plugin-svelte';
+	import CategoryCard from './CategoryCard.svelte';
 </script>
 
 <Hst.Story title="Custom/CategoryCard">
-  <CategoryCard
-    name="Household Chores"
-    icon="🧹"
-    color="#10b981"
-    itemCount={5}
-  />
+	<CategoryCard name="Household Chores" icon="🧹" color="#10b981" itemCount={5} />
 </Hst.Story>
 ```
 

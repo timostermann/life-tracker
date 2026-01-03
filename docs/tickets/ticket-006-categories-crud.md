@@ -55,14 +55,14 @@ Implement full CRUD operations for categories including API endpoints with Zod v
 
 ```typescript
 export const createCategorySchema = z.object({
-  name: z.string().min(1).max(100),
-  template_type: z.enum(["task", "chore", "habit"]),
-  icon: z.string().optional(),
-  color: z
-    .string()
-    .regex(/^#[0-9A-F]{6}$/i)
-    .optional(),
-  fields: z.array(fieldSchema),
+	name: z.string().min(1).max(100),
+	template_type: z.enum(['task', 'chore', 'habit']),
+	icon: z.string().optional(),
+	color: z
+		.string()
+		.regex(/^#[0-9A-F]{6}$/i)
+		.optional(),
+	fields: z.array(fieldSchema)
 });
 ```
 
@@ -70,12 +70,12 @@ export const createCategorySchema = z.object({
 
 ```typescript
 return json(
-  {
-    category,
-    toast: "success",
-    message: "Category created successfully",
-  },
-  { status: 201 }
+	{
+		category,
+		toast: 'success',
+		message: 'Category created successfully'
+	},
+	{ status: 201 }
 );
 ```
 

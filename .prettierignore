@@ -5,5 +5,23 @@ yarn.lock
 bun.lock
 bun.lockb
 
+# Git hooks
+.husky
+
+# Build outputs
+.svelte-kit
+build
+dist
+.next
+
+# Test outputs
+coverage
+test-results
+playwright-report
+
+# Histoire
+.histoire/dist
+
 # Miscellaneous
 /static/
+

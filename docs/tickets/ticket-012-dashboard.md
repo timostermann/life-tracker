@@ -92,10 +92,10 @@ Create home dashboard showing categories overview, items assigned to user, items
 ```typescript
 // Single query for efficiency
 const [categories, assignedItems, dueItems, habits] = await Promise.all([
-  db.getCategoriesWithCounts(userId),
-  db.getAssignedItems(userId),
-  db.getDueSoonItems(userId, 7),
-  db.getHabitsNotLoggedToday(userId),
+	db.getCategoriesWithCounts(userId),
+	db.getAssignedItems(userId),
+	db.getDueSoonItems(userId, 7),
+	db.getHabitsNotLoggedToday(userId)
 ]);
 ```
 

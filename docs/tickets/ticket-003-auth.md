@@ -45,15 +45,15 @@ Implement session-based authentication using Lucia Auth v3 for 2 users.
 **Lucia configuration:**
 
 ```typescript
-import { Lucia } from "lucia";
-import { BetterSqlite3Adapter } from "@lucia-auth/adapter-sqlite";
+import { Lucia } from 'lucia';
+import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite';
 
 export const lucia = new Lucia(adapter, {
-  sessionCookie: {
-    attributes: {
-      secure: import.meta.env.PROD,
-    },
-  },
+	sessionCookie: {
+		attributes: {
+			secure: import.meta.env.PROD
+		}
+	}
 });
 ```
 
@@ -61,8 +61,8 @@ export const lucia = new Lucia(adapter, {
 
 ```typescript
 export const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+	username: z.string().min(1, 'Username is required'),
+	password: z.string().min(1, 'Password is required')
 });
 ```
 
@@ -79,8 +79,8 @@ INSERT INTO users (username, password_hash) VALUES
 ```typescript
 // hooks.server.ts
 export const handle = async ({ event, resolve }) => {
-  const sessionId = event.cookies.get(lucia.sessionCookieName);
-  // validate and set event.locals.user
+	const sessionId = event.cookies.get(lucia.sessionCookieName);
+	// validate and set event.locals.user
 };
 ```
 

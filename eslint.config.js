@@ -27,6 +27,25 @@ export default defineConfig(
 		}
 	},
 	{
+		files: ['src/**/*.ts', 'src/**/*.svelte.ts'],
+		languageOptions: {
+			parserOptions: {
+				projectService: true
+			}
+		},
+		rules: {
+			'@typescript-eslint/consistent-type-imports': [
+				'error',
+				{
+					fixStyle: 'inline-type-imports'
+				}
+			],
+			'@typescript-eslint/consistent-type-exports': 'error',
+			'@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+			'@typescript-eslint/no-floating-promises': 'error'
+		}
+	},
+	{
 		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 
 		languageOptions: {
@@ -36,6 +55,21 @@ export default defineConfig(
 				parser: ts.parser,
 				svelteConfig
 			}
+		}
+	},
+	{
+		files: ['**/*.{test,spec}.{js,ts}', '**/*.svelte.{test,spec}.{js,ts}'],
+		languageOptions: {
+			globals: {
+				...globals.browser,
+				...globals.node
+			}
+		}
+	},
+	{
+		files: ['**/*.cjs'],
+		rules: {
+			'@typescript-eslint/no-require-imports': 'off'
 		}
 	}
 );

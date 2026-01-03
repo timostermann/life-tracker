@@ -251,9 +251,9 @@ CREATE INDEX idx_items_created_at ON items(created_at DESC);
 
 ```json
 {
-  "frequency": "weekly",
-  "interval": 1,
-  "unit": "weeks"
+	"frequency": "weekly",
+	"interval": 1,
+	"unit": "weeks"
 }
 ```
 
@@ -373,13 +373,13 @@ CREATE INDEX idx_templates_is_system ON templates(is_system);
 
 ```json
 {
-  "name": "Tasks",
-  "icon": "✓",
-  "color": "#3b82f6",
-  "fields": [
-    { "name": "Title", "field_type": "text", "field_order": 1 },
-    { "name": "Description", "field_type": "text", "field_order": 2 }
-  ]
+	"name": "Tasks",
+	"icon": "✓",
+	"color": "#3b82f6",
+	"fields": [
+		{ "name": "Title", "field_type": "text", "field_order": 1 },
+		{ "name": "Description", "field_type": "text", "field_order": 2 }
+	]
 }
 ```
 
@@ -391,14 +391,14 @@ CREATE INDEX idx_templates_is_system ON templates(is_system);
 
 ```json
 {
-  "name": "Tasks",
-  "template_type": "task",
-  "icon": "✓",
-  "color": "#3b82f6",
-  "fields": [
-    { "name": "Title", "field_type": "text", "field_order": 1 },
-    { "name": "Description", "field_type": "text", "field_order": 2 }
-  ]
+	"name": "Tasks",
+	"template_type": "task",
+	"icon": "✓",
+	"color": "#3b82f6",
+	"fields": [
+		{ "name": "Title", "field_type": "text", "field_order": 1 },
+		{ "name": "Description", "field_type": "text", "field_order": 2 }
+	]
 }
 ```
 
@@ -414,14 +414,14 @@ CREATE INDEX idx_templates_is_system ON templates(is_system);
 
 ```json
 {
-  "name": "Chores",
-  "template_type": "chore",
-  "icon": "🧹",
-  "color": "#10b981",
-  "fields": [
-    { "name": "Chore Name", "field_type": "text", "field_order": 1 },
-    { "name": "Notes", "field_type": "text", "field_order": 2 }
-  ]
+	"name": "Chores",
+	"template_type": "chore",
+	"icon": "🧹",
+	"color": "#10b981",
+	"fields": [
+		{ "name": "Chore Name", "field_type": "text", "field_order": 1 },
+		{ "name": "Notes", "field_type": "text", "field_order": 2 }
+	]
 }
 ```
 
@@ -434,15 +434,15 @@ CREATE INDEX idx_templates_is_system ON templates(is_system);
 
 ```json
 {
-  "name": "Habits",
-  "template_type": "habit",
-  "icon": "📈",
-  "color": "#8b5cf6",
-  "fields": [
-    { "name": "Habit Name", "field_type": "text", "field_order": 1 },
-    { "name": "Goal", "field_type": "text", "field_order": 2 },
-    { "name": "Is Good Habit", "field_type": "boolean", "field_order": 3 }
-  ]
+	"name": "Habits",
+	"template_type": "habit",
+	"icon": "📈",
+	"color": "#8b5cf6",
+	"fields": [
+		{ "name": "Habit Name", "field_type": "text", "field_order": 1 },
+		{ "name": "Goal", "field_type": "text", "field_order": 2 },
+		{ "name": "Is Good Habit", "field_type": "boolean", "field_order": 3 }
+	]
 }
 ```
 
@@ -585,25 +585,25 @@ Example schemas:
 ```typescript
 // Task creation
 export const createTaskSchema = z.object({
-  category_id: z.number().int().positive(),
-  priority: z.enum(["urgent", "high", "medium", "low"]),
-  deadline: z.string().datetime().optional(),
-  time_estimate: z.number().int().positive().optional(),
-  assigned_to_user_id: z.number().int().positive().optional(),
-  recurring_config: z
-    .object({
-      frequency: z.enum(["daily", "weekly", "monthly"]),
-      interval: z.number().int().positive(),
-    })
-    .optional(),
-  values: z.record(z.string(), z.string()),
+	category_id: z.number().int().positive(),
+	priority: z.enum(['urgent', 'high', 'medium', 'low']),
+	deadline: z.string().datetime().optional(),
+	time_estimate: z.number().int().positive().optional(),
+	assigned_to_user_id: z.number().int().positive().optional(),
+	recurring_config: z
+		.object({
+			frequency: z.enum(['daily', 'weekly', 'monthly']),
+			interval: z.number().int().positive()
+		})
+		.optional(),
+	values: z.record(z.string(), z.string())
 });
 
 // Habit entry
 export const habitEntrySchema = z.object({
-  logged_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  status: z.enum(["done", "skipped", "failed"]),
-  notes: z.string().max(500).optional(),
+	logged_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+	status: z.enum(['done', 'skipped', 'failed']),
+	notes: z.string().max(500).optional()
 });
 ```
 

@@ -11,23 +11,23 @@ Initialize the Life Tracker project with SvelteKit, TypeScript, Tailwind CSS, sh
 
 ## Tasks
 
-- [ ] Initialize SvelteKit project with TypeScript
-- [ ] Configure Tailwind CSS v4
-- [ ] Install and configure shadcn-svelte
-- [ ] Set up Zod for validation
-- [ ] Set up ESLint with flat config
-- [ ] Configure Prettier with Tailwind plugin
-- [ ] Set up Husky git hooks
-- [ ] Configure lint-staged (with co-located tests)
-- [ ] Set up commitlint (allow ticket IDs as scopes)
-- [ ] Configure commit-and-tag-version for releases
-- [ ] Install svelte-sonner for toasts
-- [ ] Install Histoire for component stories
-- [ ] Create `.gitignore`, `.prettierignore`, `.eslintignore`
-- [ ] Initialize git repository
-- [ ] Create `package.json` with all scripts
-- [ ] Set Node 24 requirement in engines field
-- [ ] Create project structure (`lib/`, `routes/`, etc.)
+- [x] Initialize SvelteKit project with TypeScript
+- [x] Configure Tailwind CSS v4
+- [x] Install and configure shadcn-svelte
+- [x] Set up Zod for validation
+- [x] Set up ESLint with flat config
+- [x] Configure Prettier with Tailwind plugin
+- [x] Set up Husky git hooks
+- [x] Configure lint-staged (with co-located tests)
+- [x] Set up commitlint (allow ticket IDs as scopes)
+- [x] Configure commit-and-tag-version for releases
+- [x] Install svelte-sonner for toasts
+- [x] Install Histoire for component stories
+- [x] Create `.gitignore`, `.prettierignore`, `.eslintignore`
+- [x] Initialize git repository
+- [x] Create `package.json` with all scripts
+- [x] Set Node 24 requirement in engines field
+- [x] Create project structure (`lib/`, `routes/`, etc.)
 
 ## Acceptance Criteria
 

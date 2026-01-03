@@ -170,14 +170,14 @@ life-tracker/
 
 ```json
 {
-  "name": "Tasks",
-  "template_type": "task",
-  "icon": "✓",
-  "color": "#3b82f6",
-  "fields": [
-    { "name": "Title", "field_type": "text" },
-    { "name": "Description", "field_type": "text" }
-  ]
+	"name": "Tasks",
+	"template_type": "task",
+	"icon": "✓",
+	"color": "#3b82f6",
+	"fields": [
+		{ "name": "Title", "field_type": "text" },
+		{ "name": "Description", "field_type": "text" }
+	]
 }
 ```
 
@@ -187,14 +187,14 @@ Plus metadata: priority, deadline, time_estimate, recurring, assignment
 
 ```json
 {
-  "name": "Chores",
-  "template_type": "chore",
-  "icon": "🧹",
-  "color": "#10b981",
-  "fields": [
-    { "name": "Chore Name", "field_type": "text" },
-    { "name": "Notes", "field_type": "text" }
-  ]
+	"name": "Chores",
+	"template_type": "chore",
+	"icon": "🧹",
+	"color": "#10b981",
+	"fields": [
+		{ "name": "Chore Name", "field_type": "text" },
+		{ "name": "Notes", "field_type": "text" }
+	]
 }
 ```
 
@@ -204,15 +204,15 @@ Plus metadata: recurring (required), assignment
 
 ```json
 {
-  "name": "Habits",
-  "template_type": "habit",
-  "icon": "📈",
-  "color": "#8b5cf6",
-  "fields": [
-    { "name": "Habit Name", "field_type": "text" },
-    { "name": "Goal", "field_type": "text" },
-    { "name": "Is Good Habit", "field_type": "boolean" }
-  ]
+	"name": "Habits",
+	"template_type": "habit",
+	"icon": "📈",
+	"color": "#8b5cf6",
+	"fields": [
+		{ "name": "Habit Name", "field_type": "text" },
+		{ "name": "Goal", "field_type": "text" },
+		{ "name": "Is Good Habit", "field_type": "boolean" }
+	]
 }
 ```
 
@@ -369,9 +369,9 @@ timostermann
 ```typescript
 // schemas/task.ts
 export const createTaskSchema = z.object({
-  priority: z.enum(["urgent", "high", "medium", "low"]),
-  deadline: z.string().datetime().optional(),
-  values: z.record(z.string(), z.string()),
+	priority: z.enum(['urgent', 'high', 'medium', 'low']),
+	deadline: z.string().datetime().optional(),
+	values: z.record(z.string(), z.string())
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
@@ -380,7 +380,7 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 const result = createTaskSchema.safeParse(await request.json());
 
 // Client gets types
-import type { CreateTaskInput } from "$lib/schemas/task";
+import type { CreateTaskInput } from '$lib/schemas/task';
 ```
 
 ## Key Features Walkthrough
@@ -474,14 +474,12 @@ import type { CreateTaskInput } from "$lib/schemas/task";
 ## Next Steps
 
 1. **Review updated documentation**
-
    - Architecture with use case diagrams
    - Database schema for tasks/chores/habits
    - API documentation with Zod examples
    - FUTURE_IMPROVEMENTS.md for deferred features
 
 2. **Review revised tickets**
-
    - 13 MVP tickets (vs original 24)
    - Quality embedded in each ticket
    - New tech stack reflected
