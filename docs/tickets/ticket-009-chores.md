@@ -1,0 +1,109 @@
+# Ticket 009: Chores Implementation
+
+**ID:** ticket-009  
+**Scope:** `items` or `ticket-009`  
+**Phase:** 1 (MVP)  
+**Dependencies:** ticket-008
+
+## Description
+
+Implement recurring chores with assignment and archiving. Chores are always recurring (weekly, monthly, etc.).
+
+## Tasks
+
+- [ ] Create Zod schemas for chore operations
+- [ ] Create chore-specific API endpoints (enforce recurring)
+- [ ] Create chore list view
+- [ ] Create chore form component (recurring required)
+- [ ] Implement recurring frequency selector (daily/weekly/monthly + interval)
+- [ ] Implement assignee selector
+- [ ] Implement complete chore action
+- [ ] Show next occurrence date in UI
+- [ ] Add chore schedule view (calendar/timeline)
+- [ ] Add unit tests (co-located)
+- [ ] Add E2E tests for chore flows
+
+## Acceptance Criteria
+
+- ✅ Users can create chores (recurring config required)
+- ✅ Frequency selector: daily, weekly, monthly
+- ✅ Interval selector: 1, 2, 3, etc.
+- ✅ Assignee selector works
+- ✅ Completing chore archives it
+- ✅ Next occurrence created immediately
+- ✅ Next occurrence shown after recurring period
+- ✅ Chore schedule view shows upcoming occurrences
+- ✅ Can't create chore without recurring config
+- ✅ All operations validated with Zod
+- ✅ Success toasts on all actions
+
+## Technical Notes
+
+**Zod schema (recurring required):**
+
+```typescript
+export const createChoreSchema = z.object({
+  values: z.record(z.string(), z.string()),
+  assigned_to_user_id: z.number().int().positive().optional(),
+  recurring_config: recurringConfigSchema, // REQUIRED
+});
+```
+
+**Frequency examples:**
+
+- Daily: `{ frequency: 'daily', interval: 1 }` = every day
+- Weekly: `{ frequency: 'weekly', interval: 2 }` = every 2 weeks
+- Monthly: `{ frequency: 'monthly', interval: 1 }` = every month
+
+**Next date calculation:**
+
+```typescript
+function calculateNextDate(
+  config: RecurringConfig,
+  from: Date = new Date()
+): Date {
+  const { frequency, interval } = config;
+
+  switch (frequency) {
+    case "daily":
+      return addDays(from, interval);
+    case "weekly":
+      return addWeeks(from, interval);
+    case "monthly":
+      return addMonths(from, interval);
+  }
+}
+```
+
+**Schedule view query:**
+
+```sql
+-- Get upcoming chores (next 30 days)
+SELECT * FROM items
+WHERE category_id IN (SELECT id FROM categories WHERE template_type = 'chore')
+  AND next_show_date BETWEEN CURRENT_DATE AND DATE(CURRENT_DATE, '+30 days')
+ORDER BY next_show_date;
+```
+
+## Testing
+
+- ✅ Unit test: Chore requires recurring config
+- ✅ Unit test: Next date calculated correctly
+- ✅ Unit test: Daily/weekly/monthly intervals work
+- ✅ Unit test: Complete creates next occurrence
+- ✅ E2E test: Create chore with recurring
+- ✅ E2E test: Complete chore, verify next
+- ✅ E2E test: Schedule view shows correct dates
+
+## Accessibility
+
+- ✅ Recurring config form accessible
+- ✅ Frequency explained in plain language
+- ✅ Next occurrence date announced
+- ✅ Schedule view keyboard navigable
+
+## Performance
+
+- ✅ Schedule queries optimized with next_show_date index
+- ✅ Calendar view loads only visible month
+- ✅ No N+1 queries for chore list
