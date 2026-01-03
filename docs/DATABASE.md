@@ -561,7 +561,7 @@ WHERE item_id = ?;
 
 ## Migration Strategy
 
-Migrations are SQL files in `src/lib/db/migrations/`:
+Migrations are SQL files in `src/lib/server/db/migrations/`:
 
 - `001_initial_schema.sql`: All tables
 - `002_seed_templates.sql`: System templates

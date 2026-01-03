@@ -11,17 +11,18 @@ Implement SQLite database schema for tasks, chores, and habits with migration sy
 
 ## Tasks
 
-- [ ] Install `better-sqlite3` dependency
-- [ ] Create database wrapper in `src/lib/server/db.ts`
-- [ ] Create Zod schemas in `src/lib/schemas/db.ts`
-- [ ] Create TypeScript types matching schema
-- [ ] Create migration system with `schema_version` table
-- [ ] Create `001_initial_schema.sql` with all 8 tables
-- [ ] Create `002_seed_templates.sql` (Tasks, Chores, Habits)
-- [ ] Add migration runner (runs on app startup)
-- [ ] Create database helper functions (CRUD queries)
-- [ ] Add unit tests for database operations (co-located)
-- [ ] Enable WAL mode for SQLite
+- [x] Install `better-sqlite3` dependency
+- [x] Create database wrapper in `src/lib/server/db.ts`
+- [x] Create Zod schemas in `src/lib/schemas/db.ts`
+- [x] Create TypeScript types matching schema
+- [x] Create migration system with `schema_version` table
+- [x] Create `001_initial_schema.sql` with all 8 tables
+- [x] Create `002_seed_templates.sql` (Tasks, Chores, Habits)
+- [x] Add Lucia-compatible sessions table (`sessions`) migration (`003_lucia_auth.sql`)
+- [x] Add migration runner (runs automatically on server startup)
+- [x] Create database helper functions (CRUD queries)
+- [x] Add unit tests for database operations (co-located)
+- [x] Enable WAL mode for SQLite
 
 ## Database Tables
 
@@ -59,7 +60,16 @@ Implement SQLite database schema for tasks, chores, and habits with migration sy
 
 ## Technical Notes
 
-**Database path:** Configurable via env, default `/data/db.sqlite`
+**Database path:** Configurable via env:
+
+- `DATABASE_PATH` is read from `.env` (SvelteKit private env).
+- Defaults:
+  - Development: `./.data/db.sqlite`
+  - Production: `/data/db.sqlite`
+
+**Local DB browser:** Optional `sqlite-web` via `docker compose up -d` (binds to `127.0.0.1:8080`).
+
+**Migrations location:** `src/lib/server/db/migrations/`
 
 **Zod schemas example:**
 
@@ -79,6 +89,11 @@ export type User = z.infer<typeof userSchema>;
 // Check schema_version, run pending migrations
 // Transaction-wrapped for safety
 ```
+
+**Logging:**
+
+- Enable DB/migration logs via `DB_LOG=true` (or `LOG=true`)
+- Optional: `LOG_LEVEL=debug|info|warn|error`
 
 **Helper functions:**
 

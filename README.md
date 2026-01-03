@@ -48,8 +48,8 @@ life-tracker/
 │   ├── lib/
 │   │   ├── components/     # shadcn components + custom
 │   │   │   └── *.test.ts  # Co-located tests
-│   │   ├── db/            # Database logic
 │   │   ├── server/        # Server-side utilities
+│   │   │   └── db/        # SQLite (migrations, queries, connection)
 │   │   ├── schemas/       # Zod schemas
 │   │   └── utils/         # Utilities
 │   └── routes/            # SvelteKit routes + API
@@ -94,6 +94,24 @@ Daily tracking for building good habits or breaking bad ones:
 - Mark as good or bad habit
 
 ## Development
+
+### Local dev (host-run + SQLite file)
+
+Create a local SQLite file (ignored by git) and run the dev server on your machine:
+
+```bash
+npm run dev
+```
+
+Optional: start a DB browser UI (sqlite-web) via Docker (mounts the same `./.data/db.sqlite` file):
+
+```bash
+docker compose up -d
+```
+
+Then open `http://localhost:8080`.
+
+### Docs
 
 See [docs/](./docs/) for detailed documentation:
 

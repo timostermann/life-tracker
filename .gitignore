@@ -24,3 +24,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 .eslintcache
+
+# Local SQLite db (host dev)
+.data

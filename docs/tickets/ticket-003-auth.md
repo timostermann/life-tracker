@@ -13,7 +13,7 @@ Implement session-based authentication using Lucia Auth v3 for 2 users.
 
 - [ ] Install `lucia` and `@lucia-auth/adapter-sqlite`
 - [ ] Create Lucia instance in `src/lib/server/auth.ts`
-- [ ] Add session table to database schema (if not in ticket-002)
+- [x] Session table already added in ticket-002 (`sessions`, migration `003_lucia_auth.sql`)
 - [ ] Create auth utilities (validate session, create session, etc.)
 - [ ] Set up hooks for session validation (`hooks.server.ts`)
 - [ ] Create Zod schemas for login
