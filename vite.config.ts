@@ -2,9 +2,21 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
+import type { Plugin } from 'vite';
+
+function stripViteBaseDuringVitest(): Plugin {
+	return {
+		name: 'strip-vite-base-during-vitest',
+		// Remove an injected Vite `base` during Vitest runs to avoid SvelteKit's override warning.
+		config(config) {
+			if (!process.env.VITEST) return;
+			if ('base' in config) delete (config as { base?: unknown }).base;
+		}
+	};
+}
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [stripViteBaseDuringVitest(), sveltekit(), tailwindcss()],
 
 	test: {
 		expect: { requireAssertions: true },
