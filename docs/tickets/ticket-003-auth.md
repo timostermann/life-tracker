@@ -11,20 +11,20 @@ Implement session-based authentication using Lucia Auth v3 for 2 users.
 
 ## Tasks
 
-- [ ] Install `lucia` and `@lucia-auth/adapter-sqlite`
-- [ ] Create Lucia instance in `src/lib/server/auth.ts`
+- [x] Install `lucia` and `@lucia-auth/adapter-sqlite`
+- [x] Create Lucia instance in `src/lib/server/auth.ts`
 - [x] Session table already added in ticket-002 (`sessions`, migration `003_lucia_auth.sql`)
-- [ ] Create auth utilities (validate session, create session, etc.)
-- [ ] Set up hooks for session validation (`hooks.server.ts`)
-- [ ] Create Zod schemas for login
-- [ ] Implement `POST /api/auth/login` endpoint
-- [ ] Implement `POST /api/auth/logout` endpoint
-- [ ] Implement `GET /api/auth/me` endpoint
-- [ ] Create login page UI (`/login`)
-- [ ] Add auth middleware for protecting routes
-- [ ] Seed 2 user accounts on first run
-- [ ] Add unit tests for auth logic (co-located)
-- [ ] Handle auth errors with toast messages
+- [x] Create auth utilities (validate session, create session, etc.)
+- [x] Set up hooks for session validation (`hooks.server.ts`)
+- [x] Create Zod schemas for login
+- [x] Implement `POST /api/auth/login` endpoint
+- [x] Implement `POST /api/auth/logout` endpoint
+- [x] Implement `GET /api/auth/me` endpoint
+- [x] Create login page UI (`/login`)
+- [x] Add auth middleware for protecting routes
+- [x] Seed 2 user accounts on first run (`tim`, `jule`)
+- [x] Add unit tests for auth logic (co-located)
+- [x] Handle auth errors with toast messages
 
 ## Acceptance Criteria
 
@@ -34,7 +34,7 @@ Implement session-based authentication using Lucia Auth v3 for 2 users.
 - ✅ Unauthorized API requests return 401 with toast message
 - ✅ Protected pages redirect to `/login`
 - ✅ Logout clears session and redirects
-- ✅ Passwords hashed (Lucia handles this)
+- ✅ Passwords hashed (Node `crypto.scrypt`, stored in `users.password_hash`)
 - ✅ Session expires after 7 days
 - ✅ Login form validates with Zod
 - ✅ Error toasts shown on login failure
@@ -49,9 +49,10 @@ import { Lucia } from 'lucia';
 import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite';
 
 export const lucia = new Lucia(adapter, {
+	sessionExpiresIn: new TimeSpan(7, 'd'),
 	sessionCookie: {
 		attributes: {
-			secure: import.meta.env.PROD
+			secure: import.meta.env.PROD // overrideable via AUTH_COOKIE_SECURE
 		}
 	}
 });
@@ -68,11 +69,16 @@ export const loginSchema = z.object({
 
 **Seed users:**
 
-```sql
-INSERT INTO users (username, password_hash) VALUES
-  ('tim', '<bcrypt_hash>'),
-  ('girlfriend', '<bcrypt_hash>');
-```
+Seed users on startup (idempotent): `src/lib/server/auth/seed.ts`
+
+- Users: `tim`, `jule`
+- Env vars:
+  - `AUTH_SEED_TIM_PASSWORD`
+  - `AUTH_SEED_JULE_PASSWORD`
+  - `AUTH_SEED_FORCE=true` (optional, repairs existing `tim`/`jule` password_hash)
+  - `AUTH_COOKIE_SECURE=false` (optional; helpful for http preview/e2e)
+
+````
 
 **Hook for session:**
 
@@ -80,19 +86,18 @@ INSERT INTO users (username, password_hash) VALUES
 // hooks.server.ts
 export const handle = async ({ event, resolve }) => {
 	const sessionId = event.cookies.get(lucia.sessionCookieName);
-	// validate and set event.locals.user
+	// validate and set event.locals.user + event.locals.session
+	// protect routes (redirect to /login, but return 401 JSON for /api/*)
 };
-```
+````
 
 ## Testing
 
-- ✅ Unit test: Validate session
-- ✅ Unit test: Create session
-- ✅ Unit test: Invalidate session
-- ✅ Unit test: Zod validation on login
-- ✅ Integration test: Full login flow
-- ✅ Integration test: Protected route redirects
-- ✅ Integration test: Session expiration
+- ✅ Unit test: Password hashing (scrypt)
+- ✅ Unit test: Create/validate/invalidate session (Lucia)
+- ✅ Unit test: Seed users (idempotent)
+- ✅ E2E (UI): Protected route redirects → login → session persists → logout
+- ✅ E2E (API-only): login → me → logout → me=401
 
 ## Accessibility
 
@@ -105,4 +110,8 @@ export const handle = async ({ event, resolve }) => {
 ## Performance
 
 - ✅ Session lookup optimized with index
-- ✅ bcrypt rounds: 10 (balance of security/speed)
+- ✅ scrypt params: N=16384, r=8, p=1
+
+## Implementation Notes (repo-specific)
+
+- Migrations are bundled into the server build via `import.meta.glob(..., { query: '?raw', eager: true })` in `src/lib/server/db/migrate.ts` so production builds (`npm run preview`) don't depend on `.sql` files existing on disk.
