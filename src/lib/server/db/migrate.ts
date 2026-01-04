@@ -1,5 +1,3 @@
-import fs from 'node:fs';
-
 import type { Database as BetterSqlite3Database } from 'better-sqlite3';
 
 export type Logger = (...args: unknown[]) => void;
@@ -15,9 +13,18 @@ const migrations: Migration[] = [
 	{ version: 3, filename: '003_lucia_auth.sql' }
 ];
 
+// Bundle SQL migrations into the server build so production builds don't depend on .sql files existing on disk.
+const bundledMigrations = import.meta.glob('./migrations/*.sql', {
+	query: '?raw',
+	import: 'default',
+	eager: true
+}) as Record<string, string>;
+
 function readMigrationSql(filename: string): string {
-	const url = new URL(`./migrations/${filename}`, import.meta.url);
-	return fs.readFileSync(url, 'utf8');
+	const key = `./migrations/${filename}`;
+	const sql = bundledMigrations[key];
+	if (!sql) throw new Error(`Migration not found: ${filename}`);
+	return sql;
 }
 
 function ensureSchemaVersionTable(db: BetterSqlite3Database) {
