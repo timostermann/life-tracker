@@ -7,5 +7,5 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-<Toaster richColors />
+<Toaster richColors position="top-center" closeButton />
 {@render children()}

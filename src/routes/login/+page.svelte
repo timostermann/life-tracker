@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { toast } from 'svelte-sonner';
+	import { fetch as apiFetch, ApiError } from '$lib/api/fetch';
+	import { toast } from '$lib/utils/toast';
 
 	import { loginSchema } from '$lib/schemas';
 
@@ -27,23 +28,24 @@
 
 		submitting = true;
 		try {
-			const res = await fetch('/api/auth/login', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(parsed.data)
-			});
-
-			if (!res.ok) {
-				const data = (await res.json().catch(() => ({}))) as { error?: string };
-				const msg = data.error ?? 'Login failed';
-				formError = msg;
-				toast.error(msg);
-				return;
-			}
+			await apiFetch<{ ok: true }>(
+				'/api/auth/login',
+				{
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(parsed.data)
+				},
+				{ toastOnError: false }
+			);
 
 			toast.success('Logged in');
 			await goto(resolve('/'));
-		} catch {
+		} catch (err) {
+			if (err instanceof ApiError) {
+				formError = err.message || 'Login failed';
+				toast.error(formError);
+				return;
+			}
 			formError = 'Network error. Please try again.';
 			toast.error(formError);
 		} finally {

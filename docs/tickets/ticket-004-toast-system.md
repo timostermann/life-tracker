@@ -11,14 +11,14 @@ Set up global toast notification system using svelte-sonner for consistent error
 
 ## Tasks
 
-- [ ] Install and configure svelte-sonner
-- [ ] Create toast utilities in `src/lib/utils/toast.ts`
-- [ ] Add `<Toaster />` to root layout
-- [ ] Create typed toast functions (success, error, warning, info)
-- [ ] Create API error handling utility that shows toasts
-- [ ] Document toast usage patterns
-- [ ] Add unit tests for toast utilities
-- [ ] Test toast accessibility
+- [x] Install and configure svelte-sonner
+- [x] Create toast utilities in `src/lib/utils/toast.ts`
+- [x] Add `<Toaster />` to root layout
+- [x] Create typed toast functions (success, error, warning, info)
+- [x] Create API error handling utility that shows toasts
+- [x] Document toast usage patterns
+- [x] Add unit tests for toast utilities
+- [x] Test toast accessibility
 
 ## Acceptance Criteria
 
@@ -26,57 +26,33 @@ Set up global toast notification system using svelte-sonner for consistent error
 - ✅ Toaster component in root layout
 - ✅ Toast functions typed and exportable
 - ✅ API errors automatically show toasts
-- ✅ Toast position configurable
+- ✅ Toast position configurable (currently `top-center` in `src/routes/+layout.svelte`)
 - ✅ Toast duration appropriate (success: 3s, error: manual)
 - ✅ Toasts accessible (screen reader announcements)
 - ✅ Multiple toasts stack properly
 
 ## Technical Notes
 
-**Toast utility:**
+**Toast utility (implemented):**
 
-```typescript
-// src/lib/utils/toast.ts
-import { toast as sonnerToast } from 'svelte-sonner';
+- `src/lib/utils/toast.ts` wraps `svelte-sonner` with typed helpers and defaults:
+  - success/info: 3s
+  - warning: 5s
+  - error: manual (`Infinity`)
+  - close button enabled by default
 
-export const toast = {
-	success: (message: string) => sonnerToast.success(message, { duration: 3000 }),
-	error: (message: string) => sonnerToast.error(message, { duration: Infinity }),
-	warning: (message: string) => sonnerToast.warning(message, { duration: 5000 }),
-	info: (message: string) => sonnerToast.info(message, { duration: 3000 })
-};
-```
+**API error handler (implemented):**
 
-**API error handler:**
-
-```typescript
-export async function apiCall<T>(fn: () => Promise<Response>): Promise<T> {
-	try {
-		const response = await fn();
-		const data = await response.json();
-
-		if (!response.ok) {
-			toast.error(data.error || 'Something went wrong');
-			throw new Error(data.error);
-		}
-
-		if (data.toast === 'success') {
-			toast.success(data.message || 'Success');
-		}
-
-		return data;
-	} catch (error) {
-		toast.error('Network error. Please try again.');
-		throw error;
-	}
-}
-```
+- `src/lib/api/fetch.ts` exports `fetch<T>(input, init?, options?)` which:
+  - Shows an error toast on non-OK (unless disabled)
+  - Special-cases 401 on `/api/*` excluding `/api/auth/*` as “Unauthorized. Please log in.”
+  - Shows a network error toast on fetch failures (unless disabled)
 
 ## Testing
 
-- ✅ Unit test: Each toast type renders
-- ✅ Unit test: Toast duration correct
-- ✅ Unit test: API error shows toast
+- ✅ Unit test: Toast defaults + overrides (`src/lib/utils/toast.spec.ts`)
+- ✅ Unit test: API error handling + toast behavior (`src/lib/api/fetch.spec.ts`)
+- ✅ Unit tests: helper modules (`src/lib/api/*.spec.ts`)
 - ✅ Manual test: Multiple toasts stack
 - ✅ Manual test: Screen reader announces toasts
 
