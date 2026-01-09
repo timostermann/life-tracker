@@ -12,7 +12,7 @@ Core functionality to get a working app deployed.
 | 002 | [DB Schema](./ticket-002-db-schema.md)                       | `db`, `ticket-002`           | SQLite schema for tasks/chores/habits + migrations           |
 | 003 | [Auth](./ticket-003-auth.md)                                 | `auth`, `ticket-003`         | Lucia Auth v3 session-based authentication                   |
 | 004 | [Toast System](./ticket-004-toast-system.md)                 | `ui`, `ticket-004`           | svelte-sonner global toast notifications                     |
-| 005 | [UI Foundation](./ticket-005-ui-foundation.md)               | `ui`, `ticket-005`           | shadcn-svelte components + Histoire stories                  |
+| 005 | [UI Foundation](./ticket-005-ui-foundation.md)               | `ui`, `ticket-005`           | shadcn-svelte components + comprehensive unit tests          |
 | 006 | [Categories CRUD](./ticket-006-categories-crud.md)           | `categories`, `ticket-006`   | Create, read, update, delete categories with template_type   |
 | 007 | [Sharing](./ticket-007-sharing.md)                           | `categories`, `ticket-007`   | Explicit category sharing with view/edit permissions         |
 | 008 | [Tasks](./ticket-008-tasks.md)                               | `items`, `ticket-008`        | Priority, assignment, deadline, estimate, recurring, archive |
@@ -23,6 +23,16 @@ Core functionality to get a working app deployed.
 | 013 | [PWA + Deployment + E2E](./ticket-013-pwa-deployment-e2e.md) | `setup`, `pwa`, `ticket-013` | PWA manifest, Docker, CI/CD, comprehensive E2E tests         |
 
 **MVP Deliverable:** Working life tracker deployed at `tracker.timostermann.io`
+
+---
+
+## 🚀 Post-MVP Enhancement Tickets
+
+Improvements to add after MVP is complete and deployed.
+
+| ID  | Ticket                                             | Scope                     | Description                                                 |
+| --- | -------------------------------------------------- | ------------------------- | ----------------------------------------------------------- |
+| 014 | [Storybook Setup](./ticket-014-storybook-setup.md) | `storybook`, `ticket-014` | Add Storybook 8.4+ with Svelte 5 support for component docs |
 
 ---
 
@@ -102,13 +112,13 @@ Every ticket includes:
 
 ### Tech Stack
 
-- **Framework**: SvelteKit (Node 24)
+- **Framework**: SvelteKit (Node 24) + Svelte 5
 - **UI**: shadcn-svelte + Tailwind CSS v4
 - **Validation**: Zod schemas throughout
 - **Auth**: Lucia Auth v3
 - **Database**: SQLite (better-sqlite3)
-- **Stories**: Histoire (not Storybook)
-- **Tests**: Vitest (co-located) + Playwright (E2E)
+- **Component Docs**: Storybook 8.4+ (coming in ticket-014)
+- **Tests**: Vitest (co-located unit + browser) + Playwright (E2E)
 - **Notifications**: svelte-sonner
 
 ### Test Strategy
@@ -119,11 +129,11 @@ Every ticket includes:
 - Run in pre-commit hook
 - Cover all logic, utils, API handlers
 
-**Histoire Stories:**
+**Component Tests:**
 
-- All shadcn customizations
-- All custom components
-- Interactive variants
+- Vitest browser mode with Playwright
+- All custom components tested
+- Accessibility and interaction testing
 
 **E2E Tests:**
 
@@ -136,7 +146,7 @@ Every ticket includes:
 1. **Pick a ticket** (follow dependency order)
 2. **Create branch**: `git checkout -b ticket-XXX-short-name`
 3. **Implement** following ticket tasks
-4. **Test** (unit + E2E + Histoire)
+4. **Test** (unit + component + E2E)
 5. **Commit** using conventional commits with scopes
 6. **Push** and create PR
 7. **Merge** when tests pass
