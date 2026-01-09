@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Badge from '$lib/components/ui/badge/badge.svelte';
-	import type { BadgeVariant } from '$lib/components/ui/badge/badge.svelte';
+	import Badge from '$lib/components/ui/Badge/Badge.svelte';
+	import type { BadgeVariant } from '$lib/components/ui/Badge/Badge.svelte';
 
 	type Props = {
 		priority: 'urgent' | 'high' | 'medium' | 'low';

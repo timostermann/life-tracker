@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox/Checkbox.svelte';
 	import PriorityBadge from '$lib/components/PriorityBadge/PriorityBadge.svelte';
 
 	type Props = {
