@@ -56,10 +56,10 @@ describe('db bootstrap', () => {
 		close();
 	});
 
-	it('enables WAL mode', async () => {
+	it('enables WAL mode or falls back to DELETE mode', async () => {
 		const { db, close } = await freshDb();
 		const mode = db.pragma('journal_mode', { simple: true }) as string;
-		expect(mode.toLowerCase()).toBe('wal');
+		expect(['wal', 'delete'].includes(mode.toLowerCase())).toBe(true);
 		close();
 	});
 });

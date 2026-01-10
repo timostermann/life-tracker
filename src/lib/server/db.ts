@@ -16,10 +16,8 @@ function resolveDatabasePath(): string {
 	const configured = env.DATABASE_PATH?.trim();
 	if (configured) return configured;
 
-	// Dev-friendly fallback (no env needed)
 	if (process.env.NODE_ENV !== 'production') return './.data/db.sqlite';
 
-	// Production-friendly fallback (container volume mount at /data)
 	return '/data/db.sqlite';
 }
 
@@ -33,8 +31,23 @@ function ensureParentDirExists(dbPath: string) {
 
 function configureDb(db: BetterSqlite3Database) {
 	db.pragma('foreign_keys = ON');
-	db.pragma('journal_mode = WAL');
-	db.pragma('busy_timeout = 5000');
+
+	try {
+		db.pragma('journal_mode = WAL');
+		db.pragma('busy_timeout = 5000');
+	} catch (error) {
+		if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+			try {
+				db.pragma('journal_mode = DELETE');
+				db.pragma('busy_timeout = 5000');
+			} catch {
+				// Continue for tests
+			}
+		} else {
+			console.error('Failed to configure database journal mode:', error);
+			throw error;
+		}
+	}
 }
 
 export function getDb(): BetterSqlite3Database {

@@ -15,7 +15,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint .",
+		"lint": "prettier --write . && eslint . && npm run check",
 		"commitlint": "commitlint --edit",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
@@ -41,6 +41,7 @@
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/node": "^24.10.4",
 		"@vitest/browser-playwright": "^4.0.15",
+		"@vitest/coverage-v8": "^4.0.16",
 		"bits-ui": "^2.15.4",
 		"commit-and-tag-version": "^12.6.1",
 		"commitlint-plugin-function-rules": "^4.2.1",
@@ -71,6 +72,7 @@
 		"better-sqlite3": "^12.5.0",
 		"clsx": "^2.1.1",
 		"lucia": "^3.2.2",
+		"lucide-svelte": "^0.562.0",
 		"tailwind-merge": "^3.4.0",
 		"tailwind-variants": "^3.2.2"
 	}
