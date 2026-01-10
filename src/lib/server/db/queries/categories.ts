@@ -3,11 +3,18 @@ import {
 	dbSchemas,
 	sharedCategorySchema,
 	type CreateCategoryInput,
+	type UpdateCategoryInput,
 	type Category,
 	type SharedCategory
 } from './types';
 import type { Db } from './utils';
-import { parseRow } from './utils';
+import { parseRow, buildSqlUpdates, buildBooleanSqlUpdate } from './utils';
+
+export function getCategoryById(categoryId: number, db: Db = getDb()): Category | null {
+	const row = db.prepare('SELECT * FROM categories WHERE id = ?').get(categoryId);
+	if (!row) return null;
+	return parseRow(dbSchemas.categorySchema, row);
+}
 
 export function createCategory(input: CreateCategoryInput, db: Db = getDb()): Category {
 	const res = db
@@ -24,16 +31,47 @@ export function createCategory(input: CreateCategoryInput, db: Db = getDb()): Ca
 			input.is_private === undefined ? 1 : input.is_private ? 1 : 0
 		);
 
-	const row = db
-		.prepare('SELECT * FROM categories WHERE id = ?')
-		.get(Number(res.lastInsertRowid)) as unknown;
+	const row = db.prepare('SELECT * FROM categories WHERE id = ?').get(Number(res.lastInsertRowid));
 	return parseRow(dbSchemas.categorySchema, row);
+}
+
+export function updateCategory(
+	categoryId: number,
+	input: UpdateCategoryInput,
+	db: Db = getDb()
+): Category {
+	const sqlUpdates = buildSqlUpdates({
+		name: input.name,
+		icon: input.icon,
+		color: input.color
+	});
+
+	const boolUpdate = buildBooleanSqlUpdate('is_private', input.is_private);
+	if (boolUpdate) {
+		sqlUpdates.updates.push(boolUpdate.update);
+		sqlUpdates.values.push(boolUpdate.value);
+	}
+
+	if (sqlUpdates.updates.length > 0) {
+		sqlUpdates.updates.push('updated_at = CURRENT_TIMESTAMP');
+		sqlUpdates.values.push(categoryId);
+		db.prepare(`UPDATE categories SET ${sqlUpdates.updates.join(', ')} WHERE id = ?`).run(
+			...sqlUpdates.values
+		);
+	}
+
+	const row = db.prepare('SELECT * FROM categories WHERE id = ?').get(categoryId);
+	return parseRow(dbSchemas.categorySchema, row);
+}
+
+export function deleteCategory(categoryId: number, db: Db = getDb()): void {
+	db.prepare('DELETE FROM categories WHERE id = ?').run(categoryId);
 }
 
 export function listCategoriesOwnedByUser(userId: number, db: Db = getDb()): Category[] {
 	const rows = db
 		.prepare('SELECT * FROM categories WHERE user_id = ? ORDER BY created_at DESC')
-		.all(userId) as unknown[];
+		.all(userId);
 	return rows.map((r) => parseRow(dbSchemas.categorySchema, r));
 }
 
@@ -46,7 +84,7 @@ export function listCategoriesSharedWithUser(userId: number, db: Db = getDb()): 
        WHERE sa.shared_with_user_id = ?
        ORDER BY c.created_at DESC`
 		)
-		.all(userId) as unknown[];
+		.all(userId);
 	return rows.map((r) => parseRow(sharedCategorySchema, r));
 }
 
