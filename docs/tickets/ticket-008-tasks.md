@@ -56,12 +56,16 @@ Implement full task management with priority, assignment, deadlines, time estima
 
 ## Technical Notes
 
-**Priority colors:**
+**Priority colors (use Tailwind color names from ticket-006 system):**
 
-- Urgent: Red (#ef4444)
-- High: Orange (#f97316)
-- Medium: Blue (#3b82f6)
-- Low: Gray (#6b7280)
+Categories already use Tailwind color names. For consistency, priority could also use color names, but for MVP we'll use the existing PriorityBadge component which uses explicit colors:
+
+- Urgent: Red (`bg-red-500`)
+- High: Orange (`bg-orange-500`)
+- Medium: Blue (`bg-blue-500`)
+- Low: Gray (`bg-gray-500`)
+
+**Note:** PriorityBadge component already exists and handles colors correctly.
 
 **Recurring config:**
 

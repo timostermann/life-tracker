@@ -37,8 +37,7 @@ describe('useCategoryFormState', () => {
 						field_type: 'select',
 						options: 'Low\nMedium\nHigh',
 						field_order: 0,
-						created_at: '2024-01-01',
-						updated_at: '2024-01-01'
+						created_at: '2024-01-01'
 					}
 				]
 			});
