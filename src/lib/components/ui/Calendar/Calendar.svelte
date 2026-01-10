@@ -1,10 +1,27 @@
 <script lang="ts">
 	import { Calendar as CalendarPrimitive } from 'bits-ui';
 	import * as Calendar from './index';
-	import { cn, type WithoutChildrenOrChild } from '$lib/utils';
+	import { cn } from '$lib/utils';
 	import type { ButtonVariant } from '../Button/Button.svelte';
 	import { isEqualMonth, type DateValue } from '@internationalized/date';
 	import type { Snippet } from 'svelte';
+
+	type Props = {
+		ref?: CalendarPrimitive.RootProps['ref'];
+		value?: CalendarPrimitive.RootProps['value'];
+		placeholder?: CalendarPrimitive.RootProps['placeholder'];
+		class?: string;
+		weekdayFormat?: CalendarPrimitive.RootProps['weekdayFormat'];
+		buttonVariant?: ButtonVariant;
+		captionLayout?: 'dropdown' | 'dropdown-months' | 'dropdown-years' | 'label';
+		locale?: string;
+		months?: CalendarPrimitive.MonthSelectProps['months'];
+		years?: CalendarPrimitive.YearSelectProps['years'];
+		monthFormat?: CalendarPrimitive.MonthSelectProps['monthFormat'];
+		yearFormat?: CalendarPrimitive.YearSelectProps['yearFormat'];
+		day?: Snippet<[{ day: DateValue; outsideMonth: boolean }]>;
+		disableDaysOutsideMonth?: boolean;
+	};
 
 	let {
 		ref = $bindable(null),
@@ -20,17 +37,8 @@
 		monthFormat: monthFormatProp,
 		yearFormat = 'numeric',
 		day,
-		disableDaysOutsideMonth = false,
-		...restProps
-	}: WithoutChildrenOrChild<CalendarPrimitive.RootProps> & {
-		buttonVariant?: ButtonVariant;
-		captionLayout?: 'dropdown' | 'dropdown-months' | 'dropdown-years' | 'label';
-		months?: CalendarPrimitive.MonthSelectProps['months'];
-		years?: CalendarPrimitive.YearSelectProps['years'];
-		monthFormat?: CalendarPrimitive.MonthSelectProps['monthFormat'];
-		yearFormat?: CalendarPrimitive.YearSelectProps['yearFormat'];
-		day?: Snippet<[{ day: DateValue; outsideMonth: boolean }]>;
-	} = $props();
+		disableDaysOutsideMonth = false
+	}: Props = $props();
 
 	const monthFormat = $derived.by(() => {
 		if (monthFormatProp) return monthFormatProp;
@@ -44,6 +52,7 @@ Discriminated Unions + Destructing (required for bindable) do not
 get along, so we shut typescript up by casting `value` to `never`.
 -->
 <CalendarPrimitive.Root
+	type="single"
 	bind:value={value as never}
 	bind:ref
 	bind:placeholder
@@ -56,7 +65,6 @@ get along, so we shut typescript up by casting `value` to `never`.
 	{locale}
 	{monthFormat}
 	{yearFormat}
-	{...restProps}
 >
 	{#snippet children({ months, weekdays })}
 		<Calendar.Months>
