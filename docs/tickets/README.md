@@ -30,9 +30,11 @@ Core functionality to get a working app deployed.
 
 Improvements to add after MVP is complete and deployed.
 
-| ID  | Ticket                                             | Scope                     | Description                                                 |
-| --- | -------------------------------------------------- | ------------------------- | ----------------------------------------------------------- |
-| 014 | [Storybook Setup](./ticket-014-storybook-setup.md) | `storybook`, `ticket-014` | Add Storybook 8.4+ with Svelte 5 support for component docs |
+| ID  | Ticket                                                             | Scope                     | Description                                                  |
+| --- | ------------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------ |
+| 014 | [Storybook Setup](./ticket-014-storybook-setup.md)                 | `storybook`, `ticket-014` | Add Storybook 8.4+ with Svelte 5 support for component docs  |
+| 015 | [Emoji Picker Component](./ticket-015-emoji-picker.md)             | `ui`, `ticket-015`        | Replace text input with interactive emoji picker like Slack  |
+| 016 | [Internationalization (i18n)](./ticket-016-i18n-implementation.md) | `i18n`, `ticket-016`      | Extract all texts to JSON and implement svelte-i18n solution |
 
 ---
 
@@ -84,6 +86,8 @@ Use these scopes in conventional commits:
 - `docs`: Documentation
 - `api`: API endpoints
 - `pwa`: PWA functionality
+- `i18n`: Internationalization, translations
+- `storybook`: Component documentation
 
 **Ticket scopes:**
 
