@@ -1,16 +1,35 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { updateCategorySchema } from '$lib/schemas/categories';
+import { updateCategorySchema, type CategoryFieldInput } from '$lib/schemas/categories';
 import {
 	getCategoryById,
 	updateCategory,
 	deleteCategory,
 	listFieldsForCategory,
 	deleteFieldsForCategory,
-	createField,
-	type CreateFieldInput
+	createField
 } from '$lib/server/db/queries';
 import { getDb } from '$lib/server/db';
+import type { Db } from '$lib/server/db/queries/utils';
+
+function updateCategoryFields(categoryId: number, fields: CategoryFieldInput[], db: Db) {
+	deleteFieldsForCategory(categoryId, db);
+
+	if (fields.length === 0) return;
+
+	for (const [index, field] of fields.entries()) {
+		createField(
+			{
+				category_id: categoryId,
+				name: field.name,
+				field_type: field.field_type,
+				options: field.options,
+				field_order: field.field_order ?? index
+			},
+			db
+		);
+	}
+}
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	const user = locals.user;
@@ -24,11 +43,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	}
 
 	const category = getCategoryById(categoryId);
-	if (!category) {
-		return json({ error: 'Category not found' }, { status: 404 });
-	}
-
-	if (category.user_id !== user.id) {
+	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
@@ -54,11 +69,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 	}
 
 	const category = getCategoryById(categoryId);
-	if (!category) {
-		return json({ error: 'Category not found' }, { status: 404 });
-	}
-
-	if (category.user_id !== user.id) {
+	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
@@ -89,21 +100,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		const updatedCategory = updateCategory(categoryId, categoryData, db);
 
 		if (fields !== undefined) {
-			deleteFieldsForCategory(categoryId, db);
-
-			if (fields.length > 0) {
-				const fieldInputs: CreateFieldInput[] = fields.map((field, index) => ({
-					category_id: categoryId,
-					name: field.name,
-					field_type: field.field_type,
-					options: field.options,
-					field_order: field.field_order ?? index
-				}));
-
-				for (const fieldInput of fieldInputs) {
-					createField(fieldInput, db);
-				}
-			}
+			updateCategoryFields(categoryId, fields, db);
 		}
 
 		return updatedCategory;
@@ -130,11 +127,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 	}
 
 	const category = getCategoryById(categoryId);
-	if (!category) {
-		return json({ error: 'Category not found' }, { status: 404 });
-	}
-
-	if (category.user_id !== user.id) {
+	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 

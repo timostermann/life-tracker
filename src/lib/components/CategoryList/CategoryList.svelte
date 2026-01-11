@@ -38,7 +38,7 @@
 						</div>
 						{#if category.color && isTailwindColorName(category.color)}
 							<div
-								class="h-6 w-6 rounded-full border-2 border-gray-200 dark:border-gray-700 {getColorClass(
+								class="size-6 rounded-full border-2 border-gray-200 dark:border-gray-700 {getColorClass(
 									category.color,
 									'bg',
 									'500'
@@ -50,11 +50,11 @@
 				</Card.Header>
 				<Card.Footer class="flex justify-end gap-2">
 					<Button variant="ghost" size="sm" onclick={() => onEdit(category)}>
-						<Pencil class="mr-2 h-4 w-4" />
+						<Pencil class="mr-2 size-4" />
 						Edit
 					</Button>
 					<Button variant="ghost" size="sm" onclick={() => onDelete(category)}>
-						<Trash2 class="mr-2 h-4 w-4" />
+						<Trash2 class="mr-2 size-4" />
 						Delete
 					</Button>
 				</Card.Footer>

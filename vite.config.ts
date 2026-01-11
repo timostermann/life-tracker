@@ -20,6 +20,23 @@ export default defineConfig({
 
 	test: {
 		expect: { requireAssertions: true },
+		coverage: {
+			provider: 'v8',
+			reporter: ['text', 'json', 'html'],
+			exclude: [
+				'**/node_modules/**',
+				'**/*.spec.{js,ts}',
+				'**/*.svelte.spec.{js,ts}',
+				'**/+page.svelte',
+				'**/+layout.svelte',
+				'**/+server.ts',
+				'**/db/migrations/**',
+				'**/db/seeds/**',
+				'**/index.ts',
+				'**/.svelte-kit/**',
+				'**/build/**'
+			]
+		},
 
 		projects: [
 			{

@@ -6,26 +6,15 @@ Lessons learned from ticket-006 to improve efficiency and quality on future tick
 
 ### Before Starting Implementation
 
-1. **Review Dependencies**
-   - Check which previous tickets need to be completed
-   - Verify reusable patterns exist (composables, utilities)
-   - Identify what can be copied/adapted vs built from scratch
-
-2. **Design Data Flow**
-   - Backend: Schema → Queries → API
-   - Frontend: Load data → Components → Composables → API calls
-   - Think about reusable patterns early
-
-3. **Identify Reusable Patterns**
-   - Can existing composables be used? (useCrudDialogs, API utilities)
-   - Are there similar components to reference?
-   - What utilities already exist?
+1. **Review Dependencies** - Check which previous tickets need completion, identify reusable patterns
+2. **Design Data Flow** - Backend: Schema → Queries → API. Frontend: Load → Components → API
+3. **Identify Reusable Patterns** - Can existing composables/utilities be used?
 
 ## Implementation Phase
 
 ### Backend First Approach (Recommended)
 
-**Order of implementation:**
+**Order:**
 
 1. Schemas (Zod validation)
 2. Database queries with tests
@@ -34,12 +23,7 @@ Lessons learned from ticket-006 to improve efficiency and quality on future tick
 5. Page integration
 6. E2E tests
 
-**Benefits:**
-
-- Backend can be tested independently
-- Frontend knows exact API shape
-- Easier to debug issues
-- Better git commit organization
+**Benefits:** Backend tested independently, frontend knows exact API shape, easier debugging, better git commit organization
 
 ### Component Organization
 
@@ -47,7 +31,6 @@ Lessons learned from ticket-006 to improve efficiency and quality on future tick
 
 - If main component will be >150 lines, plan sub-components from start
 - Extract logic to composables immediately
-- Don't wait until "refactoring phase"
 
 **Pattern for large forms:**
 
@@ -68,77 +51,19 @@ ComponentForm/
 - Frontend: Test composables immediately
 - E2E: Write after UI is functional
 
-**Test coverage target:** 100% for new/modified files
-
-- Run coverage frequently: `npm run test:unit -- --coverage`
-- Don't let untested code accumulate
+**Target:** 100% coverage for new/modified files. Run `npm run test:unit -- --coverage` frequently.
 
 ## Common Pitfalls & Solutions
 
-### 1. Empty Edit Forms
+1. **Empty edit forms** - Don't use `$derived.by(() => useComposable(props))`. Create composable once, then call `state.loadData(initialData)` in `$effect`.
 
-**Problem:** Using `$derived.by(() => useComposable(props))` creates new state on every prop change.
+2. **Dialog backgrounds missing** - Add OKLCH color variables to `layout.css`: `--color-background: oklch(100% 0 0);`
 
-**Solution:**
+3. **Dynamic Tailwind classes don't work** - Use explicit class mapping, not template literals: `const COLOR_CLASSES = { blue: { bg: { '500': 'bg-blue-500' } } };`
 
-```typescript
-// ✅ GOOD
-const state = useComposable();
+4. **Type casts everywhere** - Use runtime type guards instead: `export function isType(value: unknown): value is Type { return /* validation */ }`
 
-$effect(() => {
-	if (initialData) {
-		state.loadData(initialData);
-	}
-});
-```
-
-### 2. Dialog Backgrounds Missing
-
-**Problem:** Forgot to add theme color variables.
-
-**Solution:** Always check `layout.css` has OKLCH color variables:
-
-```css
-@theme {
-	--color-background: oklch(100% 0 0);
-	--color-foreground: oklch(9.61% 0.021 285.82);
-	/* ... other semantic colors */
-}
-```
-
-### 3. Dynamic Tailwind Classes Don't Work
-
-**Problem:** Using template literals `` `bg-${color}-500` ``
-
-**Solution:** Create explicit class mapping utility early:
-
-```typescript
-const COLOR_CLASSES = {
-	blue: { bg: { '500': 'bg-blue-500' } }
-};
-```
-
-### 4. Type Casts Everywhere
-
-**Problem:** Using `as Type` without runtime validation.
-
-**Solution:** Create type guards:
-
-```typescript
-export function isType(value: unknown): value is Type {
-	return /* validation logic */;
-}
-```
-
-### 5. Boilerplate Explosion
-
-**Problem:** Copy-pasting similar logic across features.
-
-**Solution:** Extract to composables/utilities immediately:
-
-- Dialog state → `useCrudDialogs`
-- API calls → Generic utilities
-- Form validation → Reusable schemas
+5. **Boilerplate explosion** - Extract to composables/utilities immediately: dialog state → `useCrudDialogs`, API calls → generic utilities
 
 ## Git Best Practices
 
@@ -150,25 +75,15 @@ export function isType(value: unknown): value is Type {
 2. `feat(XXX): add UI components and page` - all frontend
 3. `test(XXX): add comprehensive test suite` - all tests
 4. `feat(XXX): add theme/styling improvements` - visual polish
-5. `chore(XXX): improve tooling` - lint, format, config
-6. `docs(XXX): add documentation` - ticket docs, AGENTS.md
+5. `docs(XXX): add documentation` - ticket docs, updates
 
-**Why this structure works:**
+**Benefits:** Each commit self-contained, logical flow, easy to understand, good for changelog
 
-- ✅ Each commit is self-contained and reviewable
-- ✅ Logical flow: backend → frontend → tests → polish → docs
-- ✅ Easy to understand scope of changes
-- ✅ Good for changelog/release notes
-
-**Avoid:**
-
-- ❌ 30+ commits showing every iteration
-- ❌ Single giant commit with everything
-- ❌ Commits like "fix bug" or "wip"
+**Avoid:** 30+ iteration commits, single giant commit, commits like "fix bug" or "wip"
 
 ### Commit Message Quality
 
-**Good commit messages explain WHY:**
+**Good (explains WHY):**
 
 ```
 feat(006): add comprehensive theme system with WCAG AA compliance
@@ -176,17 +91,9 @@ feat(006): add comprehensive theme system with WCAG AA compliance
 Add complete theme with light/dark mode support. Uses OKLCH color format
 for Tailwind v4 compatibility. Includes getContrastTextColor utility to
 ensure proper contrast ratios for accessibility.
-
-Fixes transparent dialog backgrounds by providing semantic color variables
-that Tailwind utilities depend on.
 ```
 
-**Bad commit messages:**
-
-```
-feat: add colors
-fix: update dialog
-```
+**Bad:** `feat: add colors` or `fix: update dialog`
 
 ## Quality Checklist
 
@@ -203,121 +110,49 @@ fix: update dialog
 
 ### Pre-existing Issues
 
-**Don't block on pre-existing failures:**
-
-- If tests timeout due to WAL mode issues → skip with note
-- If linting flags pre-existing files → exclude and note
-- Focus on YOUR changes being high quality
+Don't block on pre-existing failures. If tests timeout due to WAL mode issues or linting flags pre-existing files, exclude and note. Focus on YOUR changes being high quality.
 
 ## Efficiency Tips
 
 ### Leverage Existing Patterns
 
-**Before writing new code, check:**
+**Before writing new code:**
 
 1. Can I copy from a similar component? (e.g., TaskForm → CategoryForm)
 2. Does a utility already exist? (check `src/lib/utils/`)
 3. Can I reuse a composable? (check `src/lib/composables/`)
 
-**Example time savings:**
-
-- With `useCrudDialogs`: 48% less boilerplate
-- With API utilities: Consistent error handling for free
-- With color utility: No need to build class generator
+**Time savings:** With `useCrudDialogs` = 48% less boilerplate. With API utilities = consistent error handling for free.
 
 ### Parallel Work
 
-**When stuck on one part:**
-
-- Work on tests while thinking about implementation
-- Write documentation while code is fresh
-- Create E2E tests for happy path first
+When stuck: Work on tests while thinking about implementation, write docs while code is fresh, create E2E tests for happy path first.
 
 ### Use AI Effectively
 
-**Good AI prompts:**
+**Good prompts:**
 
 - "Create a composable similar to useCategoryActions but for tasks"
 - "Add tests for this function achieving 100% coverage"
 - "Review this code for shadcn-svelte best practices"
 
-**Avoid:**
-
-- Vague requests leading to wrong patterns
-- Letting AI make architectural decisions without review
-- Accepting code without understanding it
+**Avoid:** Vague requests, letting AI make architectural decisions without review, accepting code without understanding it.
 
 ## Communication
 
 ### When to Ask for Help
 
-**Ask early if:**
+**Ask early if:** Architectural decision affects multiple features, pattern seems overcomplicated, test strategy unclear, performance concerns.
 
-- Architectural decision affects multiple features
-- Pattern seems overcomplicated
-- Test strategy unclear
-- Performance concerns
-
-**Don't ask if:**
-
-- Similar pattern exists in codebase (copy and adapt)
-- Issue is clearly documented in AGENTS.md
-- Solution is a Google search away
+**Don't ask if:** Similar pattern exists in codebase (copy and adapt), issue is documented in AGENTS.md, solution is a Google search away.
 
 ### Documentation Updates
 
-**Always update these:**
+**Always update:**
 
 - Ticket MD: Mark completed, add stats
 - AGENTS.md: Add new patterns or gotchas
 - README: If new commands/scripts added
-
-**When to create new docs:**
-
-- New major pattern introduced (like useCrudDialogs)
-- Complex domain logic needs explanation
-- Setup process changed
-
-## Future Ticket Predictions
-
-### Ticket-007 (Sharing) Prep
-
-**Reusable from ticket-006:**
-
-- Category queries (reference pattern)
-- Permission validation pattern
-- Toast notifications
-- Test patterns
-
-**New challenges:**
-
-- Multi-user scenarios in tests
-- Permission UI components
-- Share modal/dialog
-
-### Ticket-008 (Tasks) Prep
-
-**Reusable from ticket-006:**
-
-- `useCrudDialogs` composable (direct reuse!)
-- API utilities (direct reuse!)
-- Form splitting pattern
-- Color picker component
-- Test patterns (100% coverage approach)
-
-**New challenges:**
-
-- More complex form (priority, dates, assignment)
-- Recurring task logic
-- Due date calculations
-
-### General Pattern
-
-**Each ticket should:**
-
-1. Reuse 40-60% from previous tickets
-2. Add 20-30% new domain logic
-3. Polish 10-20% (accessibility, UX)
 
 ## Success Metrics
 

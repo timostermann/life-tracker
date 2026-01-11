@@ -103,6 +103,20 @@ Create a local SQLite file (ignored by git) and run the dev server on your machi
 npm run dev
 ```
 
+### Database Seeding
+
+Populate the database with 12 example categories (Work Projects, Home Maintenance, Fitness Goals, Bad Habits to Break, Daily Wellness, Administrative Tasks, etc.). Follows the same standalone, idempotent pattern as migrations.
+
+```bash
+npm run db:seed                  # Seed categories (skips if user already has categories)
+npm run db:seed -- --clear       # Clear existing categories before seeding
+npm run db:seed -- --skip-if-exists  # Skip seeding if categories exist (default behavior)
+```
+
+**Requirements:** At least one user must exist (create via `/auth/register`)
+
+### Database Browser
+
 Optional: start a DB browser UI (sqlite-web) via Docker (mounts the same `./.data/db.sqlite` file):
 
 ```bash

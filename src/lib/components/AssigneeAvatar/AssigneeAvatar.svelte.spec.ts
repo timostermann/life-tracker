@@ -59,8 +59,7 @@ describe('AssigneeAvatar', () => {
 		});
 
 		const avatar = container.querySelector('[role="img"]') as HTMLElement;
-		expect(avatar?.classList.contains('h-6')).toBe(true);
-		expect(avatar?.classList.contains('w-6')).toBe(true);
+		expect(avatar?.classList.contains('size-6')).toBe(true);
 	});
 
 	it('renders large size correctly', async () => {
@@ -70,7 +69,6 @@ describe('AssigneeAvatar', () => {
 		});
 
 		const avatar = container.querySelector('[role="img"]') as HTMLElement;
-		expect(avatar?.classList.contains('h-12')).toBe(true);
-		expect(avatar?.classList.contains('w-12')).toBe(true);
+		expect(avatar?.classList.contains('size-12')).toBe(true);
 	});
 });

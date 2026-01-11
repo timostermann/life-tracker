@@ -41,7 +41,7 @@
 			<button
 				type="button"
 				class={cn(
-					'relative h-10 w-10 rounded-md transition-all hover:scale-110',
+					'relative size-10 rounded-md transition-all hover:scale-110',
 					'focus:ring-2 focus:ring-offset-2 focus:outline-none',
 					'border-2',
 					getColorClass(color.name, 'bg', '500'),
@@ -56,7 +56,7 @@
 				onclick={() => selectColor(color.name)}
 			>
 				{#if value === color.name}
-					<Check class={cn('absolute inset-0 m-auto h-5 w-5', getContrastTextColor(color.name))} />
+					<Check class={cn('absolute inset-0 m-auto size-5', getContrastTextColor(color.name))} />
 				{/if}
 			</button>
 		{/each}

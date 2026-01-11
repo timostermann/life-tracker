@@ -1,7 +1,7 @@
 import { getDb } from '../../db';
 import { dbSchemas, type CreateFieldInput, type UpdateFieldInput, type Field } from './types';
 import type { Db } from './utils';
-import { parseRow } from './utils';
+import { buildSqlUpdates, parseRow } from './utils';
 
 export function listFieldsForCategory(categoryId: number, db: Db = getDb()): Field[] {
 	const rows = db
@@ -36,25 +36,7 @@ export function createFields(input: CreateFieldInput[], db: Db = getDb()) {
 }
 
 export function updateField(fieldId: number, input: UpdateFieldInput, db: Db = getDb()): Field {
-	const updates: string[] = [];
-	const values: unknown[] = [];
-
-	if (input.name !== undefined) {
-		updates.push('name = ?');
-		values.push(input.name);
-	}
-	if (input.field_type !== undefined) {
-		updates.push('field_type = ?');
-		values.push(input.field_type);
-	}
-	if (input.options !== undefined) {
-		updates.push('options = ?');
-		values.push(input.options);
-	}
-	if (input.field_order !== undefined) {
-		updates.push('field_order = ?');
-		values.push(input.field_order);
-	}
+	const { updates, values } = buildSqlUpdates(input);
 
 	if (updates.length === 0) {
 		const row = db.prepare('SELECT * FROM fields WHERE id = ?').get(fieldId);

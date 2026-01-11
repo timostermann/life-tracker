@@ -33,15 +33,25 @@ function configureDb(db: BetterSqlite3Database) {
 	db.pragma('foreign_keys = ON');
 
 	try {
+		// WAL (Write-Ahead Logging) mode provides better concurrency:
+		// - Readers don't block writers
+		// - Writers don't block readers
+		// - Better performance for web apps with multiple connections
+		// See: https://www.sqlite.org/wal.html
 		db.pragma('journal_mode = WAL');
 		db.pragma('busy_timeout = 5000');
 	} catch (error) {
+		// In test environments, WAL mode may fail due to filesystem limitations
+		// or when using in-memory databases. Fall back to DELETE mode:
+		// - Traditional rollback journal
+		// - More restrictive locking (writers block readers)
+		// - Acceptable for tests since they use isolated databases
 		if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
 			try {
 				db.pragma('journal_mode = DELETE');
 				db.pragma('busy_timeout = 5000');
 			} catch {
-				// Continue for tests
+				console.error('Failed to configure database journal mode:', error);
 			}
 		} else {
 			console.error('Failed to configure database journal mode:', error);

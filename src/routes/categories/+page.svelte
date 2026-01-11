@@ -25,7 +25,7 @@
 			<p class="mt-2 text-muted-foreground">Manage your task, chore, and habit categories</p>
 		</div>
 		<Button onclick={actions.openCreate}>
-			<Plus class="mr-2 h-4 w-4" />
+			<Plus class="mr-2 size-4" />
 			New Category
 		</Button>
 	</div>

@@ -23,7 +23,7 @@
 	<div class="flex items-center justify-between">
 		<h3 class="text-lg font-semibold">Custom Fields</h3>
 		<Button type="button" variant="outline" size="sm" onclick={onAddField} disabled={loading}>
-			<Plus class="mr-2 h-4 w-4" />
+			<Plus class="mr-2 size-4" />
 			Add Field
 		</Button>
 	</div>
@@ -43,7 +43,7 @@
 							onclick={() => onRemoveField(index)}
 							disabled={loading}
 						>
-							<Trash2 class="h-4 w-4" />
+							<Trash2 class="size-4" />
 						</Button>
 					</div>
 
