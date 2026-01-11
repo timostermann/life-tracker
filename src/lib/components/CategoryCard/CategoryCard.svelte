@@ -18,7 +18,7 @@
 {#if isInteractive}
 	<button
 		class={cn(
-			'focus-visible:ring-ring flex flex-col gap-2 rounded-lg border border-gray-200 p-4 text-left transition-colors hover:bg-gray-50 focus-visible:ring-2 focus-visible:outline-none'
+			'flex flex-col gap-2 rounded-lg border border-gray-200 p-4 text-left transition-colors hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
 		)}
 		{onclick}
 		aria-label="Category: {name}, {itemCount} items"

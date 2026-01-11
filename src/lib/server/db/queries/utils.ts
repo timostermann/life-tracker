@@ -11,3 +11,33 @@ export function parseOptionalRow<T>(schema: z.ZodType<T>, row: unknown): T | und
 	if (!row) return undefined;
 	return schema.parse(row);
 }
+
+type SqlUpdate = {
+	updates: string[];
+	values: unknown[];
+};
+
+export function buildSqlUpdates(input: Record<string, unknown>): SqlUpdate {
+	const updates: string[] = [];
+	const values: unknown[] = [];
+
+	for (const [key, value] of Object.entries(input)) {
+		if (value !== undefined) {
+			updates.push(`${key} = ?`);
+			values.push(value);
+		}
+	}
+
+	return { updates, values };
+}
+
+export function buildBooleanSqlUpdate(
+	key: string,
+	value: boolean | undefined
+): { update: string; value: number } | null {
+	if (value === undefined) return null;
+	return {
+		update: `${key} = ?`,
+		value: value ? 1 : 0
+	};
+}

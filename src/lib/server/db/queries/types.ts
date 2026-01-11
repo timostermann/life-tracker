@@ -1,8 +1,9 @@
 import type { z } from 'zod';
 
-import type { Category, HabitEntry, Item, Template, User } from '$lib/schemas';
+import type { Category, HabitEntry, Item, Template, User, Field } from '$lib/schemas';
 import {
 	categorySchema,
+	fieldSchema,
 	habitEntrySchema,
 	itemSchema,
 	permissionSchema,
@@ -16,7 +17,7 @@ export type Permission = 'view' | 'edit';
 export type HabitEntryStatus = 'done' | 'skipped' | 'failed';
 export type FieldType = 'text' | 'number' | 'date' | 'boolean' | 'select';
 
-export type { Category, HabitEntry, Item, Template, User };
+export type { Category, HabitEntry, Item, Template, User, Field };
 
 export const sharedCategorySchema = categorySchema.extend({ permission: permissionSchema });
 export type SharedCategory = z.infer<typeof sharedCategorySchema>;
@@ -28,12 +29,26 @@ export type CreateCategoryInput = Pick<Category, 'user_id' | 'name' | 'template_
 	is_private?: boolean;
 };
 
+export type UpdateCategoryInput = {
+	name?: string;
+	icon?: string | null;
+	color?: string | null;
+	is_private?: boolean;
+};
+
 export type CreateFieldInput = {
 	category_id: number;
 	name: string;
 	field_type: FieldType;
 	options?: string | null;
 	field_order: number;
+};
+
+export type UpdateFieldInput = {
+	name?: string;
+	field_type?: FieldType;
+	options?: string | null;
+	field_order?: number;
 };
 
 export type CreateItemInput = Pick<Item, 'category_id' | 'user_id'> & {
@@ -58,6 +73,7 @@ export const dbSchemas = {
 	userSchema,
 	templateSchema,
 	categorySchema,
+	fieldSchema,
 	itemSchema,
 	habitEntrySchema,
 	permissionSchema

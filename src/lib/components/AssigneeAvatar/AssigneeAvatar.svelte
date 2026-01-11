@@ -20,7 +20,7 @@
 	);
 
 	let sizeClass = $derived(
-		size === 'sm' ? 'h-6 w-6 text-xs' : size === 'lg' ? 'h-12 w-12 text-lg' : 'h-8 w-8 text-sm'
+		size === 'sm' ? 'size-6 text-xs' : size === 'lg' ? 'size-12 text-lg' : 'size-8 text-sm'
 	);
 </script>
 

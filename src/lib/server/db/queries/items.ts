@@ -31,7 +31,7 @@ export function createItem(input: CreateItemInput, db: Db = getDb()): Item {
 			for (const fv of input.field_values) fvStmt.run(itemId, fv.field_id, fv.value ?? null);
 		}
 
-		const row = db.prepare('SELECT * FROM items WHERE id = ?').get(itemId) as unknown;
+		const row = db.prepare('SELECT * FROM items WHERE id = ?').get(itemId);
 		return parseRow(dbSchemas.itemSchema, row);
 	});
 
@@ -67,7 +67,7 @@ export function listItemsForCategory(
          i.created_at DESC
        LIMIT ? OFFSET ?`
 		)
-		.all(categoryId, limit, offset) as unknown[];
+		.all(categoryId, limit, offset);
 
 	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
 }

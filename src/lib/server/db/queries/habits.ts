@@ -19,7 +19,7 @@ export function upsertHabitEntry(input: UpsertHabitEntryInput, db: Db = getDb())
 
 	const row = db
 		.prepare('SELECT * FROM habit_entries WHERE item_id = ? AND logged_date = ?')
-		.get(input.item_id, input.logged_date) as unknown;
+		.get(input.item_id, input.logged_date);
 	return parseRow(dbSchemas.habitEntrySchema, row);
 }
 
@@ -37,7 +37,7 @@ export function listHabitEntries(
        ORDER BY logged_date DESC
        LIMIT ? OFFSET ?`
 		)
-		.all(itemId, limit, offset) as unknown[];
+		.all(itemId, limit, offset);
 
 	return rows.map((r) => parseRow(dbSchemas.habitEntrySchema, r));
 }

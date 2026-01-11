@@ -19,24 +19,10 @@ export class ApiError extends Error {
 }
 
 export type FetchOptions = {
-	/**
-	 * Show a toast when the request fails (non-2xx) or throws (network error).
-	 * Default: true
-	 */
 	toastOnError?: boolean;
-	/**
-	 * Show a toast specifically for 401 responses on `/api/*` (excluding `/api/auth/*`).
-	 * Default: true
-	 */
 	toastUnauthorized?: boolean;
 };
 
-/**
- * Fetch wrapper that centralizes API error handling + toasts.
- *
- * - On non-OK response: throws ApiError and (optionally) shows a toast.
- * - On network error: rethrows and (optionally) shows a toast.
- */
 export async function fetch<T>(
 	input: RequestInfo | URL,
 	init?: RequestInit,

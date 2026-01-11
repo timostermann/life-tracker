@@ -1,11 +1,37 @@
-export { default as Select } from './Select.svelte';
-export { default as Content } from './SelectContent.svelte';
-export { default as Group } from './SelectGroup.svelte';
-export { default as GroupHeading } from './SelectGroupHeading.svelte';
-export { default as Item } from './SelectItem.svelte';
-export { default as Label } from './SelectLabel.svelte';
-export { default as Portal } from './SelectPortal.svelte';
-export { default as ScrollDownButton } from './SelectScrollDownButton.svelte';
-export { default as ScrollUpButton } from './SelectScrollUpButton.svelte';
-export { default as Separator } from './SelectSeparator.svelte';
-export { default as Trigger } from './SelectTrigger.svelte';
+import Root from './Select.svelte';
+import Group from './SelectGroup.svelte';
+import Label from './SelectLabel.svelte';
+import Item from './SelectItem.svelte';
+import Content from './SelectContent.svelte';
+import Trigger from './SelectTrigger.svelte';
+import Separator from './SelectSeparator.svelte';
+import ScrollDownButton from './SelectScrollDownButton.svelte';
+import ScrollUpButton from './SelectScrollUpButton.svelte';
+import GroupHeading from './SelectGroupHeading.svelte';
+import Portal from './SelectPortal.svelte';
+
+export {
+	Root,
+	Group,
+	Label,
+	Item,
+	Content,
+	Trigger,
+	Separator,
+	ScrollDownButton,
+	ScrollUpButton,
+	GroupHeading,
+	Portal,
+	//
+	Root as Select,
+	Group as SelectGroup,
+	Label as SelectLabel,
+	Item as SelectItem,
+	Content as SelectContent,
+	Trigger as SelectTrigger,
+	Separator as SelectSeparator,
+	ScrollDownButton as SelectScrollDownButton,
+	ScrollUpButton as SelectScrollUpButton,
+	GroupHeading as SelectGroupHeading,
+	Portal as SelectPortal
+};

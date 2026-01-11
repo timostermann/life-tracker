@@ -517,17 +517,14 @@ test('should switch language', async ({ page }) => {
 
 ```typescript
 // API handler
-return json(
-	{ error: 'validation.required', field: 'name' },
-	{ status: 400 }
-);
+return json({ error: 'validation.required', field: 'name' }, { status: 400 });
 ```
 
 ```svelte
 <!-- Client component -->
 <script>
-	const errorMessage = $_('validation.required', { 
-		values: { field: $_('common.labels.name') } 
+	const errorMessage = $_('validation.required', {
+		values: { field: $_('common.labels.name') }
 	});
 </script>
 ```

@@ -4,12 +4,12 @@ import type { Db } from './utils';
 import { parseOptionalRow } from './utils';
 
 export function getUserById(id: number, db: Db = getDb()): User | undefined {
-	const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as unknown;
+	const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
 	return parseOptionalRow(dbSchemas.userSchema, row);
 }
 
 export function getUserByUsername(username: string, db: Db = getDb()): User | undefined {
-	const row = db.prepare('SELECT * FROM users WHERE username = ?').get(username) as unknown;
+	const row = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
 	return parseOptionalRow(dbSchemas.userSchema, row);
 }
 
