@@ -9,9 +9,11 @@ const projectRoot = path.resolve(__dirname, '../../../../..');
 const args = process.argv.slice(2);
 const clearExisting = args.includes('--clear');
 const skipIfExists = args.includes('--skip-if-exists');
+const cleanTestData = args.includes('--clean-test-data');
 
 console.log('🌱 Starting database seeding...\n');
 
+if (cleanTestData) console.log('🧹 Will clean up test data first\n');
 if (clearExisting) console.log('⚠️  Will clear existing categories\n');
 if (skipIfExists) console.log('ℹ️  Will skip if categories already exist\n');
 
@@ -64,6 +66,39 @@ try {
 			db.exec(sql);
 			db.prepare('INSERT INTO schema_version (version) VALUES (?)').run(version);
 		}
+	}
+
+	// Clean up test data pollution (users/categories with UUID or timestamp patterns)
+	if (cleanTestData) {
+		const testUserPatterns = [
+			'tim-%', // tim-{uuid} from unit tests
+			'u-%' // u-{timestamp} from unit tests
+		];
+
+		let deletedCategories = 0;
+		let deletedUsers = 0;
+
+		db.transaction(() => {
+			for (const pattern of testUserPatterns) {
+				// First delete categories owned by test users
+				const testUsers = db
+					.prepare('SELECT id FROM users WHERE username LIKE ?')
+					.all(pattern) as Array<{ id: number }>;
+
+				for (const testUser of testUsers) {
+					const catResult = db.prepare('DELETE FROM categories WHERE user_id = ?').run(testUser.id);
+					deletedCategories += catResult.changes;
+				}
+
+				// Then delete the test users themselves
+				const userResult = db.prepare('DELETE FROM users WHERE username LIKE ?').run(pattern);
+				deletedUsers += userResult.changes;
+			}
+		})();
+
+		console.log(
+			`🧹 Cleaned up ${deletedUsers} test users and ${deletedCategories} test categories\n`
+		);
 	}
 
 	const user = db.prepare('SELECT id FROM users WHERE username = ? LIMIT 1').get('tim') as

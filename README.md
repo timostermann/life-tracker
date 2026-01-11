@@ -105,15 +105,17 @@ npm run dev
 
 ### Database Seeding
 
-Populate the database with 12 example categories (Work Projects, Home Maintenance, Fitness Goals, Bad Habits to Break, Daily Wellness, Administrative Tasks, etc.). Follows the same standalone, idempotent pattern as migrations.
+Populate the database with 12 example categories for the `tim` user. Follows the same standalone, idempotent pattern as migrations.
 
 ```bash
-npm run db:seed                  # Seed categories (skips if user already has categories)
-npm run db:seed -- --clear       # Clear existing categories before seeding
-npm run db:seed -- --skip-if-exists  # Skip seeding if categories exist (default behavior)
+npm run db:seed                  # Seed categories (skips if tim already has categories)
+npm run db:seed -- --clear       # Clear tim's categories before seeding
+npm run db:clean                 # Clean up test data pollution (removes test users/categories)
 ```
 
-**Requirements:** At least one user must exist (create via `/auth/register`)
+**Requirements:** The `tim` user must exist (created automatically on dev server startup)
+
+**Note:** If you see garbage test users (`tim-{uuid}`, `u-{timestamp}`) in your database, run `npm run db:clean` to remove them. This can happen when unit tests don't properly isolate their databases.
 
 ### Database Browser
 

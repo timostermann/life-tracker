@@ -22,7 +22,8 @@
 		"test:e2e": "playwright test",
 		"release": "commit-and-tag-version",
 		"release:test": "commit-and-tag-version --skip.commit --skip.tag",
-		"db:seed": "vite-node src/lib/server/db/seeds/run.ts"
+		"db:seed": "vite-node src/lib/server/db/seeds/run.ts",
+		"db:clean": "vite-node src/lib/server/db/seeds/run.ts -- --clean-test-data --skip-if-exists"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^20.3.0",
