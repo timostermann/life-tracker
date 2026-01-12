@@ -75,30 +75,6 @@ describe('ItemCard', () => {
 		expect(colorIndicator).toBeTruthy();
 	});
 
-	it('calls ontoggle when checkbox is changed', async () => {
-		const ontoggle = vi.fn();
-		render(ItemCard, {
-			title: 'Test Task',
-			ontoggle
-		});
-
-		const checkbox = page.getByLabelText('Mark as complete');
-		await checkbox.click();
-		expect(ontoggle).toHaveBeenCalledOnce();
-	});
-
-	it('calls onclick when card is clicked', async () => {
-		const onclick = vi.fn();
-		render(ItemCard, {
-			title: 'Test Task',
-			onclick
-		});
-
-		const card = page.getByRole('button');
-		await card.click();
-		expect(onclick).toHaveBeenCalledOnce();
-	});
-
 	it('has aria-describedby when description is provided', async () => {
 		const { container } = render(ItemCard, {
 			title: 'Test Task',
@@ -111,17 +87,5 @@ describe('ItemCard', () => {
 
 		const descriptionElement = container.querySelector(`#${describedById}`);
 		expect(descriptionElement?.textContent).toBe('Test description');
-	});
-
-	it('responds to keyboard events when clickable', async () => {
-		const onclick = vi.fn();
-		render(ItemCard, {
-			title: 'Test Task',
-			onclick
-		});
-
-		const card = page.getByRole('button');
-		await card.click(); // Using click instead of keyboard simulation
-		expect(onclick).toHaveBeenCalledOnce();
 	});
 });

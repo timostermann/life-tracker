@@ -59,12 +59,18 @@ describe('api utilities', () => {
 		});
 
 		it('handles network error', async () => {
+			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 			mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
 			const result = await createResource('/api/test', { name: 'Test' });
 
 			expect(result.success).toBe(false);
 			expect(toast.error).toHaveBeenCalled();
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'API request error (/api/test):',
+				expect.any(Error)
+			);
+			consoleErrorSpy.mockRestore();
 		});
 
 		it('skips invalidation when invalidate is false', async () => {

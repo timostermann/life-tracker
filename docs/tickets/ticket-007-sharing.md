@@ -32,27 +32,28 @@ The categories page already includes:
 
 ## Tasks
 
-- [ ] Create Zod schemas for sharing operations
-- [ ] Create API endpoints for sharing
+- [x] Create Zod schemas for sharing operations
+- [x] Create API endpoints for sharing
   - `POST /api/categories/:id/share` - Share with user
   - `DELETE /api/categories/:id/share/:userId` - Revoke access
-- [ ] Add share button to category cards (owner only)
-- [ ] Create share dialog component
-- [ ] Implement user selector (dropdown of other users)
-- [ ] Implement permission selector (view/edit radio buttons)
-- [ ] Add "Shared with" section showing current shares
-- [ ] Add revoke access functionality
-- [ ] Update shared categories display to show permission badge
-- [ ] Add visual indicators for shared categories (icon)
+- [x] Add share button to category cards (owner only)
+- [x] Create share dialog component
+- [x] Implement user selector (dropdown of other users)
+- [x] Implement permission selector (view/edit)
+- [x] Add "Shared with" section showing current shares
+- [x] Add revoke access functionality
+- [x] Update shared categories display to show permission badge
+- [x] Add visual indicators for shared categories (icon)
 - [ ] Validate permissions on all item operations (defer to 008-010)
-- [ ] Add unit tests (co-located)
-- [ ] Add E2E test for sharing workflow
+- [x] Add unit tests
+- [x] Add E2E test for sharing workflow
 
 ## API Endpoints
 
 - `POST /api/categories/:id/share` - Share category with user
 - `DELETE /api/categories/:id/share/:userId` - Revoke user's access
 - `GET /api/categories/:id/shares` - List all shares for a category
+- `GET /api/users` - List users for share dropdown (excluding self)
 - `GET /api/categories` - Already returns shared categories ✅
 
 ## Acceptance Criteria

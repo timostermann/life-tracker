@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { updateCategorySchema, type CategoryFieldInput } from '$lib/schemas/categories';
 import {
 	getCategoryById,
+	checkCategoryAccess,
 	updateCategory,
 	deleteCategory,
 	listFieldsForCategory,
@@ -42,12 +43,19 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const category = getCategoryById(categoryId);
-	if (!category || category.user_id !== user.id) {
+	const db = (locals as { db?: Db }).db ?? getDb();
+
+	const category = getCategoryById(categoryId, db);
+	if (!category) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
-	const fields = listFieldsForCategory(categoryId);
+	const canView = checkCategoryAccess(user.id, categoryId, 'view', db);
+	if (!canView) {
+		return json({ error: 'Forbidden' }, { status: 403 });
+	}
+
+	const fields = listFieldsForCategory(categoryId, db);
 
 	return json({
 		category: {
@@ -68,7 +76,8 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const category = getCategoryById(categoryId);
+	const db = (locals as { db?: Db }).db ?? getDb();
+	const category = getCategoryById(categoryId, db);
 	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
@@ -95,7 +104,6 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
 	const { fields, ...categoryData } = parsed.data;
 
-	const db = getDb();
 	const updateCategoryWithFields = db.transaction(() => {
 		const updatedCategory = updateCategory(categoryId, categoryData, db);
 
@@ -126,12 +134,12 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const category = getCategoryById(categoryId);
+	const db = (locals as { db?: Db }).db ?? getDb();
+	const category = getCategoryById(categoryId, db);
 	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
-	const db = getDb();
 	const deleteCategoryWithFields = db.transaction(() => {
 		deleteFieldsForCategory(categoryId, db);
 		deleteCategory(categoryId, db);

@@ -36,8 +36,28 @@ Implement recurring chores with assignment and archiving. Chores are always recu
 - ✅ Can't create chore without recurring config
 - ✅ All operations validated with Zod
 - ✅ Success toasts on all actions
+- ✅ Seeding with real-life examples
 
 ## Technical Notes
+
+**Permission Enforcement (from ticket-007):**
+
+All chore operations must check category access using `checkCategoryAccess()`:
+
+```typescript
+import { checkCategoryAccess } from '$lib/server/db/queries/categories';
+
+const hasAccess = checkCategoryAccess(categoryId, user.id, 'edit', db);
+if (!hasAccess) {
+	return json({ error: 'Forbidden' }, { status: 403 });
+}
+```
+
+**Access rules:**
+
+- **GET** (view chores): Requires 'view' or 'edit' permission
+- **POST/PUT/DELETE** (modify chores): Requires 'edit' permission
+- **POST complete**: Requires 'edit' permission
 
 **Zod schema (recurring required):**
 

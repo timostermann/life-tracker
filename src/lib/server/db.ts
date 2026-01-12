@@ -13,8 +13,6 @@ let singletonDb: BetterSqlite3Database | null = null;
 const logger = createLogger('db', { envFlag: 'DB_LOG' });
 
 function resolveDatabasePath(): string {
-	// Check process.env first (for tests that set it directly),
-	// then fall back to SvelteKit's $env (for normal runtime)
 	const configured = process.env.DATABASE_PATH?.trim() || env.DATABASE_PATH?.trim();
 	if (configured) return configured;
 

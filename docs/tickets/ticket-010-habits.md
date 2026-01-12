@@ -45,8 +45,27 @@ Implement habit tracking with daily entries, streaks, frequency goals, and notes
 - ✅ Entry history shows all notes
 - ✅ All operations validated with Zod
 - ✅ Success toasts on log/update/delete
+- ✅ Seeding with real-life examples
 
 ## Technical Notes
+
+**Permission Enforcement (from ticket-007):**
+
+All habit operations must check category access using `checkCategoryAccess()`:
+
+```typescript
+import { checkCategoryAccess } from '$lib/server/db/queries/categories';
+
+const hasAccess = checkCategoryAccess(categoryId, user.id, 'edit', db);
+if (!hasAccess) {
+	return json({ error: 'Forbidden' }, { status: 403 });
+}
+```
+
+**Access rules:**
+
+- **GET** (view habits + entries): Requires 'view' or 'edit' permission
+- **POST/PUT/DELETE** (modify habits or entries): Requires 'edit' permission
 
 **Zod schema:**
 

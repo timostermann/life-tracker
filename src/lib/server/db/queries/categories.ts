@@ -5,10 +5,12 @@ import {
 	type CreateCategoryInput,
 	type UpdateCategoryInput,
 	type Category,
-	type SharedCategory
+	type SharedCategory,
+	type Permission
 } from './types';
 import type { Db } from './utils';
 import { parseRow, buildSqlUpdates, buildBooleanSqlUpdate } from './utils';
+import { z } from 'zod';
 
 export function getCategoryById(categoryId: number, db: Db = getDb()): Category | null {
 	const row = db.prepare('SELECT * FROM categories WHERE id = ?').get(categoryId);
@@ -99,4 +101,79 @@ export function listCategoriesForUser(
 		owned: listCategoriesOwnedByUser(userId, db),
 		shared: listCategoriesSharedWithUser(userId, db)
 	};
+}
+
+const categoryShareSchema = z.object({
+	user_id: z.number().int().positive(),
+	username: z.string().min(1),
+	permission: dbSchemas.permissionSchema
+});
+
+export type CategoryShare = z.infer<typeof categoryShareSchema>;
+
+export function listCategoryShares(categoryId: number, db: Db = getDb()): CategoryShare[] {
+	const rows = db
+		.prepare(
+			`SELECT sa.shared_with_user_id AS user_id, u.username, sa.permission
+       FROM shared_access sa
+       JOIN users u ON u.id = sa.shared_with_user_id
+       WHERE sa.category_id = ?
+       ORDER BY u.username ASC`
+		)
+		.all(categoryId);
+	return rows.map((r) => parseRow(categoryShareSchema, r));
+}
+
+export function getSharePermissionForUser(
+	categoryId: number,
+	userId: number,
+	db: Db = getDb()
+): Permission | null {
+	const row = db
+		.prepare(
+			'SELECT permission FROM shared_access WHERE category_id = ? AND shared_with_user_id = ?'
+		)
+		.get(categoryId, userId);
+	if (!row) return null;
+	const parsed = dbSchemas.permissionSchema.safeParse((row as { permission?: unknown }).permission);
+	return parsed.success ? parsed.data : null;
+}
+
+export function checkCategoryAccess(
+	userId: number,
+	categoryId: number,
+	requiredPermission: Permission,
+	db: Db = getDb()
+): boolean {
+	const category = getCategoryById(categoryId, db);
+	if (!category) return false;
+	if (category.user_id === userId) return true;
+
+	const permission = getSharePermissionForUser(categoryId, userId, db);
+	if (!permission) return false;
+	if (requiredPermission === 'view') return true;
+	return permission === 'edit';
+}
+
+export function shareCategory(
+	categoryId: number,
+	sharedWithUserId: number,
+	permission: Permission,
+	db: Db = getDb()
+): void {
+	db.prepare(
+		`INSERT INTO shared_access (category_id, shared_with_user_id, permission)
+     VALUES (?, ?, ?)`
+	).run(categoryId, sharedWithUserId, permission);
+}
+
+export function revokeCategoryShare(
+	categoryId: number,
+	sharedWithUserId: number,
+	db: Db = getDb()
+): void {
+	db.prepare('DELETE FROM shared_access WHERE category_id = ? AND shared_with_user_id = ?').run(
+		categoryId,
+		sharedWithUserId
+	);
 }

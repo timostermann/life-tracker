@@ -25,7 +25,6 @@
 		onclick
 	}: Props = $props();
 
-	// Format due date
 	let formattedDueDate = $derived(
 		dueDate
 			? new Intl.DateTimeFormat('en-US', {
@@ -36,72 +35,110 @@
 			: null
 	);
 
-	// Generate unique ID for accessibility
 	let descriptionId = $derived(`item-desc-${Math.random().toString(36).substr(2, 9)}`);
-
-	// Determine element type
-	let ElementType = $derived(onclick ? 'button' : 'article');
 </script>
 
-<svelte:element
-	this={ElementType}
-	class={cn(
-		'flex gap-3 rounded-lg border border-gray-200 p-4 text-left',
-		completed && 'opacity-60',
-		onclick && 'cursor-pointer transition-colors hover:bg-gray-50'
-	)}
-	role={ElementType === 'article' ? 'article' : undefined}
-	aria-describedby={description ? descriptionId : undefined}
-	{onclick}
-	onkeydown={(e) => {
-		if (onclick && (e.key === 'Enter' || e.key === ' ')) {
-			e.preventDefault();
-			onclick();
-		}
-	}}
->
-	<!-- Checkbox -->
-	{#if ontoggle}
-		<div class="pt-0.5">
-			<Checkbox
-				checked={completed}
-				onCheckedChange={ontoggle}
-				aria-label="Mark as {completed ? 'incomplete' : 'complete'}"
-			/>
-		</div>
-	{/if}
+{#if onclick}
+	<button
+		type="button"
+		class={cn(
+			'flex gap-3 rounded-lg border border-gray-200 p-4 text-left',
+			completed && 'opacity-60',
+			'cursor-pointer transition-colors hover:bg-gray-50'
+		)}
+		aria-describedby={description ? descriptionId : undefined}
+		onclick={() => onclick?.()}
+		onkeydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				onclick?.();
+			}
+		}}
+	>
+		{#if ontoggle}
+			<div class="pt-0.5">
+				<Checkbox
+					checked={completed}
+					onCheckedChange={ontoggle}
+					aria-label="Mark as {completed ? 'incomplete' : 'complete'}"
+				/>
+			</div>
+		{/if}
 
-	<!-- Category color indicator -->
-	{#if categoryColor}
-		<div class="pt-1.5">
-			<div class="h-4 w-1 rounded-full" style="background-color: {categoryColor}"></div>
-		</div>
-	{/if}
+		{#if categoryColor}
+			<div class="pt-1.5">
+				<div class="h-4 w-1 rounded-full" style="background-color: {categoryColor}"></div>
+			</div>
+		{/if}
 
-	<!-- Content -->
-	<div class="flex-1 space-y-2">
-		<!-- Title and Priority -->
-		<div class="flex items-start justify-between gap-2">
-			<h3 class={cn('text-base font-medium', completed && 'line-through')}>
-				{title}
-			</h3>
-			{#if priority}
-				<PriorityBadge {priority} showLabel={false} />
+		<div class="flex-1 space-y-2">
+			<div class="flex items-start justify-between gap-2">
+				<h3 class={cn('text-base font-medium', completed && 'line-through')}>
+					{title}
+				</h3>
+				{#if priority}
+					<PriorityBadge {priority} showLabel={false} />
+				{/if}
+			</div>
+
+			{#if description}
+				<p id={descriptionId} class="text-sm text-gray-600">
+					{description}
+				</p>
+			{/if}
+
+			{#if dueDate}
+				<time datetime={dueDate.toISOString()} class="text-xs text-gray-500">
+					Due: {formattedDueDate}
+				</time>
 			{/if}
 		</div>
-
-		<!-- Description -->
-		{#if description}
-			<p id={descriptionId} class="text-sm text-gray-600">
-				{description}
-			</p>
+	</button>
+{:else}
+	<article
+		class={cn(
+			'flex gap-3 rounded-lg border border-gray-200 p-4 text-left',
+			completed && 'opacity-60'
+		)}
+		aria-describedby={description ? descriptionId : undefined}
+	>
+		{#if ontoggle}
+			<div class="pt-0.5">
+				<Checkbox
+					checked={completed}
+					onCheckedChange={ontoggle}
+					aria-label="Mark as {completed ? 'incomplete' : 'complete'}"
+				/>
+			</div>
 		{/if}
 
-		<!-- Due Date -->
-		{#if dueDate}
-			<time datetime={dueDate.toISOString()} class="text-xs text-gray-500">
-				Due: {formattedDueDate}
-			</time>
+		{#if categoryColor}
+			<div class="pt-1.5">
+				<div class="h-4 w-1 rounded-full" style="background-color: {categoryColor}"></div>
+			</div>
 		{/if}
-	</div>
-</svelte:element>
+
+		<div class="flex-1 space-y-2">
+			<div class="flex items-start justify-between gap-2">
+				<h3 class={cn('text-base font-medium', completed && 'line-through')}>
+					{title}
+				</h3>
+				{#if priority}
+					<PriorityBadge {priority} showLabel={false} />
+				{/if}
+			</div>
+
+			{#if description}
+				<p id={descriptionId} class="text-sm text-gray-600">
+					{description}
+				</p>
+			{/if}
+
+			{#if dueDate}
+				<time datetime={dueDate.toISOString()} class="text-xs text-gray-500">
+					Due: {formattedDueDate}
+				</time>
+			{/if}
+		</div>
+	</article>
+{/if}
