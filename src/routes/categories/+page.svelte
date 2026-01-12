@@ -6,7 +6,9 @@
 	import { CategoryList } from '$lib/components/CategoryList';
 	import { CategoryForm } from '$lib/components/CategoryForm';
 	import { DeleteCategoryDialog } from '$lib/components/DeleteCategoryDialog';
-	import { Plus } from 'lucide-svelte';
+	import { ShareCategoryDialog } from '$lib/components/ShareCategoryDialog';
+	import Badge from '$lib/components/ui/Badge/Badge.svelte';
+	import { Plus, Users } from 'lucide-svelte';
 	import { useCategoryActions } from './useCategoryActions.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -45,6 +47,7 @@
 				categories={data.categories.owned}
 				onEdit={actions.handleEdit}
 				onDelete={actions.handleDeleteClick}
+				onShare={actions.openShare}
 			/>
 		</Tabs.Content>
 
@@ -64,9 +67,13 @@
 								{/if}
 								<div>
 									<h3 class="text-lg font-semibold">{category.name}</h3>
-									<p class="text-sm text-muted-foreground capitalize">
-										{category.template_type} · {category.permission}
-									</p>
+									<div class="mt-1 flex items-center gap-2">
+										<p class="text-sm text-muted-foreground capitalize">{category.template_type}</p>
+										<Badge variant="secondary">
+											<Users class="mr-1 size-3" />
+											Shared ({category.permission})
+										</Badge>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -109,4 +116,11 @@
 	categoryName={actions.selectedCategory?.name ?? ''}
 	onConfirm={actions.confirmDelete}
 	onCancel={actions.cancelDelete}
+/>
+
+<ShareCategoryDialog
+	bind:open={actions.shareDialogOpen.value}
+	categoryId={actions.shareCategory?.id ?? 0}
+	categoryName={actions.shareCategory?.name ?? ''}
+	onClose={actions.closeShare}
 />

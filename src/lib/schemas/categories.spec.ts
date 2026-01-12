@@ -3,7 +3,8 @@ import {
 	createCategorySchema,
 	updateCategorySchema,
 	categoryFieldSchema,
-	tailwindColorNames
+	tailwindColorNames,
+	shareCategorySchema
 } from './categories';
 
 describe('categoryFieldSchema', () => {
@@ -270,5 +271,25 @@ describe('updateCategorySchema', () => {
 		if (result.success) {
 			expect(result.data).not.toHaveProperty('template_type');
 		}
+	});
+});
+
+describe('shareCategorySchema', () => {
+	it('validates valid share input', () => {
+		const input = { user_id: 2, permission: 'view' as const };
+		const result = shareCategorySchema.safeParse(input);
+		expect(result.success).toBe(true);
+	});
+
+	it('rejects invalid permission', () => {
+		const input = { user_id: 2, permission: 'owner' };
+		const result = shareCategorySchema.safeParse(input);
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects invalid user_id', () => {
+		const input = { user_id: 0, permission: 'edit' as const };
+		const result = shareCategorySchema.safeParse(input);
+		expect(result.success).toBe(false);
 	});
 });

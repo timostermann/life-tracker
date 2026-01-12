@@ -88,6 +88,36 @@ Get current authenticated user.
 
 ---
 
+## Users
+
+### GET /api/users
+
+Get list of all users (excluding current user) for sharing dropdowns.
+
+**Response (200):**
+
+```json
+{
+	"users": [
+		{
+			"id": 2,
+			"username": "jule"
+		}
+	]
+}
+```
+
+**Response (401):**
+
+```json
+{
+	"error": "Unauthorized",
+	"toast": "error"
+}
+```
+
+---
+
 ## Categories
 
 ### GET /api/categories
@@ -231,9 +261,38 @@ Delete category and all items.
 
 ---
 
+### GET /api/categories/:id/shares
+
+List all users who have access to this category (owner-only).
+
+**Response (200):**
+
+```json
+{
+	"shares": [
+		{
+			"user_id": 2,
+			"username": "jule",
+			"permission": "edit"
+		}
+	]
+}
+```
+
+**Response (403):**
+
+```json
+{
+	"error": "Forbidden",
+	"toast": "error"
+}
+```
+
+---
+
 ### POST /api/categories/:id/share
 
-Share category with another user.
+Share category with another user (owner-only).
 
 **Request (Zod Schema):**
 
@@ -248,23 +307,35 @@ Share category with another user.
 
 ```json
 {
-	"success": true,
-	"toast": "success"
+	"toast": "success",
+	"message": "Category shared with username"
 }
 ```
+
+**Response (400) - Already Shared:**
+
+```json
+{
+	"error": "Already shared",
+	"toast": "error",
+	"message": "Category is already shared with this user"
+}
+```
+
+**Note:** Sharing a category automatically sets `is_private` to `false`. This flag is NOT automatically reset when shares are revoked, allowing owners to maintain public categories without active shares.
 
 ---
 
 ### DELETE /api/categories/:id/share/:userId
 
-Revoke access.
+Revoke user's access to category (owner-only).
 
 **Response (200):**
 
 ```json
 {
-	"success": true,
-	"toast": "success"
+	"toast": "success",
+	"message": "Access revoked"
 }
 ```
 

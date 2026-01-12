@@ -2,16 +2,17 @@
 	import type { Category } from '$lib/schemas';
 	import { Button } from '$lib/components/ui/Button';
 	import * as Card from '$lib/components/ui/Card';
-	import { Pencil, Trash2 } from 'lucide-svelte';
+	import { Pencil, Trash2, Users } from 'lucide-svelte';
 	import { getColorClass, isTailwindColorName } from '$lib/utils/colors';
 
 	type Props = {
 		categories: Category[];
 		onEdit: (category: Category) => void;
 		onDelete: (category: Category) => void;
+		onShare?: (category: Category) => void;
 	};
 
-	let { categories, onEdit, onDelete }: Props = $props();
+	let { categories, onEdit, onDelete, onShare }: Props = $props();
 </script>
 
 {#if categories.length === 0}
@@ -49,6 +50,12 @@
 					</div>
 				</Card.Header>
 				<Card.Footer class="flex justify-end gap-2">
+					{#if onShare}
+						<Button variant="ghost" size="sm" onclick={() => onShare?.(category)}>
+							<Users class="mr-2 size-4" />
+							Share
+						</Button>
+					{/if}
 					<Button variant="ghost" size="sm" onclick={() => onEdit(category)}>
 						<Pencil class="mr-2 size-4" />
 						Edit

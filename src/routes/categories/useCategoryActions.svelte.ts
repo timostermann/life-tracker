@@ -20,6 +20,8 @@ type CategoryFormData = {
 
 export function useCategoryActions() {
 	const dialogs = useCrudDialogs<CategoryWithFields>();
+	let shareDialogOpen = $state(false);
+	let shareCategory = $state<Category | null>(null);
 
 	async function handleCreate(formData: CategoryFormData) {
 		const result = await createResource('/api/categories', formData, {
@@ -75,7 +77,28 @@ export function useCategoryActions() {
 		createDialogOpen: dialogs.createDialogOpen,
 		editDialogOpen: dialogs.editDialogOpen,
 		deleteDialogOpen: dialogs.deleteDialogOpen,
-		selectedCategory: dialogs.selectedItem,
+		get selectedCategory() {
+			return dialogs.selectedItem;
+		},
+		get shareCategory() {
+			return shareCategory;
+		},
+		shareDialogOpen: {
+			get value() {
+				return shareDialogOpen;
+			},
+			set value(v: boolean) {
+				shareDialogOpen = v;
+			}
+		},
+		openShare: (category: Category) => {
+			shareCategory = category;
+			shareDialogOpen = true;
+		},
+		closeShare: () => {
+			shareDialogOpen = false;
+			shareCategory = null;
+		},
 		openCreate: dialogs.openCreate,
 		handleCreate,
 		handleEdit,

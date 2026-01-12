@@ -7,7 +7,12 @@ import {
 	deleteCategory,
 	listCategoriesOwnedByUser,
 	listCategoriesSharedWithUser,
-	listCategoriesForUser
+	listCategoriesForUser,
+	listCategoryShares,
+	getSharePermissionForUser,
+	checkCategoryAccess,
+	shareCategory,
+	revokeCategoryShare
 } from './categories';
 
 describe('categories queries', () => {
@@ -373,6 +378,92 @@ describe('categories queries', () => {
 
 			expect(result.owned).toEqual([]);
 			expect(result.shared).toEqual([]);
+		});
+	});
+
+	describe('sharing helpers', () => {
+		it('lists shares for a category with usernames', () => {
+			const category = createCategory(
+				{
+					user_id: testUserId,
+					name: 'Sharable',
+					template_type: 'task',
+					is_private: true
+				},
+				db
+			);
+
+			db.prepare(
+				'INSERT INTO shared_access (category_id, shared_with_user_id, permission) VALUES (?, ?, ?)'
+			).run(category.id, otherUserId, 'edit');
+
+			const shares = listCategoryShares(category.id, db);
+			expect(shares).toEqual([{ user_id: otherUserId, username: 'otheruser', permission: 'edit' }]);
+		});
+
+		it('gets share permission for a user', () => {
+			const category = createCategory(
+				{
+					user_id: testUserId,
+					name: 'Sharable',
+					template_type: 'task',
+					is_private: true
+				},
+				db
+			);
+
+			expect(getSharePermissionForUser(category.id, otherUserId, db)).toBeNull();
+
+			db.prepare(
+				'INSERT INTO shared_access (category_id, shared_with_user_id, permission) VALUES (?, ?, ?)'
+			).run(category.id, otherUserId, 'view');
+
+			expect(getSharePermissionForUser(category.id, otherUserId, db)).toBe('view');
+		});
+
+		it('checks category access for owner and shared users', () => {
+			const category = createCategory(
+				{
+					user_id: testUserId,
+					name: 'Sharable',
+					template_type: 'task',
+					is_private: true
+				},
+				db
+			);
+
+			// Owner has full access
+			expect(checkCategoryAccess(testUserId, category.id, 'view', db)).toBe(true);
+			expect(checkCategoryAccess(testUserId, category.id, 'edit', db)).toBe(true);
+
+			// No share => no access
+			expect(checkCategoryAccess(otherUserId, category.id, 'view', db)).toBe(false);
+
+			// view share => view ok, edit not ok
+			db.prepare(
+				'INSERT INTO shared_access (category_id, shared_with_user_id, permission) VALUES (?, ?, ?)'
+			).run(category.id, otherUserId, 'view');
+
+			expect(checkCategoryAccess(otherUserId, category.id, 'view', db)).toBe(true);
+			expect(checkCategoryAccess(otherUserId, category.id, 'edit', db)).toBe(false);
+		});
+
+		it('shareCategory inserts and revokeCategoryShare removes access', () => {
+			const category = createCategory(
+				{
+					user_id: testUserId,
+					name: 'Sharable',
+					template_type: 'task',
+					is_private: true
+				},
+				db
+			);
+
+			shareCategory(category.id, otherUserId, 'edit', db);
+			expect(getSharePermissionForUser(category.id, otherUserId, db)).toBe('edit');
+
+			revokeCategoryShare(category.id, otherUserId, db);
+			expect(getSharePermissionForUser(category.id, otherUserId, db)).toBeNull();
 		});
 	});
 });

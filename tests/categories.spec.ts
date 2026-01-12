@@ -262,4 +262,44 @@ test.describe('Categories CRUD', () => {
 			page.getByText(/No categories yet/i).or(page.getByText(/My Categories/))
 		).toBeVisible();
 	});
+
+	test('user can share a category and recipient sees it', async ({ page, context }) => {
+		await page.goto('/categories');
+
+		// Create a category
+		await page.getByText('New Category').click();
+		await page.fill('input[id="name"]', 'Shared Category');
+		await page.selectOption('select', 'task');
+		await page.getByText('Create Category').click();
+		await expect(page.getByText('Shared Category')).toBeVisible();
+
+		// Open share dialog
+		await page.getByRole('button', { name: 'Share' }).first().click();
+		await expect(page.getByText(/Share “Shared Category”/)).toBeVisible();
+		const dialog = page.getByRole('dialog');
+
+		// Select user
+		await dialog.getByText('Select user').click();
+		await page.getByText('jule').click();
+
+		// Share
+		await dialog.getByRole('button', { name: 'Share' }).click();
+
+		// Verify toast
+		await expect(page.getByText(/Category shared with jule/i)).toBeVisible();
+
+		// Switch user
+		await context.clearCookies();
+		await page.goto('/login');
+		await page.fill('input[name="username"]', 'jule');
+		await page.fill('input[name="password"]', 'test123');
+		await page.click('button[type="submit"]');
+		await page.waitForURL('/');
+
+		// Recipient sees it in shared tab
+		await page.goto('/categories');
+		await page.getByText(/Shared with me/i).click();
+		await expect(page.getByText('Shared Category')).toBeVisible();
+		await expect(page.getByText(/Shared \(view\)/i)).toBeVisible();
+	});
 });

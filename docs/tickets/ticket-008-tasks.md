@@ -53,8 +53,29 @@ Implement full task management with priority, assignment, deadlines, time estima
 - ✅ Filters work correctly
 - ✅ All operations validated with Zod
 - ✅ Success toasts on all actions
+- ✅ Seeding with real-life examples
 
 ## Technical Notes
+
+**Permission Enforcement (from ticket-007):**
+
+All task operations must check category access using `checkCategoryAccess()`:
+
+```typescript
+// Example in POST /api/categories/:id/items
+import { checkCategoryAccess } from '$lib/server/db/queries/categories';
+
+const hasAccess = checkCategoryAccess(categoryId, user.id, 'edit', db);
+if (!hasAccess) {
+	return json({ error: 'Forbidden' }, { status: 403 });
+}
+```
+
+**Access rules:**
+
+- **GET** (view tasks): Requires 'view' or 'edit' permission
+- **POST/PUT/DELETE** (modify tasks): Requires 'edit' permission
+- **POST complete**: Requires 'edit' permission
 
 **Priority colors (use Tailwind color names from ticket-006 system):**
 

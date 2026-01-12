@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { templateTypeSchema, fieldTypeSchema } from './db';
+import { templateTypeSchema, fieldTypeSchema, permissionSchema } from './db';
 
 export const tailwindColorNames = [
 	'red',
@@ -57,3 +57,10 @@ export const updateCategorySchema = z.object({
 });
 
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
+
+export const shareCategorySchema = z.object({
+	user_id: z.number().int().positive(),
+	permission: permissionSchema
+});
+
+export type ShareCategoryInput = z.infer<typeof shareCategorySchema>;
