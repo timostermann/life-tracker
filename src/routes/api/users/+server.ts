@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getDb } from '$lib/server/db';
-import { listOtherUsers } from '$lib/server/db/queries';
+import { listUsers } from '$lib/server/db/queries';
 import type { Db } from '$lib/server/db/queries/utils';
 
 export const GET: RequestHandler = async ({ locals }) => {
@@ -11,7 +11,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 	}
 
 	const db = (locals as { db?: Db }).db ?? getDb();
-	const users = listOtherUsers(user.id, db);
+	const users = listUsers(db);
 
 	return json({ users });
 };

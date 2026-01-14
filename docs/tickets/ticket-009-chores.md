@@ -9,6 +9,15 @@
 
 Implement recurring chores with assignment and archiving. Chores are always recurring (weekly, monthly, etc.).
 
+**Note:** Ticket-008 (Tasks) has implemented shared infrastructure that can be reused for chores:
+
+- Item CRUD operations and queries
+- Field values management
+- Recurring logic utilities
+- AssigneeSelector, RecurringConfigDialog components
+- Permission enforcement patterns
+- Complete item action with next occurrence creation
+
 ## Tasks
 
 - [ ] Create Zod schemas for chore operations

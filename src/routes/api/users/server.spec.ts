@@ -34,12 +34,15 @@ describe('GET /api/users', () => {
 		expect(res.status).toBe(401);
 	});
 
-	it('returns users excluding the current user', async () => {
+	it('returns all users including the current user', async () => {
 		const res = await GET({
 			locals: { user: { id: timId, username: 'tim' }, db }
 		} as unknown as Parameters<typeof GET>[0]);
 		expect(res.status).toBe(200);
 		const body = await res.json();
-		expect(body.users).toEqual([{ id: juleId, username: 'jule' }]);
+		expect(body.users).toEqual([
+			{ id: juleId, username: 'jule' },
+			{ id: timId, username: 'tim' }
+		]);
 	});
 });

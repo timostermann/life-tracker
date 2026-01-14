@@ -3,7 +3,8 @@
 **ID:** ticket-008  
 **Scope:** `items` or `ticket-008`  
 **Phase:** 1 (MVP)  
-**Dependencies:** ticket-006, ticket-007
+**Dependencies:** ticket-006, ticket-007  
+**Status:** ✅ **COMPLETED**
 
 ## Description
 
@@ -11,22 +12,22 @@ Implement full task management with priority, assignment, deadlines, time estima
 
 ## Tasks
 
-- [ ] Create Zod schemas for task operations
-- [ ] Create API endpoints for tasks (CRUD + complete)
-- [ ] Create task list view with priority sorting
-- [ ] Create task form component (all fields)
-- [ ] Implement priority selector (Urgent/High/Medium/Low)
-- [ ] Implement assignee selector
-- [ ] Implement deadline picker (Calendar component)
-- [ ] Implement time estimate input (minutes)
-- [ ] Implement recurring configuration dialog
-- [ ] Implement complete task action
-- [ ] Implement recurring logic (archive + create next)
-- [ ] Calculate and set next_show_date for recurring
-- [ ] Add archive view
-- [ ] Add filters (priority, assignee, due date)
-- [ ] Add unit tests (co-located)
-- [ ] Add E2E tests for task flows
+- [x] Create Zod schemas for task operations
+- [x] Create API endpoints for tasks (CRUD + complete)
+- [x] Create task list view with priority sorting
+- [x] Create task form component (all fields)
+- [x] Implement priority selector (Urgent/High/Medium/Low)
+- [x] Implement assignee selector
+- [x] Implement deadline picker (Calendar component)
+- [x] Implement time estimate input (minutes)
+- [x] Implement recurring configuration dialog
+- [x] Implement complete task action
+- [x] Implement recurring logic (archive + create next)
+- [x] Calculate and set next_show_date for recurring
+- [x] Add archive view
+- [x] Add filters (priority, assignee, due date)
+- [x] Add unit tests (co-located)
+- [x] Add E2E tests for task flows
 
 ## API Endpoints
 
@@ -149,3 +150,42 @@ async function completeTask(taskId: number) {
 - ✅ Filters query optimized with indices
 - ✅ next_show_date indexed for fast queries
 - ✅ Archive queries separate from active
+
+## Implementation Notes
+
+**Completed Features:**
+
+- All CRUD operations for tasks with full permission enforcement
+- Priority selector with 4 levels (Urgent/High/Medium/Low)
+- Assignee selector loading users from API
+- Deadline picker using shadcn Calendar component
+- Time estimate input with preset buttons (15m, 30m, 60m, 120m, 240m)
+- Recurring configuration dialog (daily/weekly/monthly with interval)
+- Complete task action with archive and next occurrence creation
+- Task list with priority sorting and filters
+- Archive toggle to view completed tasks
+- Permission checks using `checkCategoryAccess()` from ticket-007
+
+**Shared Infrastructure for Chores & Habits:**
+
+The following components and utilities are now available for tickets 009 and 010:
+
+- `TaskForm` component (can be adapted for chores/habits)
+- `TaskList` component (generic item list with filters)
+- `PrioritySelector`, `AssigneeSelector`, `DeadlinePicker`, `TimeEstimateInput`, `RecurringConfigDialog`
+- Items API routes pattern (`/api/categories/:id/items`, `/api/items/:id`, `/api/items/:id/complete`)
+- Item queries: `createItem`, `getItemById`, `updateItem`, `deleteItem`, `completeItem`, `listItemsForCategory`
+- Field values queries: `getFieldValuesForItem`, `upsertFieldValues`
+- Recurring utilities: `parseRecurringConfig`, `calculateNextDate`, `formatRecurringConfig`
+- Permission enforcement pattern established
+
+**Files Created:**
+
+- Schemas: `src/lib/schemas/items.ts` (with tests)
+- Database queries: Extended `src/lib/server/db/queries/items.ts`, created `fieldValues.ts`
+- API routes: `src/routes/api/categories/[id]/items/+server.ts`, `src/routes/api/items/[id]/+server.ts`, `src/routes/api/items/[id]/complete/+server.ts`
+- Components: `PrioritySelector`, `AssigneeSelector`, `DeadlinePicker`, `TimeEstimateInput`, `RecurringConfigDialog`, `TaskForm`, `TaskList`
+- Pages: `src/routes/categories/[id]/+page.svelte`, `+page.server.ts`, `useTaskActions.svelte.ts`
+- Utilities: `src/lib/utils/recurring.ts` (with tests)
+- Migration: `004_seed_tasks.sql`
+- Tests: Unit tests for all queries, schemas, and utilities; E2E tests for full task flows
