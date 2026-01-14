@@ -9,11 +9,11 @@ export const recurringConfigSchema = z.object({
 export type RecurringConfig = z.infer<typeof recurringConfigSchema>;
 
 export const createItemSchema = z.object({
-	priority: prioritySchema.optional(),
-	deadline: z.string().datetime().optional(),
-	time_estimate: z.number().int().min(1).optional(),
-	assigned_to_user_id: z.number().int().positive().optional(),
-	recurring_config: recurringConfigSchema.optional(),
+	priority: prioritySchema.nullable().optional(),
+	deadline: z.string().datetime().nullable().optional(),
+	time_estimate: z.number().int().min(1).nullable().optional(),
+	assigned_to_user_id: z.number().int().positive().nullable().optional(),
+	recurring_config: recurringConfigSchema.nullable().optional(),
 	values: z.record(z.string(), z.string()).default({})
 });
 

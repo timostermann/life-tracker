@@ -10,6 +10,7 @@
 	import Badge from '$lib/components/ui/Badge/Badge.svelte';
 	import { Plus, Users } from 'lucide-svelte';
 	import { useCategoryActions } from './useCategoryActions.svelte';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
 
@@ -60,7 +61,10 @@
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each data.categories.shared as category (category.id)}
-						<div class="rounded-lg border p-4">
+						<a
+							href={resolve(`/categories/${category.id}`)}
+							class="rounded-lg border p-4 transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+						>
 							<div class="flex items-center gap-3">
 								{#if category.icon}
 									<span class="text-2xl">{category.icon}</span>
@@ -76,7 +80,7 @@
 									</div>
 								</div>
 							</div>
-						</div>
+						</a>
 					{/each}
 				</div>
 			{/if}

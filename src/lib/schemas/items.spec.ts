@@ -148,6 +148,39 @@ describe('createItemSchema', () => {
 		});
 		expect(result.success).toBe(false);
 	});
+
+	it('should accept null values for optional fields', () => {
+		const result = createItemSchema.safeParse({
+			priority: null,
+			deadline: null,
+			time_estimate: null,
+			assigned_to_user_id: null,
+			recurring_config: null,
+			values: { '1': 'Task' }
+		});
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.priority).toBeNull();
+			expect(result.data.deadline).toBeNull();
+			expect(result.data.time_estimate).toBeNull();
+			expect(result.data.assigned_to_user_id).toBeNull();
+			expect(result.data.recurring_config).toBeNull();
+		}
+	});
+
+	it('should accept undefined values for optional fields', () => {
+		const result = createItemSchema.safeParse({
+			values: { '1': 'Task' }
+		});
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.priority).toBeUndefined();
+			expect(result.data.deadline).toBeUndefined();
+			expect(result.data.time_estimate).toBeUndefined();
+			expect(result.data.assigned_to_user_id).toBeUndefined();
+			expect(result.data.recurring_config).toBeUndefined();
+		}
+	});
 });
 
 describe('updateItemSchema', () => {

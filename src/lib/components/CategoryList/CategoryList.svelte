@@ -4,6 +4,7 @@
 	import * as Card from '$lib/components/ui/Card';
 	import { Pencil, Trash2, Users } from 'lucide-svelte';
 	import { getColorClass, isTailwindColorName } from '$lib/utils/colors';
+	import { resolve } from '$app/paths';
 
 	type Props = {
 		categories: Category[];
@@ -25,7 +26,10 @@
 		{#each categories as category (category.id)}
 			<Card.Card>
 				<Card.Header>
-					<div class="flex items-start justify-between">
+					<a
+						href={resolve(`/categories/${category.id}`)}
+						class="flex items-start justify-between transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+					>
 						<div class="flex items-center gap-3">
 							{#if category.icon}
 								<span class="text-2xl">{category.icon}</span>
@@ -47,7 +51,7 @@
 								aria-label="Color: {category.color}"
 							></div>
 						{/if}
-					</div>
+					</a>
 				</Card.Header>
 				<Card.Footer class="flex justify-end gap-2">
 					{#if onShare}

@@ -30,12 +30,10 @@
 	});
 
 	function handleChange(newValue: string | undefined) {
-		if (newValue && onValueChange) {
-			if (newValue === 'none') {
-				onValueChange(null);
-			} else {
-				onValueChange(Number(newValue));
-			}
+		if (newValue === 'none') {
+			onValueChange?.(null);
+		} else if (newValue) {
+			onValueChange?.(Number(newValue));
 		}
 	}
 
