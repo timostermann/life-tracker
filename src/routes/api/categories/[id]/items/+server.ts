@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createItemSchema, createChoreSchema, listItemsQuerySchema } from '$lib/schemas/items';
+import { createHabitSchema } from '$lib/schemas/habits';
 import {
 	getCategoryById,
 	checkCategoryAccess,
@@ -104,7 +105,12 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid JSON' }, { status: 400 });
 	}
 
-	const schema = category.template_type === 'chore' ? createChoreSchema : createItemSchema;
+	const schema =
+		category.template_type === 'chore'
+			? createChoreSchema
+			: category.template_type === 'habit'
+				? createHabitSchema
+				: createItemSchema;
 	const parsed = schema.safeParse(body);
 	if (!parsed.success) {
 		return json(
@@ -118,7 +124,11 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	if (category.template_type === 'chore' && !parsed.data.recurring_config) {
+	if (
+		category.template_type === 'chore' &&
+		'recurring_config' in parsed.data &&
+		!parsed.data.recurring_config
+	) {
 		return json(
 			{
 				error: 'Chores must have a recurring schedule',
@@ -129,7 +139,28 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	const { values, recurring_config, ...itemData } = parsed.data;
+	const { values, ...restData } = parsed.data;
+	let recurring_config:
+		| { frequency: 'daily' | 'weekly' | 'monthly'; interval: number }
+		| undefined = undefined;
+	if (category.template_type !== 'habit' && 'recurring_config' in restData) {
+		const rc = restData.recurring_config;
+		if (
+			rc &&
+			typeof rc === 'object' &&
+			'frequency' in rc &&
+			'interval' in rc &&
+			typeof rc.interval === 'number'
+		) {
+			recurring_config = rc as { frequency: 'daily' | 'weekly' | 'monthly'; interval: number };
+		}
+	}
+	const itemData =
+		category.template_type === 'habit'
+			? {}
+			: 'assigned_to_user_id' in restData || 'priority' in restData
+				? restData
+				: {};
 
 	const createItemTransaction = db.transaction(() => {
 		const fieldValues = Object.entries(values).map(([fieldId, value]) => ({
@@ -138,18 +169,52 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		}));
 
 		const isChore = category.template_type === 'chore';
+		const isHabit = category.template_type === 'habit';
+
+		let assignedTo: number | null = null;
+		if (
+			!isHabit &&
+			'assigned_to_user_id' in itemData &&
+			typeof itemData.assigned_to_user_id === 'number'
+		) {
+			assignedTo = itemData.assigned_to_user_id;
+		}
+
+		let priority: 'urgent' | 'high' | 'medium' | 'low' | null = null;
+		if (!isChore && !isHabit && 'priority' in itemData) {
+			const p = itemData.priority;
+			if (p === 'urgent' || p === 'high' || p === 'medium' || p === 'low') {
+				priority = p;
+			}
+		}
+
+		let deadline: string | null = null;
+		if (!isChore && !isHabit && 'deadline' in itemData && typeof itemData.deadline === 'string') {
+			deadline = itemData.deadline;
+		}
+
+		let timeEstimate: number | null = null;
+		if (
+			!isChore &&
+			!isHabit &&
+			'time_estimate' in itemData &&
+			typeof itemData.time_estimate === 'number'
+		) {
+			timeEstimate = itemData.time_estimate;
+		}
+
 		const itemInput: Parameters<typeof createItem>[0] = {
 			category_id: categoryId,
 			user_id: user.id,
-			assigned_to_user_id: itemData.assigned_to_user_id ?? null,
-			priority: isChore ? null : 'priority' in itemData ? (itemData.priority ?? null) : null,
-			deadline: isChore ? null : 'deadline' in itemData ? (itemData.deadline ?? null) : null,
-			time_estimate: isChore
+			assigned_to_user_id: assignedTo,
+			priority,
+			deadline,
+			time_estimate: timeEstimate,
+			recurring_config: isHabit
 				? null
-				: 'time_estimate' in itemData
-					? (itemData.time_estimate ?? null)
+				: recurring_config
+					? stringifyRecurringConfig(recurring_config)
 					: null,
-			recurring_config: stringifyRecurringConfig(recurring_config ?? null),
 			next_show_date: null,
 			field_values: fieldValues
 		};
@@ -166,7 +231,12 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		values: getFieldValuesAsRecord(item.id, db)
 	};
 
-	const itemType = category.template_type === 'chore' ? 'Chore' : 'Task';
+	const itemType =
+		category.template_type === 'chore'
+			? 'Chore'
+			: category.template_type === 'habit'
+				? 'Habit'
+				: 'Task';
 	return json(
 		{
 			item: enrichedItem,

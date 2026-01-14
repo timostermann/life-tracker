@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { updateItemSchema, updateChoreSchema } from '$lib/schemas/items';
+import { updateHabitSchema } from '$lib/schemas/habits';
 import {
 	getItemById,
 	getCategoryById,
@@ -81,7 +82,12 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid JSON' }, { status: 400 });
 	}
 
-	const schema = category.template_type === 'chore' ? updateChoreSchema : updateItemSchema;
+	const schema =
+		category.template_type === 'chore'
+			? updateChoreSchema
+			: category.template_type === 'habit'
+				? updateHabitSchema
+				: updateItemSchema;
 	const parsed = schema.safeParse(body);
 	if (!parsed.success) {
 		return json(
@@ -95,7 +101,11 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	if (category.template_type === 'chore' && !parsed.data.recurring_config) {
+	if (
+		category.template_type === 'chore' &&
+		'recurring_config' in parsed.data &&
+		!parsed.data.recurring_config
+	) {
 		return json(
 			{
 				error: 'Chores must have a recurring schedule',
@@ -106,24 +116,66 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	const { values, recurring_config, ...itemData } = parsed.data;
+	const { values, ...restData } = parsed.data;
+	let recurring_config:
+		| { frequency: 'daily' | 'weekly' | 'monthly'; interval: number }
+		| undefined = undefined;
+	if (category.template_type !== 'habit' && 'recurring_config' in restData) {
+		const rc = restData.recurring_config;
+		if (
+			rc &&
+			typeof rc === 'object' &&
+			'frequency' in rc &&
+			'interval' in rc &&
+			typeof rc.interval === 'number'
+		) {
+			recurring_config = rc as { frequency: 'daily' | 'weekly' | 'monthly'; interval: number };
+		}
+	}
+	const itemData =
+		category.template_type === 'habit'
+			? {}
+			: 'assigned_to_user_id' in restData ||
+				  'is_archived' in restData ||
+				  'priority' in restData ||
+				  'deadline' in restData ||
+				  'time_estimate' in restData
+				? restData
+				: {};
 
 	const updateItemTransaction = db.transaction(() => {
 		const isChore = category.template_type === 'chore';
+		const isHabit = category.template_type === 'habit';
 		const updateData: Parameters<typeof updateItem>[1] = {
-			...(isChore
+			...(isChore || isHabit
 				? {}
 				: {
-						priority: 'priority' in itemData ? itemData.priority : undefined,
-						deadline: 'deadline' in itemData ? itemData.deadline : undefined,
-						time_estimate: 'time_estimate' in itemData ? itemData.time_estimate : undefined
+						priority:
+							'priority' in itemData
+								? (itemData.priority as 'urgent' | 'high' | 'medium' | 'low' | null)
+								: undefined,
+						deadline: 'deadline' in itemData ? (itemData.deadline as string | null) : undefined,
+						time_estimate:
+							'time_estimate' in itemData ? (itemData.time_estimate as number | null) : undefined
 					}),
-			assigned_to_user_id: itemData.assigned_to_user_id,
-			is_archived: itemData.is_archived,
-			completed_at: itemData.completed_at,
-			next_show_date: itemData.next_show_date,
-			recurring_config:
-				recurring_config !== undefined ? stringifyRecurringConfig(recurring_config) : undefined
+			assigned_to_user_id: isHabit
+				? undefined
+				: 'assigned_to_user_id' in itemData
+					? (itemData.assigned_to_user_id as number | null)
+					: undefined,
+			is_archived:
+				'is_archived' in itemData && typeof itemData.is_archived === 'boolean'
+					? itemData.is_archived
+					: undefined,
+			completed_at:
+				'completed_at' in itemData ? (itemData.completed_at as string | null) : undefined,
+			next_show_date:
+				'next_show_date' in itemData ? (itemData.next_show_date as string | null) : undefined,
+			recurring_config: isHabit
+				? undefined
+				: recurring_config
+					? stringifyRecurringConfig(recurring_config)
+					: undefined
 		};
 
 		const updated = updateItem(itemId, updateData, db);
@@ -143,7 +195,12 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		recurring_config: parseRecurringConfig(updatedItem.recurring_config)
 	};
 
-	const itemType = category.template_type === 'chore' ? 'Chore' : 'Task';
+	const itemType =
+		category.template_type === 'chore'
+			? 'Chore'
+			: category.template_type === 'habit'
+				? 'Habit'
+				: 'Task';
 	return json({
 		item: enrichedItem,
 		toast: 'success',
