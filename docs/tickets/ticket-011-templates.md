@@ -9,6 +9,18 @@
 
 Implement category template system with pre-built templates for Tasks, Chores, and Habits.
 
+**Why templates?** Currently, users must manually create categories and add fields one-by-one. Templates provide a "quick start" option: users can browse pre-configured templates and instantly create categories with all fields already set up.
+
+**Difference from manual creation:**
+- **Manual**: User fills form → selects type → manually adds each field → saves
+- **Template**: User picks template → enters custom name → category created with all fields pre-configured
+
+**Difference from seeded categories:**
+- **Seeded categories**: Actual categories that exist in the database (examples)
+- **Templates**: Reusable blueprints stored in `templates` table that can be applied multiple times to create new categories
+
+The `templates` table already exists (from ticket-002) but has no UI or API endpoints yet. This ticket makes templates usable.
+
 ## Tasks
 
 - [ ] Verify templates table seeded (from ticket-002)
