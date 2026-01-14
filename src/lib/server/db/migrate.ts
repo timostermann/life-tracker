@@ -10,7 +10,8 @@ type Migration = {
 const migrations: Migration[] = [
 	{ version: 1, filename: '001_initial_schema.sql' },
 	{ version: 2, filename: '002_seed_templates.sql' },
-	{ version: 3, filename: '003_lucia_auth.sql' }
+	{ version: 3, filename: '003_lucia_auth.sql' },
+	{ version: 4, filename: '004_seed_tasks.sql' }
 ];
 
 // Bundle SQL migrations into the server build so production builds don't depend on .sql files existing on disk.
