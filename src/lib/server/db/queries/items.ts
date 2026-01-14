@@ -207,3 +207,30 @@ export function countItemsForCategory(categoryId: number, db: Db = getDb()): num
 		.get(categoryId) as { count: number };
 	return row.count;
 }
+
+export function listUpcomingChores(
+	categoryId: number,
+	daysAhead: number = 30,
+	db: Db = getDb()
+): Item[] {
+	const rows = db
+		.prepare(
+			`SELECT i.*
+      FROM items i
+      JOIN categories c ON c.id = i.category_id
+      WHERE i.category_id = ?
+        AND c.template_type = 'chore'
+        AND i.is_archived = 0
+        AND (i.next_show_date IS NULL OR i.next_show_date BETWEEN CURRENT_DATE AND DATE(CURRENT_DATE, '+' || ? || ' days'))
+      ORDER BY 
+        CASE 
+          WHEN i.next_show_date IS NULL THEN 1
+          ELSE 0
+        END,
+        i.next_show_date ASC,
+        i.created_at DESC`
+		)
+		.all(categoryId, daysAhead);
+
+	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
+}

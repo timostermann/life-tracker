@@ -424,6 +424,21 @@ Create item (task/chore/habit).
 }
 ```
 
+**Request (Zod Schema for Chores):**
+
+```typescript
+{
+  assigned_to_user_id: z.number().int().positive().optional(),
+  recurring_config: z.object({
+    frequency: z.enum(['daily', 'weekly', 'monthly']),
+    interval: z.number().int().positive()
+  }), // REQUIRED for chores
+  values: z.record(z.string(), z.string()) // field_id -> value
+}
+```
+
+**Note:** The endpoint automatically detects the category's `template_type` and validates using the appropriate schema. Chores require `recurring_config`, while tasks have it as optional.
+
 **Response (201):**
 
 ```json
@@ -439,6 +454,8 @@ Create item (task/chore/habit).
 
 Update item.
 
+**Request:** Same schema as POST, but fields are optional. For chores, `recurring_config` is still required.
+
 **Response (200):**
 
 ```json
@@ -447,6 +464,8 @@ Update item.
   "toast": "success"
 }
 ```
+
+**Note:** The endpoint automatically detects the item's category `template_type` and validates using the appropriate schema. Chores cannot update `priority`, `deadline`, or `time_estimate` fields.
 
 ---
 

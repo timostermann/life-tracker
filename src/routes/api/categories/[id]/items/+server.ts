@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { createItemSchema, listItemsQuerySchema } from '$lib/schemas/items';
+import { createItemSchema, createChoreSchema, listItemsQuerySchema } from '$lib/schemas/items';
 import {
 	getCategoryById,
 	checkCategoryAccess,
@@ -10,7 +10,7 @@ import {
 } from '$lib/server/db/queries';
 import { getDb } from '$lib/server/db';
 import type { Db } from '$lib/server/db/queries/utils';
-import { stringifyRecurringConfig } from '$lib/utils/recurring';
+import { stringifyRecurringConfig, parseRecurringConfig } from '$lib/utils/recurring';
 
 export const GET: RequestHandler = async ({ params, url, locals }) => {
 	const user = locals.user;
@@ -62,7 +62,8 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 
 	const enrichedItems = items.map((item) => ({
 		...item,
-		values: getFieldValuesAsRecord(item.id, db)
+		values: getFieldValuesAsRecord(item.id, db),
+		recurring_config: parseRecurringConfig(item.recurring_config)
 	}));
 
 	return json({
@@ -103,7 +104,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid JSON' }, { status: 400 });
 	}
 
-	const parsed = createItemSchema.safeParse(body);
+	const schema = category.template_type === 'chore' ? createChoreSchema : createItemSchema;
+	const parsed = schema.safeParse(body);
 	if (!parsed.success) {
 		return json(
 			{
@@ -111,6 +113,17 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				issues: parsed.error.flatten(),
 				toast: 'error',
 				message: 'Please check your input and try again'
+			},
+			{ status: 400 }
+		);
+	}
+
+	if (category.template_type === 'chore' && !parsed.data.recurring_config) {
+		return json(
+			{
+				error: 'Chores must have a recurring schedule',
+				toast: 'error',
+				message: 'Please configure a recurring schedule for this chore'
 			},
 			{ status: 400 }
 		);
@@ -124,20 +137,24 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 			value
 		}));
 
-		const item = createItem(
-			{
-				category_id: categoryId,
-				user_id: user.id,
-				assigned_to_user_id: itemData.assigned_to_user_id,
-				priority: itemData.priority,
-				deadline: itemData.deadline,
-				time_estimate: itemData.time_estimate,
-				recurring_config: stringifyRecurringConfig(recurring_config ?? null),
-				next_show_date: null,
-				field_values: fieldValues
-			},
-			db
-		);
+		const isChore = category.template_type === 'chore';
+		const itemInput: Parameters<typeof createItem>[0] = {
+			category_id: categoryId,
+			user_id: user.id,
+			assigned_to_user_id: itemData.assigned_to_user_id ?? null,
+			priority: isChore ? null : 'priority' in itemData ? (itemData.priority ?? null) : null,
+			deadline: isChore ? null : 'deadline' in itemData ? (itemData.deadline ?? null) : null,
+			time_estimate: isChore
+				? null
+				: 'time_estimate' in itemData
+					? (itemData.time_estimate ?? null)
+					: null,
+			recurring_config: stringifyRecurringConfig(recurring_config ?? null),
+			next_show_date: null,
+			field_values: fieldValues
+		};
+
+		const item = createItem(itemInput, db);
 
 		return item;
 	});
@@ -149,11 +166,12 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		values: getFieldValuesAsRecord(item.id, db)
 	};
 
+	const itemType = category.template_type === 'chore' ? 'Chore' : 'Task';
 	return json(
 		{
 			item: enrichedItem,
 			toast: 'success',
-			message: 'Item created successfully'
+			message: `${itemType} created successfully`
 		},
 		{ status: 201 }
 	);

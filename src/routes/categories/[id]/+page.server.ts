@@ -5,6 +5,7 @@ import {
 	checkCategoryAccess,
 	listFieldsForCategory,
 	listItemsForCategory,
+	listUpcomingChores,
 	getFieldValuesAsRecord
 } from '$lib/server/db/queries';
 import { parseRecurringConfig } from '$lib/utils/recurring';
@@ -49,11 +50,23 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		recurring_config: parseRecurringConfig(item.recurring_config)
 	}));
 
+	// Load upcoming chores for schedule view if this is a chore category
+	let upcomingChores: typeof enrichedItems = [];
+	if (category.template_type === 'chore') {
+		const upcoming = listUpcomingChores(categoryId, 30);
+		upcomingChores = upcoming.map((item) => ({
+			...item,
+			values: getFieldValuesAsRecord(item.id),
+			recurring_config: parseRecurringConfig(item.recurring_config)
+		}));
+	}
+
 	return {
 		category,
 		fields,
 		items: enrichedItems,
 		archivedItems: enrichedArchivedItems,
+		upcomingChores,
 		canEdit
 	};
 };

@@ -20,17 +20,17 @@ Implement recurring chores with assignment and archiving. Chores are always recu
 
 ## Tasks
 
-- [ ] Create Zod schemas for chore operations
-- [ ] Create chore-specific API endpoints (enforce recurring)
-- [ ] Create chore list view
-- [ ] Create chore form component (recurring required)
-- [ ] Implement recurring frequency selector (daily/weekly/monthly + interval)
-- [ ] Implement assignee selector
-- [ ] Implement complete chore action
-- [ ] Show next occurrence date in UI
-- [ ] Add chore schedule view (calendar/timeline)
-- [ ] Add unit tests (co-located)
-- [ ] Add E2E tests for chore flows
+- [x] Create Zod schemas for chore operations
+- [x] Create chore-specific API endpoints (enforce recurring)
+- [x] Create chore list view
+- [x] Create chore form component (recurring required)
+- [x] Implement recurring frequency selector (daily/weekly/monthly + interval)
+- [x] Implement assignee selector
+- [x] Implement complete chore action
+- [x] Show next occurrence date in UI
+- [x] Add chore schedule view (calendar/timeline)
+- [x] Add unit tests (co-located)
+- [x] Add E2E tests for chore flows
 
 ## Acceptance Criteria
 

@@ -42,3 +42,22 @@ export const listItemsQuerySchema = z.object({
 });
 
 export type ListItemsQuery = z.infer<typeof listItemsQuerySchema>;
+
+export const createChoreSchema = z.object({
+	assigned_to_user_id: z.number().int().positive().nullable().optional(),
+	recurring_config: recurringConfigSchema,
+	values: z.record(z.string(), z.string()).default({})
+});
+
+export type CreateChoreInput = z.infer<typeof createChoreSchema>;
+
+export const updateChoreSchema = z.object({
+	assigned_to_user_id: z.number().int().positive().nullable().optional(),
+	recurring_config: recurringConfigSchema,
+	is_archived: z.boolean().optional(),
+	completed_at: z.string().datetime().optional().nullable(),
+	next_show_date: z.string().datetime().optional().nullable(),
+	values: z.record(z.string(), z.string()).optional()
+});
+
+export type UpdateChoreInput = z.infer<typeof updateChoreSchema>;
