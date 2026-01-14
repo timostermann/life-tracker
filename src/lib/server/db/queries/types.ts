@@ -1,9 +1,10 @@
 import type { z } from 'zod';
 
-import type { Category, HabitEntry, Item, Template, User, Field } from '$lib/schemas';
+import type { Category, HabitEntry, Item, Template, User, Field, FieldValue } from '$lib/schemas';
 import {
 	categorySchema,
 	fieldSchema,
+	fieldValueSchema,
 	habitEntrySchema,
 	itemSchema,
 	permissionSchema,
@@ -17,7 +18,7 @@ export type Permission = 'view' | 'edit';
 export type HabitEntryStatus = 'done' | 'skipped' | 'failed';
 export type FieldType = 'text' | 'number' | 'date' | 'boolean' | 'select';
 
-export type { Category, HabitEntry, Item, Template, User, Field };
+export type { Category, HabitEntry, Item, Template, User, Field, FieldValue };
 
 export const sharedCategorySchema = categorySchema.extend({ permission: permissionSchema });
 export type SharedCategory = z.infer<typeof sharedCategorySchema>;
@@ -61,6 +62,17 @@ export type CreateItemInput = Pick<Item, 'category_id' | 'user_id'> & {
 	field_values?: Array<{ field_id: number; value: string | null }>;
 };
 
+export type UpdateItemInput = {
+	assigned_to_user_id?: number | null;
+	priority?: Priority | null;
+	deadline?: string | null;
+	time_estimate?: number | null;
+	recurring_config?: string | null;
+	is_archived?: boolean;
+	completed_at?: string | null;
+	next_show_date?: string | null;
+};
+
 export type ListItemsOptions = { include_archived?: boolean; limit?: number; offset?: number };
 export type ListEntriesOptions = { limit?: number; offset?: number };
 
@@ -74,6 +86,7 @@ export const dbSchemas = {
 	templateSchema,
 	categorySchema,
 	fieldSchema,
+	fieldValueSchema,
 	itemSchema,
 	habitEntrySchema,
 	permissionSchema

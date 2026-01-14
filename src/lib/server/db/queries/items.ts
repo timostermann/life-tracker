@@ -1,16 +1,24 @@
 import { getDb } from '../../db';
-import { dbSchemas, type CreateItemInput, type Item, type ListItemsOptions } from './types';
+import {
+	dbSchemas,
+	type CreateItemInput,
+	type Item,
+	type ListItemsOptions,
+	type UpdateItemInput
+} from './types';
 import type { Db } from './utils';
-import { parseRow } from './utils';
+import { parseRow, buildSqlUpdates, buildBooleanSqlUpdate } from './utils';
+import { parseRecurringConfig, calculateNextDate } from '$lib/utils/recurring';
+import { getFieldValuesForItem } from './fieldValues';
 
 export function createItem(input: CreateItemInput, db: Db = getDb()): Item {
 	const create = db.transaction(() => {
 		const res = db
 			.prepare(
 				`INSERT INTO items (
-           category_id, user_id, assigned_to_user_id, priority, deadline, time_estimate,
-           recurring_config, next_show_date
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+          category_id, user_id, assigned_to_user_id, priority, deadline, time_estimate,
+          recurring_config, next_show_date
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 			)
 			.run(
 				input.category_id,
@@ -38,6 +46,105 @@ export function createItem(input: CreateItemInput, db: Db = getDb()): Item {
 	return create();
 }
 
+export function getItemById(itemId: number, db: Db = getDb()): Item | null {
+	const row = db.prepare('SELECT * FROM items WHERE id = ?').get(itemId);
+	if (!row) return null;
+	return parseRow(dbSchemas.itemSchema, row);
+}
+
+export function getItemWithCategoryId(itemId: number, db: Db = getDb()): number | null {
+	const row = db.prepare('SELECT category_id FROM items WHERE id = ?').get(itemId) as
+		| { category_id: number }
+		| undefined;
+	return row?.category_id ?? null;
+}
+
+export function updateItem(itemId: number, input: UpdateItemInput, db: Db = getDb()): Item {
+	const sqlUpdates = buildSqlUpdates({
+		assigned_to_user_id: input.assigned_to_user_id,
+		priority: input.priority,
+		deadline: input.deadline,
+		time_estimate: input.time_estimate,
+		recurring_config: input.recurring_config,
+		completed_at: input.completed_at,
+		next_show_date: input.next_show_date
+	});
+
+	const boolUpdate = buildBooleanSqlUpdate('is_archived', input.is_archived);
+	if (boolUpdate) {
+		sqlUpdates.updates.push(boolUpdate.update);
+		sqlUpdates.values.push(boolUpdate.value);
+	}
+
+	if (sqlUpdates.updates.length > 0) {
+		sqlUpdates.updates.push('updated_at = CURRENT_TIMESTAMP');
+		sqlUpdates.values.push(itemId);
+		db.prepare(`UPDATE items SET ${sqlUpdates.updates.join(', ')} WHERE id = ?`).run(
+			...sqlUpdates.values
+		);
+	}
+
+	const row = db.prepare('SELECT * FROM items WHERE id = ?').get(itemId);
+	return parseRow(dbSchemas.itemSchema, row);
+}
+
+export function deleteItem(itemId: number, db: Db = getDb()): void {
+	db.prepare('DELETE FROM items WHERE id = ?').run(itemId);
+}
+
+export function completeItem(
+	itemId: number,
+	db: Db = getDb()
+): { completed: Item; nextOccurrence: Item | null } {
+	const complete = db.transaction(() => {
+		const item = getItemById(itemId, db);
+		if (!item) {
+			throw new Error('Item not found');
+		}
+
+		const completed = updateItem(
+			itemId,
+			{
+				is_archived: true,
+				completed_at: new Date().toISOString()
+			},
+			db
+		);
+
+		let nextOccurrence: Item | null = null;
+		if (item.recurring_config) {
+			const config = parseRecurringConfig(item.recurring_config);
+
+			if (config) {
+				const nextDate = calculateNextDate(config);
+				const fieldValues = getFieldValuesForItem(itemId, db);
+
+				nextOccurrence = createItem(
+					{
+						category_id: item.category_id,
+						user_id: item.user_id,
+						assigned_to_user_id: item.assigned_to_user_id,
+						priority: item.priority,
+						deadline: item.deadline,
+						time_estimate: item.time_estimate,
+						recurring_config: item.recurring_config,
+						next_show_date: nextDate.toISOString(),
+						field_values: fieldValues.map((fv) => ({
+							field_id: fv.field_id,
+							value: fv.value
+						}))
+					},
+					db
+				);
+			}
+		}
+
+		return { completed, nextOccurrence };
+	});
+
+	return complete();
+}
+
 export function listItemsForCategory(
 	categoryId: number,
 	opts: ListItemsOptions = {},
@@ -51,23 +158,52 @@ export function listItemsForCategory(
 	const rows = db
 		.prepare(
 			`SELECT i.*
-       FROM items i
-       WHERE i.category_id = ?
-         ${whereArchived}
-         AND (i.next_show_date IS NULL OR i.next_show_date <= CURRENT_TIMESTAMP)
-       ORDER BY
-         CASE i.priority
-           WHEN 'urgent' THEN 1
-           WHEN 'high' THEN 2
-           WHEN 'medium' THEN 3
-           WHEN 'low' THEN 4
-           ELSE 5
-         END,
-         i.deadline ASC,
-         i.created_at DESC
-       LIMIT ? OFFSET ?`
+      FROM items i
+      WHERE i.category_id = ?
+        ${whereArchived}
+        AND (i.next_show_date IS NULL OR i.next_show_date <= CURRENT_TIMESTAMP)
+      ORDER BY
+        CASE i.priority
+          WHEN 'urgent' THEN 1
+          WHEN 'high' THEN 2
+          WHEN 'medium' THEN 3
+          WHEN 'low' THEN 4
+          ELSE 5
+        END,
+        i.deadline ASC,
+        i.created_at DESC
+      LIMIT ? OFFSET ?`
 		)
 		.all(categoryId, limit, offset);
 
 	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
+}
+
+export function listArchivedItemsForCategory(
+	categoryId: number,
+	opts: Pick<ListItemsOptions, 'limit' | 'offset'> = {},
+	db: Db = getDb()
+): Item[] {
+	const limit = opts.limit ?? 50;
+	const offset = opts.offset ?? 0;
+
+	const rows = db
+		.prepare(
+			`SELECT i.*
+      FROM items i
+      WHERE i.category_id = ?
+        AND i.is_archived = 1
+      ORDER BY i.completed_at DESC, i.created_at DESC
+      LIMIT ? OFFSET ?`
+		)
+		.all(categoryId, limit, offset);
+
+	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
+}
+
+export function countItemsForCategory(categoryId: number, db: Db = getDb()): number {
+	const row = db
+		.prepare('SELECT COUNT(*) as count FROM items WHERE category_id = ? AND is_archived = 0')
+		.get(categoryId) as { count: number };
+	return row.count;
 }

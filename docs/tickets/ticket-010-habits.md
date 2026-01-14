@@ -9,6 +9,14 @@
 
 Implement habit tracking with daily entries, streaks, frequency goals, and notes using the habit_entries table.
 
+**Note:** Ticket-008 (Tasks) has implemented shared infrastructure that can be reused for habits:
+
+- Item CRUD operations and queries (for habit trackers)
+- Field values management
+- TaskForm pattern (adapt for habit creation)
+- Permission enforcement patterns
+- The habits-specific functionality will be the habit_entries table and streak calculations
+
 ## Tasks
 
 - [ ] Create Zod schemas for habit operations
