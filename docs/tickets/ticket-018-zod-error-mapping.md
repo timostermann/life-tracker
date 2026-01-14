@@ -95,21 +95,21 @@ Create `src/lib/utils/zodErrorMapper.ts`:
  * // Returns: { "5": "Required", "recurring_config.frequency": "Invalid" }
  */
 export function mapZodErrorsToFormFields(
-  issues: { fieldErrors: Record<string, string[]>; formErrors: string[] },
-  fieldPathMap: Record<string, string>
+	issues: { fieldErrors: Record<string, string[]>; formErrors: string[] },
+	fieldPathMap: Record<string, string>
 ): { fieldErrors: Record<string, string>; formErrors: string[] } {
-  const fieldErrors: Record<string, string> = {};
+	const fieldErrors: Record<string, string> = {};
 
-  for (const [zodPath, messages] of Object.entries(issues.fieldErrors)) {
-    const formKey = fieldPathMap[zodPath] ?? zodPath;
-    // Take first error message (Zod returns array)
-    fieldErrors[formKey] = messages[0] ?? 'Invalid value';
-  }
+	for (const [zodPath, messages] of Object.entries(issues.fieldErrors)) {
+		const formKey = fieldPathMap[zodPath] ?? zodPath;
+		// Take first error message (Zod returns array)
+		fieldErrors[formKey] = messages[0] ?? 'Invalid value';
+	}
 
-  return {
-    fieldErrors,
-    formErrors: issues.formErrors
-  };
+	return {
+		fieldErrors,
+		formErrors: issues.formErrors
+	};
 }
 
 /**
@@ -117,24 +117,24 @@ export function mapZodErrorsToFormFields(
  * Maps "values.{fieldId}" paths to form field keys
  */
 export function createFieldValuePathMap(fieldIds: number[]): Record<string, string> {
-  const map: Record<string, string> = {};
-  for (const fieldId of fieldIds) {
-    map[`values.${fieldId}`] = fieldId.toString();
-  }
-  return map;
+	const map: Record<string, string> = {};
+	for (const fieldId of fieldIds) {
+		map[`values.${fieldId}`] = fieldId.toString();
+	}
+	return map;
 }
 
 /**
  * Standard field path mappings for common form fields
  */
 export const STANDARD_FIELD_PATHS: Record<string, string> = {
-  'assigned_to_user_id': 'assigned_to_user_id',
-  'recurring_config.frequency': 'recurring_config.frequency',
-  'recurring_config.interval': 'recurring_config.interval',
-  'priority': 'priority',
-  'deadline': 'deadline',
-  'time_estimate': 'time_estimate',
-  'name': 'name'
+	assigned_to_user_id: 'assigned_to_user_id',
+	'recurring_config.frequency': 'recurring_config.frequency',
+	'recurring_config.interval': 'recurring_config.interval',
+	priority: 'priority',
+	deadline: 'deadline',
+	time_estimate: 'time_estimate',
+	name: 'name'
 };
 ```
 
@@ -144,49 +144,49 @@ Update `src/lib/utils/api.ts` to extract error details:
 
 ```typescript
 type ApiErrorResponse = {
-  error: string;
-  issues?: {
-    fieldErrors: Record<string, string[]>;
-    formErrors: string[];
-  };
-  message?: string;
-  toast?: string;
+	error: string;
+	issues?: {
+		fieldErrors: Record<string, string[]>;
+		formErrors: string[];
+	};
+	message?: string;
+	toast?: string;
 };
 
 export async function apiRequest<T = unknown>(
-  url: string,
-  options: RequestInit & { successMessage?: string; errorMessage?: string } = {}
+	url: string,
+	options: RequestInit & { successMessage?: string; errorMessage?: string } = {}
 ): Promise<{
-  success: boolean;
-  data?: T;
-  error?: string;
-  issues?: ApiErrorResponse['issues'];
+	success: boolean;
+	data?: T;
+	error?: string;
+	issues?: ApiErrorResponse['issues'];
 }> {
-  try {
-    const response = await fetch(url, options);
-    const result = await response.json();
+	try {
+		const response = await fetch(url, options);
+		const result = await response.json();
 
-    if (!response.ok) {
-      const errorMsg = options.errorMessage || result.message || 'Request failed';
-      toast.error(errorMsg);
-      return {
-        success: false,
-        error: errorMsg,
-        issues: result.issues  // Extract Zod error structure
-      };
-    }
+		if (!response.ok) {
+			const errorMsg = options.errorMessage || result.message || 'Request failed';
+			toast.error(errorMsg);
+			return {
+				success: false,
+				error: errorMsg,
+				issues: result.issues // Extract Zod error structure
+			};
+		}
 
-    if (options.successMessage) {
-      toast.success(result.message || options.successMessage);
-    }
+		if (options.successMessage) {
+			toast.success(result.message || options.successMessage);
+		}
 
-    return { success: true, data: result };
-  } catch (error) {
-    const errorMsg = options.errorMessage || 'An error occurred. Please try again.';
-    toast.error(errorMsg);
-    console.error(`API request error (${url}):`, error);
-    return { success: false, error: errorMsg };
-  }
+		return { success: true, data: result };
+	} catch (error) {
+		const errorMsg = options.errorMessage || 'An error occurred. Please try again.';
+		toast.error(errorMsg);
+		console.error(`API request error (${url}):`, error);
+		return { success: false, error: errorMsg };
+	}
 }
 ```
 
@@ -198,31 +198,31 @@ Add `setServerErrors` method to form state composables:
 
 ```typescript
 function setServerErrors(issues: { fieldErrors: Record<string, string[]>; formErrors: string[] }) {
-  const fieldPathMap = {
-    ...STANDARD_FIELD_PATHS,
-    ...createFieldValuePathMap(fieldsReactive.map(f => f.id))
-  };
+	const fieldPathMap = {
+		...STANDARD_FIELD_PATHS,
+		...createFieldValuePathMap(fieldsReactive.map((f) => f.id))
+	};
 
-  const mapped = mapZodErrorsToFormFields(issues, fieldPathMap);
+	const mapped = mapZodErrorsToFormFields(issues, fieldPathMap);
 
-  // Merge with existing errors (don't overwrite client-side validation)
-  errors = { ...errors, ...mapped.fieldErrors };
+	// Merge with existing errors (don't overwrite client-side validation)
+	errors = { ...errors, ...mapped.fieldErrors };
 
-  // Store form-level errors separately if needed
-  if (mapped.formErrors.length > 0) {
-    errors._form = mapped.formErrors[0];
-  }
+	// Store form-level errors separately if needed
+	if (mapped.formErrors.length > 0) {
+		errors._form = mapped.formErrors[0];
+	}
 }
 
 // Clear errors when field value changes
 function setFieldValue(fieldId: string, value: string) {
-  fieldValues[fieldId] = value;
-  // Clear error for this field when user modifies it
-  if (errors[fieldId]) {
-    const newErrors = { ...errors };
-    delete newErrors[fieldId];
-    errors = newErrors;
-  }
+	fieldValues[fieldId] = value;
+	// Clear error for this field when user modifies it
+	if (errors[fieldId]) {
+		const newErrors = { ...errors };
+		delete newErrors[fieldId];
+		errors = newErrors;
+	}
 }
 ```
 
@@ -273,21 +273,21 @@ Update `useChoreActions`, `useTaskActions`, etc. to return error details:
 
 ```typescript
 async function handleCreate(formData: ChoreFormData) {
-  const result = await createResource(`/api/categories/${getCategoryId()}/items`, formData, {
-    successMessage: 'Chore created successfully',
-    errorMessage: 'Failed to create chore'
-  });
+	const result = await createResource(`/api/categories/${getCategoryId()}/items`, formData, {
+		successMessage: 'Chore created successfully',
+		errorMessage: 'Failed to create chore'
+	});
 
-  if (result.success) {
-    dialogs.closeCreate();
-    return { success: true };
-  }
+	if (result.success) {
+		dialogs.closeCreate();
+		return { success: true };
+	}
 
-  // Return error details for form to handle
-  return {
-    success: false,
-    issues: result.issues  // Pass through Zod error structure
-  };
+	// Return error details for form to handle
+	return {
+		success: false,
+		issues: result.issues // Pass through Zod error structure
+	};
 }
 ```
 
@@ -340,14 +340,14 @@ Zod error messages may be technical. Consider creating a mapping utility for use
 
 ```typescript
 const USER_FRIENDLY_MESSAGES: Record<string, string> = {
-  'Required': 'This field is required',
-  'Invalid enum value': 'Please select a valid option',
-  'Expected number, received string': 'Please enter a valid number',
-  // ... more mappings
+	Required: 'This field is required',
+	'Invalid enum value': 'Please select a valid option',
+	'Expected number, received string': 'Please enter a valid number'
+	// ... more mappings
 };
 
 function formatErrorMessage(zodMessage: string): string {
-  return USER_FRIENDLY_MESSAGES[zodMessage] ?? zodMessage;
+	return USER_FRIENDLY_MESSAGES[zodMessage] ?? zodMessage;
 }
 ```
 

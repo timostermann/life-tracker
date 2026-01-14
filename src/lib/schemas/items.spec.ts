@@ -3,7 +3,9 @@ import {
 	recurringConfigSchema,
 	createItemSchema,
 	updateItemSchema,
-	listItemsQuerySchema
+	listItemsQuerySchema,
+	createChoreSchema,
+	updateChoreSchema
 } from './items';
 
 describe('recurringConfigSchema', () => {
@@ -317,5 +319,109 @@ describe('listItemsQuerySchema', () => {
 		if (result.success) {
 			expect(result.data.assigned_to_user_id).toBe(3);
 		}
+	});
+
+	describe('createChoreSchema', () => {
+		it('should require recurring_config', () => {
+			const result = createChoreSchema.safeParse({
+				values: { '1': 'Chore name' }
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('should validate chore with required recurring_config', () => {
+			const result = createChoreSchema.safeParse({
+				recurring_config: {
+					frequency: 'weekly',
+					interval: 1
+				},
+				values: { '1': 'Vacuum living room' }
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('should validate chore with assignee and recurring_config', () => {
+			const result = createChoreSchema.safeParse({
+				assigned_to_user_id: 2,
+				recurring_config: {
+					frequency: 'monthly',
+					interval: 1
+				},
+				values: { '1': 'Change air filter' }
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('should reject chore without recurring_config', () => {
+			const result = createChoreSchema.safeParse({
+				assigned_to_user_id: 2,
+				values: { '1': 'Chore name' }
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('should reject invalid recurring_config', () => {
+			const result = createChoreSchema.safeParse({
+				recurring_config: {
+					frequency: 'yearly',
+					interval: 1
+				},
+				values: { '1': 'Chore name' }
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('should default empty values object', () => {
+			const result = createChoreSchema.safeParse({
+				recurring_config: {
+					frequency: 'daily',
+					interval: 1
+				}
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.values).toEqual({});
+			}
+		});
+	});
+
+	describe('updateChoreSchema', () => {
+		it('should require recurring_config', () => {
+			const result = updateChoreSchema.safeParse({
+				assigned_to_user_id: 2
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('should validate chore update with required recurring_config', () => {
+			const result = updateChoreSchema.safeParse({
+				recurring_config: {
+					frequency: 'weekly',
+					interval: 2
+				}
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('should validate chore update with all fields', () => {
+			const result = updateChoreSchema.safeParse({
+				assigned_to_user_id: 2,
+				recurring_config: {
+					frequency: 'monthly',
+					interval: 1
+				},
+				is_archived: false,
+				values: { '1': 'Updated chore name' }
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('should reject update without recurring_config', () => {
+			const result = updateChoreSchema.safeParse({
+				assigned_to_user_id: 2,
+				values: { '1': 'Updated name' }
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 });

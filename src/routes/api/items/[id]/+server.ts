@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { updateItemSchema } from '$lib/schemas/items';
+import { updateItemSchema, updateChoreSchema } from '$lib/schemas/items';
 import {
 	getItemById,
+	getCategoryById,
 	checkCategoryAccess,
 	updateItem,
 	deleteItem,
@@ -68,6 +69,11 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
+	const category = getCategoryById(item.category_id, db);
+	if (!category) {
+		return json({ error: 'Category not found' }, { status: 404 });
+	}
+
 	let body: unknown;
 	try {
 		body = await request.json();
@@ -75,7 +81,8 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid JSON' }, { status: 400 });
 	}
 
-	const parsed = updateItemSchema.safeParse(body);
+	const schema = category.template_type === 'chore' ? updateChoreSchema : updateItemSchema;
+	const parsed = schema.safeParse(body);
 	if (!parsed.success) {
 		return json(
 			{
@@ -88,18 +95,38 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
+	if (category.template_type === 'chore' && !parsed.data.recurring_config) {
+		return json(
+			{
+				error: 'Chores must have a recurring schedule',
+				toast: 'error',
+				message: 'Please configure a recurring schedule for this chore'
+			},
+			{ status: 400 }
+		);
+	}
+
 	const { values, recurring_config, ...itemData } = parsed.data;
 
 	const updateItemTransaction = db.transaction(() => {
-		const updated = updateItem(
-			itemId,
-			{
-				...itemData,
-				recurring_config:
-					recurring_config !== undefined ? stringifyRecurringConfig(recurring_config) : undefined
-			},
-			db
-		);
+		const isChore = category.template_type === 'chore';
+		const updateData: Parameters<typeof updateItem>[1] = {
+			...(isChore
+				? {}
+				: {
+						priority: 'priority' in itemData ? itemData.priority : undefined,
+						deadline: 'deadline' in itemData ? itemData.deadline : undefined,
+						time_estimate: 'time_estimate' in itemData ? itemData.time_estimate : undefined
+					}),
+			assigned_to_user_id: itemData.assigned_to_user_id,
+			is_archived: itemData.is_archived,
+			completed_at: itemData.completed_at,
+			next_show_date: itemData.next_show_date,
+			recurring_config:
+				recurring_config !== undefined ? stringifyRecurringConfig(recurring_config) : undefined
+		};
+
+		const updated = updateItem(itemId, updateData, db);
 
 		if (values !== undefined) {
 			upsertFieldValues(itemId, values, db);
@@ -116,10 +143,11 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		recurring_config: parseRecurringConfig(updatedItem.recurring_config)
 	};
 
+	const itemType = category.template_type === 'chore' ? 'Chore' : 'Task';
 	return json({
 		item: enrichedItem,
 		toast: 'success',
-		message: 'Item updated successfully'
+		message: `${itemType} updated successfully`
 	});
 };
 
