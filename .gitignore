@@ -26,6 +26,9 @@ vite.config.ts.timestamp-*
 
 .eslintcache
 
+# TypeScript
+*.tsbuildinfo
+
 # Local SQLite db (host dev)
 .data
 coverage

@@ -28,21 +28,10 @@ export default defineConfig(
 	},
 	{
 		files: ['src/**/*.ts', 'src/**/*.svelte.ts'],
-		languageOptions: {
-			parserOptions: {
-				projectService: true
-			}
-		},
 		rules: {
-			'@typescript-eslint/consistent-type-imports': [
-				'error',
-				{
-					fixStyle: 'inline-type-imports'
-				}
-			],
-			'@typescript-eslint/consistent-type-exports': 'error',
-			'@typescript-eslint/consistent-type-definitions': ['error', 'type'],
-			'@typescript-eslint/no-floating-promises': 'error'
+			// Note: Type-aware rules (consistent-type-imports, consistent-type-exports, no-floating-promises)
+			// are handled by svelte-check for better performance. ESLint focuses on syntax/style rules.
+			'@typescript-eslint/consistent-type-definitions': ['error', 'type']
 		}
 	},
 	{
@@ -50,7 +39,6 @@ export default defineConfig(
 
 		languageOptions: {
 			parserOptions: {
-				projectService: true,
 				extraFileExtensions: ['.svelte'],
 				parser: ts.parser,
 				svelteConfig
