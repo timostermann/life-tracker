@@ -502,13 +502,13 @@ Delete item.
 
 ## Habit Entries
 
-### GET /api/habits/:itemId/entries
+### GET /api/habits/:id/entries
 
 Get habit entries with calculated stats.
 
 **Query Parameters:**
 
-- `from_date` (YYYY-MM-DD): Start date. Default: 30 days ago
+- `from_date` (YYYY-MM-DD): Start date. Default: 365 days ago
 - `to_date` (YYYY-MM-DD): End date. Default: today
 
 **Response (200):**
@@ -529,17 +529,23 @@ Get habit entries with calculated stats.
 		"current_streak": 5,
 		"longest_streak": 12,
 		"total_entries": 45,
-		"completion_rate": 0.75,
-		"last_7_days": 6
+		"last_7_days": {
+			"done": 6,
+			"total": 7
+		},
+		"last_30_days": {
+			"done": 25,
+			"total": 30
+		}
 	}
 }
 ```
 
 ---
 
-### POST /api/habits/:itemId/entries
+### POST /api/habits/:id/entries
 
-Log a habit entry for a specific date.
+Log a habit entry for a specific date. Uses upsert - will create new entry or update existing one for the same date.
 
 **Request (Zod Schema):**
 
@@ -561,20 +567,22 @@ Log a habit entry for a specific date.
 }
 ```
 
-**Response (400) - Duplicate:**
-
-```json
-{
-	"error": "Entry already exists for this date",
-	"toast": "error"
-}
-```
+**Note:** This endpoint uses upsert, so it will update an existing entry for the same date if one exists.
 
 ---
 
-### PUT /api/habits/:itemId/entries/:date
+### PUT /api/habits/:id/entries/:date
 
 Update existing entry.
+
+**Request (Zod Schema):**
+
+```typescript
+{
+  status: z.enum(['done', 'skipped', 'failed']),
+  notes: z.string().max(500).optional()
+}
+```
 
 **Response (200):**
 
@@ -588,7 +596,7 @@ Update existing entry.
 
 ---
 
-### DELETE /api/habits/:itemId/entries/:date
+### DELETE /api/habits/:id/entries/:date
 
 Delete entry.
 
@@ -597,7 +605,21 @@ Delete entry.
 ```json
 {
 	"success": true,
-	"toast": "success"
+	"updated_stats": {
+		"current_streak": 4,
+		"longest_streak": 12,
+		"total_entries": 44,
+		"last_7_days": {
+			"done": 5,
+			"total": 7
+		},
+		"last_30_days": {
+			"done": 24,
+			"total": 30
+		}
+	},
+	"toast": "success",
+	"message": "Entry deleted successfully"
 }
 ```
 
@@ -759,6 +781,10 @@ export const habitEntrySchema = z.object({
 	logged_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 	status: z.enum(['done', 'skipped', 'failed']),
 	notes: z.string().max(500).optional()
+});
+
+export const createHabitSchema = z.object({
+	values: z.record(z.string(), z.string()).default({})
 });
 ```
 

@@ -19,18 +19,18 @@ Implement habit tracking with daily entries, streaks, frequency goals, and notes
 
 ## Tasks
 
-- [ ] Create Zod schemas for habit operations
-- [ ] Create habit and habit_entries API endpoints
-- [ ] Create habit list view with current streaks
-- [ ] Create habit log form (date + status + notes)
-- [ ] Implement entry calendar view
-- [ ] Calculate and display current streak
-- [ ] Calculate and display frequency stats (e.g., 5/7 days)
-- [ ] Show entry history with notes
-- [ ] Implement "Log Today" quick action
-- [ ] Add good/bad habit indicator
-- [ ] Add unit tests for streak calculation (co-located)
-- [ ] Add E2E tests for habit flows
+- [x] Create Zod schemas for habit operations
+- [x] Create habit and habit_entries API endpoints
+- [x] Create habit list view with current streaks
+- [x] Create habit log form (date + status + notes)
+- [x] Implement entry calendar view
+- [x] Calculate and display current streak
+- [x] Calculate and display frequency stats (e.g., 5/7 days)
+- [x] Show entry history with notes
+- [x] Implement "Log Today" quick action
+- [x] Add good/bad habit indicator
+- [x] Add unit tests for streak calculation (co-located)
+- [x] Add E2E tests for habit flows
 
 ## API Endpoints
 
@@ -89,24 +89,34 @@ export const habitEntrySchema = z.object({
 
 ```typescript
 function calculateStreak(entries: HabitEntry[]): number {
-	const sorted = entries
+	const doneEntries = entries
 		.filter((e) => e.status === 'done')
-		.sort((a, b) => new Date(b.logged_date).getTime() - new Date(a.logged_date).getTime());
+		.map((e) => {
+			const date = new Date(e.logged_date);
+			date.setHours(0, 0, 0, 0);
+			return { ...e, date };
+		})
+		.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+	if (doneEntries.length === 0) return 0;
+
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
 
 	let streak = 0;
-	let currentDate = new Date();
+	let expectedDate = today;
 
-	for (const entry of sorted) {
-		const entryDate = new Date(entry.logged_date);
+	for (const entry of doneEntries) {
 		const daysDiff = Math.floor(
-			(currentDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)
+			(expectedDate.getTime() - entry.date.getTime()) / (1000 * 60 * 60 * 24)
 		);
-
-		if (daysDiff === streak) {
-			streak++;
-			currentDate = entryDate;
-		} else {
+		if (daysDiff > 1) {
 			break;
+		}
+		if (daysDiff === 0 || (streak === 0 && daysDiff <= 1)) {
+			streak++;
+			expectedDate = new Date(entry.date);
+			expectedDate.setDate(expectedDate.getDate() - 1);
 		}
 	}
 
@@ -120,10 +130,15 @@ function calculateStreak(entries: HabitEntry[]): number {
 function calculateFrequency(entries: HabitEntry[], days: number): { done: number; total: number } {
 	const cutoff = new Date();
 	cutoff.setDate(cutoff.getDate() - days);
+	cutoff.setHours(0, 0, 0, 0);
 
-	const recent = entries.filter((e) => new Date(e.logged_date) >= cutoff);
+	const recent = entries.filter((e) => {
+		const entryDate = new Date(e.logged_date);
+		entryDate.setHours(0, 0, 0, 0);
+		return entryDate >= cutoff;
+	});
+
 	const done = recent.filter((e) => e.status === 'done').length;
-
 	return { done, total: days };
 }
 ```

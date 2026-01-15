@@ -6,7 +6,9 @@ import {
 	listFieldsForCategory,
 	listItemsForCategory,
 	listUpcomingChores,
-	getFieldValuesAsRecord
+	getFieldValuesAsRecord,
+	listHabitEntries,
+	getHabitStats
 } from '$lib/server/db/queries';
 import { parseRecurringConfig } from '$lib/utils/recurring';
 
@@ -61,12 +63,30 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		}));
 	}
 
+	// Load habit entries and stats if this is a habit category
+	const habitEntries: Record<
+		number,
+		{ entries: ReturnType<typeof listHabitEntries>; stats: ReturnType<typeof getHabitStats> }
+	> = {};
+	if (category.template_type === 'habit') {
+		const oneYearAgo = new Date();
+		oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+		const fromDate = oneYearAgo.toISOString().split('T')[0];
+
+		for (const item of enrichedItems) {
+			const entries = listHabitEntries(item.id, { from_date: fromDate, limit: 365 });
+			const stats = getHabitStats(item.id);
+			habitEntries[item.id] = { entries, stats };
+		}
+	}
+
 	return {
 		category,
 		fields,
 		items: enrichedItems,
 		archivedItems: enrichedArchivedItems,
 		upcomingChores,
+		habitEntries,
 		canEdit
 	};
 };

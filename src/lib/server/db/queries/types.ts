@@ -74,7 +74,12 @@ export type UpdateItemInput = {
 };
 
 export type ListItemsOptions = { include_archived?: boolean; limit?: number; offset?: number };
-export type ListEntriesOptions = { limit?: number; offset?: number };
+export type ListEntriesOptions = {
+	limit?: number;
+	offset?: number;
+	from_date?: string;
+	to_date?: string;
+};
 
 export type UpsertHabitEntryInput = Pick<HabitEntry, 'item_id' | 'logged_date' | 'status'> & {
 	notes?: string | null;
