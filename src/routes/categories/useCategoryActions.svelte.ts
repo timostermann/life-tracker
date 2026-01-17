@@ -1,6 +1,8 @@
-import type { Category, Field } from '$lib/schemas';
+import type { Category, Field, Template } from '$lib/schemas';
 import { useCrudDialogs } from '$lib/composables/useCrudDialogs.svelte';
 import { createResource, updateResource, deleteResource, fetchResource } from '$lib/utils/api';
+import { goto } from '$app/navigation';
+import { resolve } from '$app/paths';
 
 type CategoryWithFields = Category & { fields?: Field[] };
 
@@ -22,6 +24,10 @@ export function useCategoryActions() {
 	const dialogs = useCrudDialogs<CategoryWithFields>();
 	let shareDialogOpen = $state(false);
 	let shareCategory = $state<Category | null>(null);
+	let templatePickerOpen = $state(false);
+	let applyTemplateDialogOpen = $state(false);
+	let selectedTemplate = $state<Template | null>(null);
+	let templateLoading = $state(false);
 
 	async function handleCreate(formData: CategoryFormData) {
 		const result = await createResource('/api/categories', formData, {
@@ -73,6 +79,49 @@ export function useCategoryActions() {
 		}
 	}
 
+	function openTemplatePicker() {
+		templatePickerOpen = true;
+	}
+
+	function closeTemplatePicker() {
+		templatePickerOpen = false;
+	}
+
+	function handleTemplateSelect(templateId: number, templates: Template[]) {
+		const template = templates.find((t) => t.id === templateId);
+		if (template) {
+			selectedTemplate = template;
+			applyTemplateDialogOpen = true;
+		}
+	}
+
+	async function handleApplyTemplate(name: string) {
+		if (!selectedTemplate) return;
+
+		templateLoading = true;
+		const result = await createResource<{ name: string }, { category: Category }>(
+			`/api/templates/${selectedTemplate.id}/apply`,
+			{ name },
+			{
+				successMessage: 'Category created from template',
+				errorMessage: 'Failed to create category from template'
+			}
+		);
+		templateLoading = false;
+
+		if (result.success && result.data?.category?.id) {
+			applyTemplateDialogOpen = false;
+			templatePickerOpen = false;
+			selectedTemplate = null;
+			await goto(resolve(`/categories/${result.data.category.id}`));
+		}
+	}
+
+	function cancelApplyTemplate() {
+		applyTemplateDialogOpen = false;
+		selectedTemplate = null;
+	}
+
 	return {
 		createDialogOpen: dialogs.createDialogOpen,
 		editDialogOpen: dialogs.editDialogOpen,
@@ -91,6 +140,28 @@ export function useCategoryActions() {
 				shareDialogOpen = v;
 			}
 		},
+		templatePickerOpen: {
+			get value() {
+				return templatePickerOpen;
+			},
+			set value(v: boolean) {
+				templatePickerOpen = v;
+			}
+		},
+		applyTemplateDialogOpen: {
+			get value() {
+				return applyTemplateDialogOpen;
+			},
+			set value(v: boolean) {
+				applyTemplateDialogOpen = v;
+			}
+		},
+		get selectedTemplate() {
+			return selectedTemplate;
+		},
+		get templateLoading() {
+			return templateLoading;
+		},
 		openShare: (category: Category) => {
 			shareCategory = category;
 			shareDialogOpen = true;
@@ -99,6 +170,11 @@ export function useCategoryActions() {
 			shareDialogOpen = false;
 			shareCategory = null;
 		},
+		openTemplatePicker,
+		closeTemplatePicker,
+		handleTemplateSelect,
+		handleApplyTemplate,
+		cancelApplyTemplate,
 		openCreate: dialogs.openCreate,
 		handleCreate,
 		handleEdit,

@@ -3,7 +3,8 @@
 **ID:** ticket-010  
 **Scope:** `habits` or `ticket-010`  
 **Phase:** 1 (MVP)  
-**Dependencies:** ticket-008
+**Dependencies:** ticket-008  
+**Status:** ✅ **COMPLETED**
 
 ## Description
 

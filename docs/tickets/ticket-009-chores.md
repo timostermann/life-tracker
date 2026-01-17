@@ -3,7 +3,8 @@
 **ID:** ticket-009  
 **Scope:** `items` or `ticket-009`  
 **Phase:** 1 (MVP)  
-**Dependencies:** ticket-008
+**Dependencies:** ticket-008  
+**Status:** ✅ **COMPLETED**
 
 ## Description
 

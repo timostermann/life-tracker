@@ -11,7 +11,6 @@
 
 	let { name, icon, color, itemCount, onclick }: Props = $props();
 
-	// Determine if component should be interactive
 	let isInteractive = $derived(!!onclick);
 </script>
 

@@ -10,47 +10,70 @@ async function login(page: Page, username: 'tim' | 'jule') {
 	await expect(page).not.toHaveURL(/\/login$/);
 }
 
+async function createChoreCategoryFromTemplate(page: Page, name: string) {
+	// Use template picker to create category with pre-configured fields
+	await page.getByRole('button', { name: /use template/i }).click();
+
+	// Wait for template picker dialog
+	const templateDialog = page.getByRole('dialog');
+	await expect(templateDialog.getByText('Choose a Template')).toBeVisible();
+
+	// Switch to chores tab
+	await templateDialog.getByRole('tab', { name: /chores/i }).click();
+
+	// Click "Use Template" button on the Chores template card
+	const useButtons = page.getByRole('button', { name: /use template/i });
+	await useButtons.nth(1).click(); // nth(0) is the header button, nth(1) is the template card
+
+	// Apply template dialog should appear
+	const applyDialog = page.getByRole('dialog');
+	await expect(applyDialog.getByText('Create from Template')).toBeVisible();
+
+	// Customize the name
+	const nameInput = applyDialog.getByLabel('Category Name');
+	await nameInput.clear();
+	await nameInput.fill(name);
+
+	// Submit
+	await applyDialog.getByRole('button', { name: /create category/i }).click();
+
+	// Wait for redirect to category detail page
+	await page.waitForURL(/\/categories\/\d+/);
+	await expect(page.getByRole('heading', { name })).toBeVisible();
+}
+
 test.describe('Chores Integration', () => {
 	test('should be able to create a chore category', async ({ page }) => {
 		await login(page, 'tim');
-
 		await page.goto('/categories');
 
-		// Create chore category
-		await page.getByRole('button', { name: 'New Category' }).click();
-		await page.locator('#name').fill('Household Chores E2E');
-		await page.locator('#template-type').click();
-		await page.getByRole('option', { name: 'Chore' }).click();
+		// Create chore category using template
+		await createChoreCategoryFromTemplate(page, 'Household Chores E2E');
 
-		await page.getByRole('button', { name: 'Create Category' }).click();
+		// Should be on category detail page
+		await expect(page.getByRole('heading', { name: /Household Chores E2E/i })).toBeVisible();
 
-		await expect(page.getByText('Household Chores E2E')).toBeVisible({ timeout: 10000 });
+		// Navigate back and verify it appears in list
+		await page.goto('/categories');
+		await expect(page.getByRole('link', { name: /Household Chores E2E/i })).toBeVisible();
 	});
 
 	test('should create a chore with required recurring config', async ({ page }) => {
 		await login(page, 'tim');
-
 		await page.goto('/categories');
 
-		// Create chore category first
-		await page.getByRole('button', { name: 'New Category' }).click();
-		await page.locator('#name').fill('Test Chores');
-		await page.locator('#template-type').click();
-		await page.getByRole('option', { name: 'Chore' }).click();
-		await page.getByRole('button', { name: 'Create Category' }).click();
-
-		// Wait for category to appear and click it
-		await expect(page.getByText('Test Chores')).toBeVisible({ timeout: 10000 });
-		await page.getByText('Test Chores').click();
-
-		// Verify we're on the chore category page
-		await expect(page.getByRole('heading', { name: 'Test Chores' })).toBeVisible();
+		// Create chore category using template
+		await createChoreCategoryFromTemplate(page, 'Test Chores');
 
 		// Click "New Chore" button
 		await page.getByRole('button', { name: 'New Chore' }).click();
 
+		// Wait for chore dialog to open
+		const choreDialog = page.getByRole('dialog');
+		await expect(choreDialog.getByRole('heading', { name: 'Create Chore' })).toBeVisible();
+
 		// Fill in chore name (first field)
-		const choreNameInput = page.locator('input[id^="field-"]').first();
+		const choreNameInput = choreDialog.locator('input[id^="field-"]').first();
 		await choreNameInput.fill('Vacuum living room');
 
 		// Set recurring schedule (required)
@@ -60,8 +83,8 @@ test.describe('Chores Integration', () => {
 		const intervalInput = page.locator('input[type="number"]').first();
 		await intervalInput.fill('1');
 
-		// Select weekly frequency
-		await page.getByRole('combobox').click();
+		// Select weekly frequency - click the select trigger button
+		await page.getByRole('button', { name: /day|days/ }).click();
 		await page.getByRole('option', { name: /week/ }).click();
 
 		// Save recurring config
@@ -71,27 +94,25 @@ test.describe('Chores Integration', () => {
 		await page.getByRole('button', { name: 'Create Chore' }).click();
 
 		// Verify chore appears in the list
-		await expect(page.getByText('Vacuum living room')).toBeVisible({ timeout: 10000 });
+		await expect(page.getByRole('heading', { name: 'Vacuum living room' })).toBeVisible({
+			timeout: 10000
+		});
 	});
 
 	test('should not create chore without recurring config', async ({ page }) => {
 		await login(page, 'tim');
-
 		await page.goto('/categories');
 
-		// Find or create a chore category
-		const categoryLink = page.getByText(/Home Maintenance|Meal Planning|Health Checkups/).first();
-		if (await categoryLink.isVisible().catch(() => false)) {
+		// Use seeded category or create one
+		const categoryLink = page
+			.getByRole('link', { name: /Home Maintenance|Meal Planning|Health Checkups/i })
+			.first();
+		const categoryExists = await categoryLink.isVisible().catch(() => false);
+
+		if (categoryExists) {
 			await categoryLink.click();
 		} else {
-			// Create one if it doesn't exist
-			await page.getByRole('button', { name: 'New Category' }).click();
-			await page.locator('#name').fill('Test Chores');
-			await page.locator('#template-type').click();
-			await page.getByRole('option', { name: 'Chore' }).click();
-			await page.getByRole('button', { name: 'Create Category' }).click();
-			await expect(page.getByText('Test Chores')).toBeVisible({ timeout: 10000 });
-			await page.getByText('Test Chores').click();
+			await createChoreCategoryFromTemplate(page, 'Test Chores 2');
 		}
 
 		// Wait for page to load
@@ -100,54 +121,63 @@ test.describe('Chores Integration', () => {
 		// Click "New Chore"
 		await page.getByRole('button', { name: /New Chore/ }).click();
 
+		// Wait for dialog to open
+		const dialog = page.getByRole('dialog');
+		await expect(dialog.getByRole('heading', { name: 'Create Chore' })).toBeVisible();
+
 		// Fill in chore name but don't set recurring config
-		const choreNameInput = page.locator('input[id^="field-"]').first();
+		const choreNameInput = dialog.locator('input[id^="field-"]').first();
 		await choreNameInput.fill('Test Chore Without Recurring');
 
 		// Try to create without recurring config
 		await page.getByRole('button', { name: 'Create Chore' }).click();
 
 		// Should show validation error
-		await expect(page.getByText(/Recurring schedule is required|recurring/i)).toBeVisible({
+		await expect(page.getByText('Recurring schedule is required for chores')).toBeVisible({
 			timeout: 5000
 		});
 	});
 
 	test('should complete chore and create next occurrence', async ({ page }) => {
 		await login(page, 'tim');
-
 		await page.goto('/categories');
 
-		// Find a chore category or create one
-		let categoryLink = page.getByText(/Home Maintenance|Meal Planning|Health Checkups/).first();
-		if (!(await categoryLink.isVisible().catch(() => false))) {
-			await page.getByRole('button', { name: 'New Category' }).click();
-			await page.locator('#name').fill('Complete Test Chores');
-			await page.locator('#template-type').click();
-			await page.getByRole('option', { name: 'Chore' }).click();
-			await page.getByRole('button', { name: 'Create Category' }).click();
-			await expect(page.getByText('Complete Test Chores')).toBeVisible({ timeout: 10000 });
-			categoryLink = page.getByText('Complete Test Chores');
-		}
+		// Use seeded category or create one
+		const categoryLink = page
+			.getByRole('link', { name: /Home Maintenance|Meal Planning|Health Checkups/i })
+			.first();
+		const categoryExists = await categoryLink.isVisible().catch(() => false);
 
-		await categoryLink.click();
+		if (!categoryExists) {
+			await createChoreCategoryFromTemplate(page, 'Complete Test Chores');
+			// Already on category detail page after template creation
+		} else {
+			await categoryLink.click();
+		}
 
 		// Create a chore first
 		await page.getByRole('button', { name: /New Chore/ }).click();
-		const choreNameInput = page.locator('input[id^="field-"]').first();
+
+		// Wait for dialog to open
+		const dialog = page.getByRole('dialog');
+		await expect(dialog.getByRole('heading', { name: 'Create Chore' })).toBeVisible();
+
+		const choreNameInput = dialog.locator('input[id^="field-"]').first();
 		await choreNameInput.fill('Weekly Grocery Shopping');
 
 		// Set recurring schedule
 		await page.getByRole('button', { name: /Set recurring schedule|Recurring Schedule/ }).click();
 		const intervalInput = page.locator('input[type="number"]').first();
 		await intervalInput.fill('1');
-		await page.getByRole('combobox').click();
+		await page.getByRole('button', { name: /day|days/ }).click();
 		await page.getByRole('option', { name: /week/ }).click();
 		await page.getByRole('button', { name: 'Save' }).click();
 		await page.getByRole('button', { name: 'Create Chore' }).click();
 
 		// Wait for chore to appear
-		await expect(page.getByText('Weekly Grocery Shopping')).toBeVisible({ timeout: 10000 });
+		await expect(page.getByRole('heading', { name: 'Weekly Grocery Shopping' })).toBeVisible({
+			timeout: 10000
+		});
 
 		// Complete the chore
 		const completeButton = page
@@ -162,22 +192,18 @@ test.describe('Chores Integration', () => {
 
 	test('should display schedule view with upcoming chores', async ({ page }) => {
 		await login(page, 'tim');
-
 		await page.goto('/categories');
 
-		// Find a chore category
-		const categoryLink = page.getByText(/Home Maintenance|Meal Planning|Health Checkups/).first();
-		if (await categoryLink.isVisible().catch(() => false)) {
+		// Use seeded category or create one
+		const categoryLink = page
+			.getByRole('link', { name: /Home Maintenance|Meal Planning|Health Checkups/i })
+			.first();
+		const categoryExists = await categoryLink.isVisible().catch(() => false);
+
+		if (categoryExists) {
 			await categoryLink.click();
 		} else {
-			// Create one if needed
-			await page.getByRole('button', { name: 'New Category' }).click();
-			await page.locator('#name').fill('Schedule Test');
-			await page.locator('#template-type').click();
-			await page.getByRole('option', { name: 'Chore' }).click();
-			await page.getByRole('button', { name: 'Create Category' }).click();
-			await expect(page.getByText('Schedule Test')).toBeVisible({ timeout: 10000 });
-			await page.getByText('Schedule Test').click();
+			await createChoreCategoryFromTemplate(page, 'Schedule Test');
 		}
 
 		// Verify schedule tab exists
@@ -186,47 +212,57 @@ test.describe('Chores Integration', () => {
 		// Click schedule tab
 		await page.getByRole('tab', { name: 'Schedule' }).click();
 
-		// Verify schedule view is displayed
-		await expect(page.getByText(/upcoming|schedule|no upcoming chores/i)).toBeVisible({
+		// Verify schedule view is displayed (check for specific element in schedule tab)
+		await expect(
+			page
+				.getByRole('tabpanel')
+				.getByText(/no upcoming chores/i)
+				.first()
+		).toBeVisible({
 			timeout: 5000
 		});
 	});
 
 	test('should show next occurrence date in chore list', async ({ page }) => {
 		await login(page, 'tim');
-
 		await page.goto('/categories');
 
-		// Find or create a chore category
-		let categoryLink = page.getByText(/Home Maintenance|Meal Planning|Health Checkups/).first();
-		if (!(await categoryLink.isVisible().catch(() => false))) {
-			await page.getByRole('button', { name: 'New Category' }).click();
-			await page.locator('#name').fill('Next Date Test');
-			await page.locator('#template-type').click();
-			await page.getByRole('option', { name: 'Chore' }).click();
-			await page.getByRole('button', { name: 'Create Category' }).click();
-			await expect(page.getByText('Next Date Test')).toBeVisible({ timeout: 10000 });
-			categoryLink = page.getByText('Next Date Test');
-		}
+		// Use seeded category or create one
+		const categoryLink = page
+			.getByRole('link', { name: /Home Maintenance|Meal Planning|Health Checkups/i })
+			.first();
+		const categoryExists = await categoryLink.isVisible().catch(() => false);
 
-		await categoryLink.click();
+		if (!categoryExists) {
+			await createChoreCategoryFromTemplate(page, 'Next Date Test');
+			// Already on category detail page after template creation
+		} else {
+			await categoryLink.click();
+		}
 
 		// Create a chore
 		await page.getByRole('button', { name: /New Chore/ }).click();
-		const choreNameInput = page.locator('input[id^="field-"]').first();
+
+		// Wait for dialog to open
+		const dialog = page.getByRole('dialog');
+		await expect(dialog.getByRole('heading', { name: 'Create Chore' })).toBeVisible();
+
+		const choreNameInput = dialog.locator('input[id^="field-"]').first();
 		await choreNameInput.fill('Monthly Car Maintenance');
 
 		// Set monthly recurring
 		await page.getByRole('button', { name: /Set recurring schedule|Recurring Schedule/ }).click();
 		const intervalInput = page.locator('input[type="number"]').first();
 		await intervalInput.fill('1');
-		await page.getByRole('combobox').click();
+		await page.getByRole('button', { name: /day|days/ }).click();
 		await page.getByRole('option', { name: /month/ }).click();
 		await page.getByRole('button', { name: 'Save' }).click();
 		await page.getByRole('button', { name: 'Create Chore' }).click();
 
 		// Wait for chore to appear
-		await expect(page.getByText('Monthly Car Maintenance')).toBeVisible({ timeout: 10000 });
+		await expect(page.getByRole('heading', { name: 'Monthly Car Maintenance' })).toBeVisible({
+			timeout: 10000
+		});
 
 		// Verify next occurrence date is displayed
 		await expect(page.getByText(/Next:|next occurrence/i)).toBeVisible({ timeout: 5000 });

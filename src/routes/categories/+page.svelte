@@ -7,8 +7,10 @@
 	import { CategoryForm } from '$lib/components/CategoryForm';
 	import { DeleteCategoryDialog } from '$lib/components/DeleteCategoryDialog';
 	import { ShareCategoryDialog } from '$lib/components/ShareCategoryDialog';
+	import { TemplatePicker } from '$lib/components/TemplatePicker';
+	import { ApplyTemplateDialog } from '$lib/components/ApplyTemplateDialog';
 	import Badge from '$lib/components/ui/Badge/Badge.svelte';
-	import { Plus, Users } from 'lucide-svelte';
+	import { Plus, Users, FileText } from 'lucide-svelte';
 	import { useCategoryActions } from './useCategoryActions.svelte';
 	import { resolve } from '$app/paths';
 
@@ -27,10 +29,16 @@
 			<h1 class="text-3xl font-bold">Categories</h1>
 			<p class="mt-2 text-muted-foreground">Manage your task, chore, and habit categories</p>
 		</div>
-		<Button onclick={actions.openCreate}>
-			<Plus class="mr-2 size-4" />
-			New Category
-		</Button>
+		<div class="flex gap-2">
+			<Button variant="outline" onclick={actions.openTemplatePicker}>
+				<FileText class="mr-2 size-4" />
+				Use Template
+			</Button>
+			<Button onclick={actions.openCreate}>
+				<Plus class="mr-2 size-4" />
+				New Category
+			</Button>
+		</div>
 	</div>
 
 	<Tabs.Root value="owned" class="w-full">
@@ -127,4 +135,27 @@
 	categoryId={actions.shareCategory?.id ?? 0}
 	categoryName={actions.shareCategory?.name ?? ''}
 	onClose={actions.closeShare}
+/>
+
+<Dialog.Dialog bind:open={actions.templatePickerOpen.value}>
+	<Dialog.Content class="max-w-4xl">
+		<Dialog.Header>
+			<Dialog.Title>Choose a Template</Dialog.Title>
+			<Dialog.Description>
+				Select a template to quickly create a category with pre-configured fields
+			</Dialog.Description>
+		</Dialog.Header>
+		<TemplatePicker
+			templates={data.templates}
+			onApply={(templateId) => actions.handleTemplateSelect(templateId, data.templates)}
+		/>
+	</Dialog.Content>
+</Dialog.Dialog>
+
+<ApplyTemplateDialog
+	bind:open={actions.applyTemplateDialogOpen.value}
+	template={actions.selectedTemplate}
+	loading={actions.templateLoading}
+	onApply={actions.handleApplyTemplate}
+	onCancel={actions.cancelApplyTemplate}
 />

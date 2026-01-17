@@ -1,33 +1,30 @@
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
+import Database from 'better-sqlite3';
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-function tmpDbPath() {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'life-tracker-auth-seed-'));
-	return path.join(dir, 'db.sqlite');
-}
-
-async function freshDb() {
-	const dbPath = tmpDbPath();
-	process.env.DATABASE_PATH = dbPath;
-	process.env.AUTH_SEED_TIM_PASSWORD = 'tim-pass';
-	process.env.AUTH_SEED_JULE_PASSWORD = 'jule-pass';
-	vi.resetModules();
-	const dbMod = await import('$lib/server/db');
-	const queries = await import('$lib/server/db/queries');
-	const seed = await import('./seed');
-	const db = dbMod.getDb();
-	return { db, close: dbMod.closeDbForTests, queries, seed, dbPath };
-}
+import { migrate } from '$lib/server/db/migrate';
+import { ensureSeedUsers } from './seed';
 
 describe('auth/seed', () => {
-	it('creates tim and jule idempotently', async () => {
-		const { db, seed, close } = await freshDb();
+	let db: Database.Database;
+	const originalEnv = { ...process.env };
 
-		await seed.ensureSeedUsers({ db });
-		await seed.ensureSeedUsers({ db });
+	beforeEach(() => {
+		db = new Database(':memory:');
+		db.pragma('foreign_keys = ON');
+		migrate(db);
+		process.env.AUTH_SEED_TIM_PASSWORD = 'tim-pass';
+		process.env.AUTH_SEED_JULE_PASSWORD = 'jule-pass';
+	});
+
+	afterEach(() => {
+		db.close();
+		process.env = { ...originalEnv };
+	});
+
+	it('creates tim and jule idempotently', async () => {
+		await ensureSeedUsers({ db });
+		await ensureSeedUsers({ db });
 
 		const cTim = db
 			.prepare<[string], { c: number }>('SELECT COUNT(*) AS c FROM users WHERE username = ?')
@@ -38,7 +35,5 @@ describe('auth/seed', () => {
 
 		expect(cTim).toBe(1);
 		expect(cJule).toBe(1);
-
-		close();
 	});
 });

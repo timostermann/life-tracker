@@ -3,11 +3,13 @@
 **ID:** ticket-012  
 **Scope:** `ui` or `ticket-012`  
 **Phase:** 1 (MVP)  
-**Dependencies:** ticket-008, ticket-009, ticket-010, ticket-011
+**Dependencies:** ticket-008, ticket-009, ticket-010, ticket-011 ✅
 
 ## Description
 
 Create home dashboard showing categories overview, items assigned to user, items due soon, and habits to log today.
+
+**Note:** All dependencies (ticket-008 Tasks, ticket-009 Chores, ticket-010 Habits, ticket-011 Templates) are now completed. Templates are available for quick category creation from the dashboard.
 
 ## Tasks
 

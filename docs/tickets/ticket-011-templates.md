@@ -2,8 +2,9 @@
 
 **ID:** ticket-011  
 **Scope:** `categories` or `ticket-011`  
-**Phase:** 1 (MVP)  
+**Phase:** 1 (MVP)
 **Dependencies:** ticket-006
+**Status:** Completed (implemented and verified)
 
 ## Description
 
@@ -25,16 +26,18 @@ The `templates` table already exists (from ticket-002) but has no UI or API endp
 
 ## Tasks
 
-- [ ] Verify templates table seeded (from ticket-002)
-- [ ] Create Zod schema for applying templates
-- [ ] Create API endpoint to list templates
-- [ ] Create API endpoint to apply template
-- [ ] Create template picker UI
-- [ ] Create template card component
-- [ ] Allow custom name when applying template
-- [ ] Copy field definitions from template to category
-- [ ] Add unit tests (co-located)
-- [ ] Add E2E test for template application
+- [x] Verify templates table seeded (from ticket-002)
+- [x] Create Zod schema for applying templates
+- [x] Create API endpoint to list templates
+- [x] Create API endpoint to apply template
+- [x] Create template picker UI
+- [x] Create template card component
+- [x] Allow custom name when applying template
+- [x] Copy field definitions from template to category
+- [x] Add unit tests (co-located)
+- [x] Add E2E test for template application
+
+All tasks completed; see docs/AGENTS.md and source files for implementation details.
 
 ## Built-in Templates
 
