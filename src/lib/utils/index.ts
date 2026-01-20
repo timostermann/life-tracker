@@ -5,4 +5,5 @@ export * from './colors';
 export * from './recurring';
 export * from './streaks';
 export * from './templates';
+export * from './dashboard';
 export type * from './types';

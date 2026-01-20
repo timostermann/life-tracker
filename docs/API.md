@@ -687,23 +687,94 @@ Create category from template.
 
 ### GET /api/dashboard
 
-Get dashboard data (overview, assigned items, due soon).
+Get dashboard overview data including recent categories, assigned items grouped by priority, items due soon, and habits to log today.
+
+**Authentication:** Required
 
 **Response (200):**
 
 ```json
 {
-  "categories": [...],
-  "assigned_to_me": {
-    "urgent": [...],
-    "high": [...],
-    "medium": [...],
-    "low": [...]
-  },
-  "due_soon": [...], // items with deadline < 7 days
-  "habits_today": [...] // habits not yet logged today
+	"categories": [
+		{
+			"id": 1,
+			"user_id": 1,
+			"name": "Household Chores",
+			"template_type": "chore",
+			"icon": "🧹",
+			"color": "#10b981",
+			"is_private": false,
+			"created_at": "2026-01-01T10:00:00Z",
+			"updated_at": "2026-01-15T14:30:00Z",
+			"item_count": 5
+		}
+	],
+	"assigned_to_me": {
+		"urgent": [
+			{
+				"id": 1,
+				"category_id": 1,
+				"user_id": 1,
+				"assigned_to_user_id": 1,
+				"priority": "urgent",
+				"deadline": "2026-01-18T00:00:00Z",
+				"time_estimate": 30,
+				"is_archived": false,
+				"completed_at": null,
+				"recurring_config": null,
+				"next_show_date": null,
+				"created_at": "2026-01-17T10:00:00Z",
+				"updated_at": "2026-01-17T10:00:00Z",
+				"values": {
+					"1": "Fix urgent bug",
+					"2": "Critical production issue"
+				}
+			}
+		],
+		"high": [],
+		"medium": [],
+		"low": []
+	},
+	"due_soon": [
+		{
+			"id": 2,
+			"category_id": 3,
+			"deadline": "2026-01-20T00:00:00Z",
+			"values": {
+				"1": "Submit report"
+			}
+		}
+	],
+	"habits_today": [
+		{
+			"id": 5,
+			"category_id": 4,
+			"values": {
+				"1": "Morning exercise"
+			}
+		}
+	]
 }
 ```
+
+**Response (401):**
+
+```json
+{
+	"error": "Unauthorized",
+	"toast": "error"
+}
+```
+
+**Implementation Details:**
+
+- Returns 6 most recent categories (ordered by `updated_at DESC`)
+- Categories include `item_count` field
+- Items are enriched with field values (keyed by field ID as string)
+- Assigned items grouped by priority (urgent, high, medium, low)
+- Due soon includes items with deadline ≤ 7 days from now
+- Habits today shows habits without an entry for current date
+- All queries run in parallel for optimal performance
 
 ---
 

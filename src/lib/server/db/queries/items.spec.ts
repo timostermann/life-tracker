@@ -9,7 +9,10 @@ import {
 	completeItem,
 	listItemsForCategory,
 	listArchivedItemsForCategory,
-	countItemsForCategory
+	countItemsForCategory,
+	getItemsAssignedToUser,
+	getItemsDueSoon,
+	getHabitsNotLoggedToday
 } from './items';
 import { createCategory } from './categories';
 import { createUser } from './users';
@@ -323,6 +326,357 @@ describe('items queries', () => {
 
 		it('should throw error for non-existent item', () => {
 			expect(() => completeItem(9999, db)).toThrow('Item not found');
+		});
+	});
+
+	describe('Dashboard queries', () => {
+		let db: Database.Database;
+		let userId: number;
+		let otherUserId: number;
+
+		beforeEach(() => {
+			db = new Database(':memory:');
+
+			db.exec(`
+        CREATE TABLE users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT NOT NULL,
+          password_hash TEXT NOT NULL,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE categories (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          name TEXT NOT NULL,
+          template_type TEXT NOT NULL,
+          icon TEXT,
+          color TEXT,
+          is_private INTEGER NOT NULL DEFAULT 1,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+
+        CREATE TABLE shared_access (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category_id INTEGER NOT NULL,
+          shared_with_user_id INTEGER NOT NULL,
+          permission TEXT NOT NULL,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (category_id) REFERENCES categories(id),
+          FOREIGN KEY (shared_with_user_id) REFERENCES users(id)
+        );
+
+        CREATE TABLE items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category_id INTEGER NOT NULL,
+          user_id INTEGER NOT NULL,
+          assigned_to_user_id INTEGER,
+          priority TEXT,
+          deadline DATETIME,
+          time_estimate INTEGER,
+          is_archived INTEGER NOT NULL DEFAULT 0,
+          completed_at DATETIME,
+          recurring_config TEXT,
+          next_show_date DATETIME,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (category_id) REFERENCES categories(id),
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+
+        CREATE TABLE habit_entries (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          item_id INTEGER NOT NULL,
+          logged_date DATE NOT NULL,
+          status TEXT NOT NULL,
+          notes TEXT,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (item_id) REFERENCES items(id),
+          UNIQUE(item_id, logged_date)
+        );
+      `);
+
+			const user1 = db
+				.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)')
+				.run('user1', 'hash');
+			userId = Number(user1.lastInsertRowid);
+
+			const user2 = db
+				.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)')
+				.run('user2', 'hash');
+			otherUserId = Number(user2.lastInsertRowid);
+		});
+
+		describe('getItemsAssignedToUser', () => {
+			it('should return items assigned to user', () => {
+				const category = createCategory(
+					{ user_id: userId, name: 'Tasks', template_type: 'task' },
+					db
+				);
+
+				// Create item assigned to user
+				const item = createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						assigned_to_user_id: userId,
+						priority: 'high'
+					},
+					db
+				);
+
+				// Create item assigned to someone else
+				createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						assigned_to_user_id: otherUserId
+					},
+					db
+				);
+
+				const items = getItemsAssignedToUser(userId, db);
+
+				expect(items).toHaveLength(1);
+				expect(items[0].id).toBe(item.id);
+			});
+
+			it('should filter archived items', () => {
+				const category = createCategory(
+					{ user_id: userId, name: 'Tasks', template_type: 'task' },
+					db
+				);
+
+				createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						assigned_to_user_id: userId
+					},
+					db
+				);
+
+				const archivedItem = createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						assigned_to_user_id: userId
+					},
+					db
+				);
+
+				// Archive one item
+				updateItem(archivedItem.id, { is_archived: true }, db);
+
+				const items = getItemsAssignedToUser(userId, db);
+
+				expect(items).toHaveLength(1);
+			});
+
+			it('should sort by priority then deadline', () => {
+				const category = createCategory(
+					{ user_id: userId, name: 'Tasks', template_type: 'task' },
+					db
+				);
+
+				const urgentItem = createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						assigned_to_user_id: userId,
+						priority: 'urgent'
+					},
+					db
+				);
+
+				const highItem = createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						assigned_to_user_id: userId,
+						priority: 'high',
+						deadline: '2026-01-20T00:00:00Z'
+					},
+					db
+				);
+
+				const lowItem = createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						assigned_to_user_id: userId,
+						priority: 'low'
+					},
+					db
+				);
+
+				const items = getItemsAssignedToUser(userId, db);
+
+				expect(items[0].id).toBe(urgentItem.id);
+				expect(items[1].id).toBe(highItem.id);
+				expect(items[2].id).toBe(lowItem.id);
+			});
+		});
+
+		describe('getItemsDueSoon', () => {
+			it('should return items due within specified days', () => {
+				const category = createCategory(
+					{ user_id: userId, name: 'Tasks', template_type: 'task' },
+					db
+				);
+
+				const today = new Date();
+				const in5Days = new Date(today);
+				in5Days.setDate(in5Days.getDate() + 5);
+
+				const in10Days = new Date(today);
+				in10Days.setDate(in10Days.getDate() + 10);
+
+				// Item due in 5 days
+				const dueSoonItem = createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						deadline: in5Days.toISOString()
+					},
+					db
+				);
+
+				// Item due in 10 days (beyond 7 day window)
+				createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						deadline: in10Days.toISOString()
+					},
+					db
+				);
+
+				const items = getItemsDueSoon(userId, 7, db);
+
+				expect(items).toHaveLength(1);
+				expect(items[0].id).toBe(dueSoonItem.id);
+			});
+
+			it('should not return archived items', () => {
+				const category = createCategory(
+					{ user_id: userId, name: 'Tasks', template_type: 'task' },
+					db
+				);
+
+				const tomorrow = new Date();
+				tomorrow.setDate(tomorrow.getDate() + 1);
+
+				const item = createItem(
+					{
+						category_id: category.id,
+						user_id: userId,
+						deadline: tomorrow.toISOString()
+					},
+					db
+				);
+
+				updateItem(item.id, { is_archived: true }, db);
+
+				const items = getItemsDueSoon(userId, 7, db);
+
+				expect(items).toHaveLength(0);
+			});
+		});
+
+		describe('getHabitsNotLoggedToday', () => {
+			it('should return habits not logged today', () => {
+				const category = createCategory(
+					{ user_id: userId, name: 'Habits', template_type: 'habit' },
+					db
+				);
+
+				const habit1 = createItem(
+					{
+						category_id: category.id,
+						user_id: userId
+					},
+					db
+				);
+
+				const habit2 = createItem(
+					{
+						category_id: category.id,
+						user_id: userId
+					},
+					db
+				);
+
+				// Log habit1 today
+				const today = new Date().toISOString().split('T')[0];
+				db.prepare('INSERT INTO habit_entries (item_id, logged_date, status) VALUES (?, ?, ?)').run(
+					habit1.id,
+					today,
+					'done'
+				);
+
+				const habits = getHabitsNotLoggedToday(userId, db);
+
+				expect(habits).toHaveLength(1);
+				expect(habits[0].id).toBe(habit2.id);
+			});
+
+			it('should not return archived habits', () => {
+				const category = createCategory(
+					{ user_id: userId, name: 'Habits', template_type: 'habit' },
+					db
+				);
+
+				const habit = createItem(
+					{
+						category_id: category.id,
+						user_id: userId
+					},
+					db
+				);
+
+				updateItem(habit.id, { is_archived: true }, db);
+
+				const habits = getHabitsNotLoggedToday(userId, db);
+
+				expect(habits).toHaveLength(0);
+			});
+
+			it('should only return habit type items', () => {
+				const habitCat = createCategory(
+					{ user_id: userId, name: 'Habits', template_type: 'habit' },
+					db
+				);
+
+				const taskCat = createCategory(
+					{ user_id: userId, name: 'Tasks', template_type: 'task' },
+					db
+				);
+
+				const habit = createItem(
+					{
+						category_id: habitCat.id,
+						user_id: userId
+					},
+					db
+				);
+
+				createItem(
+					{
+						category_id: taskCat.id,
+						user_id: userId
+					},
+					db
+				);
+
+				const habits = getHabitsNotLoggedToday(userId, db);
+
+				expect(habits).toHaveLength(1);
+				expect(habits[0].id).toBe(habit.id);
+			});
 		});
 	});
 });

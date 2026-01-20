@@ -45,16 +45,16 @@ CREATE INDEX idx_categories_is_favorite ON categories(user_id, is_favorite);
 
 ```typescript
 export const categorySchema = z.object({
-  id: z.number(),
-  user_id: z.number(),
-  name: z.string(),
-  template_type: z.enum(['task', 'chore', 'habit']),
-  icon: z.string().nullable(),
-  color: z.string().nullable(),
-  is_private: z.boolean(),
-  is_favorite: z.boolean(), // NEW
-  created_at: z.string(),
-  updated_at: z.string()
+	id: z.number(),
+	user_id: z.number(),
+	name: z.string(),
+	template_type: z.enum(['task', 'chore', 'habit']),
+	icon: z.string().nullable(),
+	color: z.string().nullable(),
+	is_private: z.boolean(),
+	is_favorite: z.boolean(), // NEW
+	created_at: z.string(),
+	updated_at: z.string()
 });
 ```
 
@@ -84,8 +84,8 @@ Toggle favorite status for a category (owner only).
 
 ```json
 {
-  "error": "Only category owners can favorite categories",
-  "toast": "error"
+	"error": "Only category owners can favorite categories",
+	"toast": "error"
 }
 ```
 
@@ -97,9 +97,10 @@ Toggle favorite status for a category (owner only).
 
 ```typescript
 function getRecentCategoriesWithCounts(userId: number, limit = 6) {
-  // Get owned categories
-  const owned = db
-    .prepare(`
+	// Get owned categories
+	const owned = db
+		.prepare(
+			`
       SELECT c.*, COUNT(i.id) as item_count
       FROM categories c
       LEFT JOIN items i ON i.category_id = c.id AND i.is_archived = 0
@@ -107,12 +108,14 @@ function getRecentCategoriesWithCounts(userId: number, limit = 6) {
       GROUP BY c.id
       ORDER BY c.is_favorite DESC, c.updated_at DESC
       LIMIT ?
-    `)
-    .all(userId, limit);
+    `
+		)
+		.all(userId, limit);
 
-  // Get shared categories where owner favorited them
-  const shared = db
-    .prepare(`
+	// Get shared categories where owner favorited them
+	const shared = db
+		.prepare(
+			`
       SELECT c.*, COUNT(i.id) as item_count, sa.permission
       FROM shared_access sa
       JOIN categories c ON c.id = sa.category_id
@@ -120,11 +123,12 @@ function getRecentCategoriesWithCounts(userId: number, limit = 6) {
       WHERE sa.shared_with_user_id = ?
       GROUP BY c.id
       ORDER BY c.is_favorite DESC, c.updated_at DESC
-    `)
-    .all(userId);
+    `
+		)
+		.all(userId);
 
-  // Merge and limit to 6 total
-  return [...owned, ...shared].slice(0, limit);
+	// Merge and limit to 6 total
+	return [...owned, ...shared].slice(0, limit);
 }
 ```
 
@@ -151,13 +155,13 @@ function getRecentCategoriesWithCounts(userId: number, limit = 6) {
 // src/lib/components/FavoriteToggle/FavoriteToggle.svelte
 <script lang="ts">
   import { Star } from 'lucide-svelte';
-  
+
   type Props = {
     categoryId: number;
     isFavorite: boolean;
     onToggle: (newState: boolean) => Promise<void>;
   };
-  
+
   let { categoryId, isFavorite, onToggle }: Props = $props();
 </script>
 
