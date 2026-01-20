@@ -10,7 +10,7 @@ test('redirects to login, logs in, persists session, logs out', async ({ page })
 
 	// We should now be authenticated and able to access protected pages.
 	await expect(page).not.toHaveURL(/\/login$/);
-	await expect(page.getByRole('heading', { level: 1 })).toHaveText('Welcome to SvelteKit');
+	await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dashboard');
 
 	// Verify session on API
 	const me = await page.request.get('/api/auth/me');

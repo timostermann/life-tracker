@@ -234,3 +234,73 @@ export function listUpcomingChores(
 
 	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
 }
+
+export function getItemsAssignedToUser(userId: number, db: Db = getDb()): Item[] {
+	const rows = db
+		.prepare(
+			`SELECT i.*
+      FROM items i
+      JOIN categories c ON c.id = i.category_id
+      LEFT JOIN shared_access sa ON sa.category_id = c.id AND sa.shared_with_user_id = ?
+      WHERE i.assigned_to_user_id = ?
+        AND i.is_archived = 0
+        AND (i.next_show_date IS NULL OR i.next_show_date <= CURRENT_TIMESTAMP)
+        AND (c.user_id = ? OR sa.shared_with_user_id = ?)
+      ORDER BY
+        CASE i.priority
+          WHEN 'urgent' THEN 1
+          WHEN 'high' THEN 2
+          WHEN 'medium' THEN 3
+          WHEN 'low' THEN 4
+          ELSE 5
+        END,
+        i.deadline ASC NULLS LAST,
+        i.created_at DESC
+      LIMIT 50`
+		)
+		.all(userId, userId, userId, userId);
+
+	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
+}
+
+export function getItemsDueSoon(userId: number, daysAhead: number = 7, db: Db = getDb()): Item[] {
+	const rows = db
+		.prepare(
+			`SELECT i.*
+      FROM items i
+      JOIN categories c ON c.id = i.category_id
+      LEFT JOIN shared_access sa ON sa.category_id = c.id AND sa.shared_with_user_id = ?
+      WHERE (c.user_id = ? OR sa.shared_with_user_id = ?)
+        AND i.is_archived = 0
+        AND i.deadline IS NOT NULL
+        AND DATE(i.deadline) BETWEEN DATE('now') AND DATE('now', '+' || ? || ' days')
+        AND (i.next_show_date IS NULL OR i.next_show_date <= CURRENT_TIMESTAMP)
+      ORDER BY i.deadline ASC
+      LIMIT 50`
+		)
+		.all(userId, userId, userId, daysAhead);
+
+	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
+}
+
+export function getHabitsNotLoggedToday(userId: number, db: Db = getDb()): Item[] {
+	const today = new Date().toISOString().split('T')[0];
+
+	const rows = db
+		.prepare(
+			`SELECT i.*
+      FROM items i
+      JOIN categories c ON c.id = i.category_id
+      LEFT JOIN shared_access sa ON sa.category_id = c.id AND sa.shared_with_user_id = ?
+      LEFT JOIN habit_entries he ON he.item_id = i.id AND he.logged_date = ?
+      WHERE c.template_type = 'habit'
+        AND (c.user_id = ? OR sa.shared_with_user_id = ?)
+        AND i.is_archived = 0
+        AND he.id IS NULL
+      ORDER BY i.created_at DESC
+      LIMIT 50`
+		)
+		.all(userId, today, userId, userId);
+
+	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
+}

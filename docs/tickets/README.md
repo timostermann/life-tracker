@@ -2,25 +2,32 @@
 
 All tickets for Life Tracker MVP development.
 
+## 📊 Progress Overview
+
+**MVP Phase 1**: 12 of 13 tickets completed ✅
+
+- ✅ **Completed**: tickets 001-012 (Setup through Dashboard)
+- 🚧 **Remaining**: ticket-013 (PWA + Deployment + E2E)
+
 ## 🎯 MVP Tickets (13 total)
 
 Core functionality to get a working app deployed.
 
-| ID  | Ticket                                                       | Scope                        | Description                                                  |
-| --- | ------------------------------------------------------------ | ---------------------------- | ------------------------------------------------------------ |
-| 001 | [Setup](./ticket-001-setup.md)                               | `setup`, `ticket-001`        | SvelteKit + TypeScript + Tailwind + shadcn + Zod + Histoire  |
-| 002 | [DB Schema](./ticket-002-db-schema.md)                       | `db`, `ticket-002`           | SQLite schema for tasks/chores/habits + migrations           |
-| 003 | [Auth](./ticket-003-auth.md)                                 | `auth`, `ticket-003`         | Lucia Auth v3 session-based authentication                   |
-| 004 | [Toast System](./ticket-004-toast-system.md)                 | `ui`, `ticket-004`           | svelte-sonner global toast notifications                     |
-| 005 | [UI Foundation](./ticket-005-ui-foundation.md)               | `ui`, `ticket-005`           | shadcn-svelte components + comprehensive unit tests          |
-| 006 | [Categories CRUD](./ticket-006-categories-crud.md)           | `categories`, `ticket-006`   | Create, read, update, delete categories with template_type   |
-| 007 | [Sharing](./ticket-007-sharing.md)                           | `categories`, `ticket-007`   | Explicit category sharing with view/edit permissions         |
-| 008 | [Tasks](./ticket-008-tasks.md)                               | `items`, `ticket-008`        | Priority, assignment, deadline, estimate, recurring, archive |
-| 009 | [Chores](./ticket-009-chores.md)                             | `items`, `ticket-009`        | Recurring chores with assignment and archiving               |
-| 010 | [Habits](./ticket-010-habits.md)                             | `habits`, `ticket-010`       | Daily entries, streaks, frequency tracking                   |
-| 011 | [Templates](./ticket-011-templates.md)                       | `categories`, `ticket-011`   | Pre-built templates (Tasks, Chores, Habits)                  |
-| 012 | [Dashboard](./ticket-012-dashboard.md)                       | `ui`, `ticket-012`           | Home page with overview, assigned, due soon, habits          |
-| 013 | [PWA + Deployment + E2E](./ticket-013-pwa-deployment-e2e.md) | `setup`, `pwa`, `ticket-013` | PWA manifest, Docker, CI/CD, comprehensive E2E tests         |
+| ID  | Status | Ticket                                                       | Scope                        | Description                                                  |
+| --- | ------ | ------------------------------------------------------------ | ---------------------------- | ------------------------------------------------------------ |
+| 001 | ✅     | [Setup](./ticket-001-setup.md)                               | `setup`, `ticket-001`        | SvelteKit + TypeScript + Tailwind + shadcn + Zod + Histoire  |
+| 002 | ✅     | [DB Schema](./ticket-002-db-schema.md)                       | `db`, `ticket-002`           | SQLite schema for tasks/chores/habits + migrations           |
+| 003 | ✅     | [Auth](./ticket-003-auth.md)                                 | `auth`, `ticket-003`         | Lucia Auth v3 session-based authentication                   |
+| 004 | ✅     | [Toast System](./ticket-004-toast-system.md)                 | `ui`, `ticket-004`           | svelte-sonner global toast notifications                     |
+| 005 | ✅     | [UI Foundation](./ticket-005-ui-foundation.md)               | `ui`, `ticket-005`           | shadcn-svelte components + comprehensive unit tests          |
+| 006 | ✅     | [Categories CRUD](./ticket-006-categories-crud.md)           | `categories`, `ticket-006`   | Create, read, update, delete categories with template_type   |
+| 007 | ✅     | [Sharing](./ticket-007-sharing.md)                           | `categories`, `ticket-007`   | Explicit category sharing with view/edit permissions         |
+| 008 | ✅     | [Tasks](./ticket-008-tasks.md)                               | `items`, `ticket-008`        | Priority, assignment, deadline, estimate, recurring, archive |
+| 009 | ✅     | [Chores](./ticket-009-chores.md)                             | `items`, `ticket-009`        | Recurring chores with assignment and archiving               |
+| 010 | ✅     | [Habits](./ticket-010-habits.md)                             | `habits`, `ticket-010`       | Daily entries, streaks, frequency tracking                   |
+| 011 | ✅     | [Templates](./ticket-011-templates.md)                       | `categories`, `ticket-011`   | Pre-built templates (Tasks, Chores, Habits)                  |
+| 012 | ✅     | [Dashboard](./ticket-012-dashboard.md)                       | `ui`, `ticket-012`           | Home page with overview, assigned, due soon, habits          |
+| 013 | 🚧     | [PWA + Deployment + E2E](./ticket-013-pwa-deployment-e2e.md) | `setup`, `pwa`, `ticket-013` | PWA manifest, Docker, CI/CD, comprehensive E2E tests         |
 
 **MVP Deliverable:** Working life tracker deployed at `tracker.timostermann.io`
 
@@ -30,11 +37,14 @@ Core functionality to get a working app deployed.
 
 Improvements to add after MVP is complete and deployed.
 
-| ID  | Ticket                                                             | Scope                     | Description                                                  |
-| --- | ------------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------ |
-| 014 | [Storybook Setup](./ticket-014-storybook-setup.md)                 | `storybook`, `ticket-014` | Add Storybook 8.4+ with Svelte 5 support for component docs  |
-| 015 | [Emoji Picker Component](./ticket-015-emoji-picker.md)             | `ui`, `ticket-015`        | Replace text input with interactive emoji picker like Slack  |
-| 016 | [Internationalization (i18n)](./ticket-016-i18n-implementation.md) | `i18n`, `ticket-016`      | Extract all texts to JSON and implement svelte-i18n solution |
+| ID  | Status | Ticket                                                             | Scope                      | Description                                                  |
+| --- | ------ | ------------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------ |
+| 014 | ✅     | [Storybook Setup](./ticket-014-storybook-setup.md)                 | `storybook`, `ticket-014`  | Add Storybook 8.4+ with Svelte 5 support for component docs  |
+| 015 | ✅     | [Emoji Picker Component](./ticket-015-emoji-picker.md)             | `ui`, `ticket-015`         | Replace text input with interactive emoji picker like Slack  |
+| 016 | ✅     | [Internationalization (i18n)](./ticket-016-i18n-implementation.md) | `i18n`, `ticket-016`       | Extract all texts to JSON and implement svelte-i18n solution |
+| 017 | ✅     | [Copy Share Link](./ticket-017-copy-share-link.md)                 | `categories`, `ticket-017` | Add copy-to-clipboard for category share links               |
+| 018 | ✅     | [Zod Error Mapping](./ticket-018-zod-error-mapping.md)             | `api`, `ticket-018`        | Human-readable validation error messages with field mapping  |
+| 019 | 📋     | [Category Favorites](./ticket-019-category-favorites.md)           | `categories`, `ticket-019` | Pin favorite categories to dashboard instead of most recent  |
 
 ---
 

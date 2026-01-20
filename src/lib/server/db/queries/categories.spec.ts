@@ -12,7 +12,8 @@ import {
 	getSharePermissionForUser,
 	checkCategoryAccess,
 	shareCategory,
-	revokeCategoryShare
+	revokeCategoryShare,
+	getRecentCategoriesWithCounts
 } from './categories';
 
 describe('categories queries', () => {
@@ -465,5 +466,144 @@ describe('categories queries', () => {
 			revokeCategoryShare(category.id, otherUserId, db);
 			expect(getSharePermissionForUser(category.id, otherUserId, db)).toBeNull();
 		});
+	});
+});
+
+describe('getRecentCategoriesWithCounts', () => {
+	let db: Database.Database;
+	let userId: number;
+	let otherUserId: number;
+
+	beforeEach(() => {
+		db = new Database(':memory:');
+		db.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        name TEXT NOT NULL,
+        template_type TEXT NOT NULL CHECK(template_type IN ('task', 'chore', 'habit')),
+        icon TEXT,
+        color TEXT,
+        is_private INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE shared_access (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+        shared_with_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        permission TEXT NOT NULL CHECK(permission IN ('view', 'edit')),
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(category_id, shared_with_user_id)
+      );
+      
+      CREATE TABLE items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        is_archived INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES categories(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+    `);
+
+		// Create test users
+		const userRes = db
+			.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)')
+			.run('testuser', 'hash');
+		userId = Number(userRes.lastInsertRowid);
+
+		const otherUserRes = db
+			.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)')
+			.run('otheruser', 'hash');
+		otherUserId = Number(otherUserRes.lastInsertRowid);
+	});
+
+	it('should return categories with item counts', async () => {
+		// Create categories for user
+		const cat1 = createCategory({ user_id: userId, name: 'Category 1', template_type: 'task' }, db);
+		const cat2 = createCategory({ user_id: userId, name: 'Category 2', template_type: 'task' }, db);
+
+		// Add items to cat1
+		db.prepare('INSERT INTO items (category_id, user_id, is_archived) VALUES (?, ?, ?)').run(
+			cat1.id,
+			userId,
+			0
+		);
+		db.prepare('INSERT INTO items (category_id, user_id, is_archived) VALUES (?, ?, ?)').run(
+			cat1.id,
+			userId,
+			0
+		);
+
+		// Add archived item to cat1 (should not be counted)
+		db.prepare('INSERT INTO items (category_id, user_id, is_archived) VALUES (?, ?, ?)').run(
+			cat1.id,
+			userId,
+			1
+		);
+
+		// Add item to cat2
+		db.prepare('INSERT INTO items (category_id, user_id, is_archived) VALUES (?, ?, ?)').run(
+			cat2.id,
+			userId,
+			0
+		);
+
+		const categories = getRecentCategoriesWithCounts(userId, 6, db);
+
+		expect(categories).toHaveLength(2);
+		expect(categories[0].item_count).toBe(2);
+		expect(categories[1].item_count).toBe(1);
+	});
+
+	it('should limit results to specified count', () => {
+		// Create 8 categories
+		for (let i = 0; i < 8; i++) {
+			createCategory({ user_id: userId, name: `Category ${i}`, template_type: 'task' }, db);
+		}
+
+		const categories = getRecentCategoriesWithCounts(userId, 6, db);
+
+		expect(categories).toHaveLength(6);
+	});
+
+	it('should order by updated_at DESC', () => {
+		const cat1 = createCategory({ user_id: userId, name: 'Category 1', template_type: 'task' }, db);
+		const cat2 = createCategory({ user_id: userId, name: 'Category 2', template_type: 'task' }, db);
+
+		// Update cat1 to make it more recent
+		db.prepare('UPDATE categories SET updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(cat1.id);
+
+		const categories = getRecentCategoriesWithCounts(userId, 6, db);
+
+		expect(categories[0].id).toBe(cat1.id);
+		expect(categories[1].id).toBe(cat2.id);
+	});
+
+	it('should include shared categories', () => {
+		// Create category owned by other user
+		const cat = createCategory(
+			{ user_id: otherUserId, name: 'Shared Category', template_type: 'task' },
+			db
+		);
+
+		// Share with test user
+		shareCategory(cat.id, userId, 'view', db);
+
+		const categories = getRecentCategoriesWithCounts(userId, 6, db);
+
+		expect(categories).toHaveLength(1);
+		expect(categories[0].id).toBe(cat.id);
 	});
 });

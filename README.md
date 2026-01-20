@@ -15,7 +15,9 @@ Life Tracker helps you and your partner organize your lives through three core t
 - 📋 **Task Management**: Priority levels (Urgent/High/Medium/Low), assignment, deadlines, time estimates, recurring
 - 🧹 **Chore Tracking**: Recurring maintenance tasks with assignment
 - 📈 **Habit Tracking**: Log daily habits (good/bad), track streaks, frequency goals
+- 🏠 **Dashboard**: Overview of recent categories, assigned items, due soon, and habits to log today
 - 👥 **Sharing**: Explicitly share categories with your partner
+- 🎯 **Templates**: Quick category creation from pre-built templates
 - 📱 **PWA**: Installable on mobile and desktop
 - 🔒 **Secure**: Lucia Auth with session management
 - ✨ **Type-Safe**: Zod validation throughout
@@ -139,21 +141,26 @@ See [docs/](./docs/) for detailed documentation:
 
 ## Roadmap
 
-### ✅ Phase 1: MVP
+### 🚧 Phase 1: MVP
 
-- Tasks with priority, assignment, recurring
-- Chores with recurring, assignment
-- Habits with entries and streak tracking
-- Category sharing
-- Dashboard and PWA
+- ✅ Task Management: Priority, assignment, deadlines, recurring
+- ✅ Chore Tracking: Recurring maintenance with assignment
+- ✅ Habit Tracking: Daily entries, streaks, frequency goals
+- ✅ Category Sharing: Share with partner with permissions
+- ✅ Templates: Quick category creation from templates
+- ✅ Dashboard: Overview with recent categories, assigned items, due soon, habits today
+- ✅ Authentication: Lucia Auth with session management
+- 🚧 PWA + Deployment: Mobile installable, Docker, CI/CD (ticket-013)
 
-### 🔜 Future Improvements
+### 🔜 Phase 2: Enhancements
 
+- Category favorites (pin to dashboard)
 - Search and filtering
 - Statistics and analytics
 - Data export
 - Reminders/notifications
 - Offline sync
+- Dark mode
 
 ## License
 

@@ -177,3 +177,52 @@ export function revokeCategoryShare(
 		sharedWithUserId
 	);
 }
+
+const categoryWithCountSchema = dbSchemas.categorySchema.extend({
+	item_count: z.number().int().nonnegative()
+});
+
+export type CategoryWithCount = z.infer<typeof categoryWithCountSchema>;
+
+export function getRecentCategoriesWithCounts(
+	userId: number,
+	limit: number = 6,
+	db: Db = getDb()
+): CategoryWithCount[] {
+	// Get owned categories with counts
+	const ownedRows = db
+		.prepare(
+			`SELECT c.*, COUNT(i.id) as item_count
+       FROM categories c
+       LEFT JOIN items i ON i.category_id = c.id AND i.is_archived = 0
+       WHERE c.user_id = ?
+       GROUP BY c.id
+       ORDER BY c.updated_at DESC
+       LIMIT ?`
+		)
+		.all(userId, limit);
+
+	const owned = ownedRows.map((r) => parseRow(categoryWithCountSchema, r));
+
+	// Get shared categories with counts
+	const sharedRows = db
+		.prepare(
+			`SELECT c.*, COUNT(i.id) as item_count
+       FROM shared_access sa
+       JOIN categories c ON c.id = sa.category_id
+       LEFT JOIN items i ON i.category_id = c.id AND i.is_archived = 0
+       WHERE sa.shared_with_user_id = ?
+       GROUP BY c.id
+       ORDER BY c.updated_at DESC`
+		)
+		.all(userId);
+
+	const shared = sharedRows.map((r) => parseRow(categoryWithCountSchema, r));
+
+	// Merge and sort by updated_at, then limit to requested amount
+	const allCategories = [...owned, ...shared].sort((a, b) => {
+		return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+	});
+
+	return allCategories.slice(0, limit);
+}
