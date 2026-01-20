@@ -1,4 +1,5 @@
-import { json, type RequestHandler } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 import { getRecentCategoriesWithCounts } from '$lib/server/db/queries/categories';
 import {
 	getItemsAssignedToUser,
@@ -66,46 +67,35 @@ function groupByPriority(items: ItemWithValues[]): {
 	return grouped;
 }
 
-export const GET: RequestHandler = async ({ locals }) => {
-	try {
-		// Check authentication
-		if (!locals.user) {
-			return json({ error: 'Unauthorized', toast: 'error' }, { status: 401 });
-		}
-
-		const userId = locals.user.id;
-		const db = (locals as { db?: Database }).db; // For testing
-
-		// Run all queries in parallel
-		const [categories, assignedItems, dueSoonItems, habitsToday] = await Promise.all([
-			getRecentCategoriesWithCounts(userId, DASHBOARD_MAX_CATEGORIES, db),
-			getItemsAssignedToUser(userId, db),
-			getItemsDueSoon(userId, DASHBOARD_DUE_SOON_DAYS, db),
-			getHabitsNotLoggedToday(userId, db)
-		]);
-
-		// Enrich items with field values
-		const enrichedAssignedItems = assignedItems.map((item) => enrichItemWithValues(item, db));
-		const enrichedDueSoonItems = dueSoonItems.map((item) => enrichItemWithValues(item, db));
-		const enrichedHabitsToday = habitsToday.map((item) => enrichHabitWithStreak(item, db));
-
-		// Group assigned items by priority
-		const assignedByPriority = groupByPriority(enrichedAssignedItems);
-
-		return json({
-			categories,
-			assigned_to_me: assignedByPriority,
-			due_soon: enrichedDueSoonItems,
-			habits_today: enrichedHabitsToday
-		});
-	} catch (error) {
-		console.error('Dashboard API error:', error);
-		return json(
-			{
-				error: 'Failed to load dashboard data',
-				toast: 'error'
-			},
-			{ status: 500 }
-		);
+export const load: PageServerLoad = async ({ locals }) => {
+	// Redirect unauthenticated users to login
+	if (!locals.user) {
+		throw redirect(303, '/login');
 	}
+
+	const userId = locals.user.id;
+	const db = (locals as { db?: Database }).db; // For testing
+
+	// Run all queries in parallel
+	const [categories, assignedItems, dueSoonItems, habitsToday] = await Promise.all([
+		getRecentCategoriesWithCounts(userId, DASHBOARD_MAX_CATEGORIES, db),
+		getItemsAssignedToUser(userId, db),
+		getItemsDueSoon(userId, DASHBOARD_DUE_SOON_DAYS, db),
+		getHabitsNotLoggedToday(userId, db)
+	]);
+
+	// Enrich items with field values
+	const enrichedAssignedItems = assignedItems.map((item) => enrichItemWithValues(item, db));
+	const enrichedDueSoonItems = dueSoonItems.map((item) => enrichItemWithValues(item, db));
+	const enrichedHabitsToday = habitsToday.map((item) => enrichHabitWithStreak(item, db));
+
+	// Group assigned items by priority
+	const assignedByPriority = groupByPriority(enrichedAssignedItems);
+
+	return {
+		categories,
+		assigned_to_me: assignedByPriority,
+		due_soon: enrichedDueSoonItems,
+		habits_today: enrichedHabitsToday
+	};
 };

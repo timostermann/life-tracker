@@ -10,6 +10,7 @@ import type { Db } from './utils';
 import { parseRow, buildSqlUpdates, buildBooleanSqlUpdate } from './utils';
 import { parseRecurringConfig, calculateNextDate } from '$lib/utils/recurring';
 import { getFieldValuesForItem } from './fieldValues';
+import { DASHBOARD_MAX_ITEMS_PER_SECTION } from '$lib/utils/dashboard';
 
 export function createItem(input: CreateItemInput, db: Db = getDb()): Item {
 	const create = db.transaction(() => {
@@ -256,9 +257,9 @@ export function getItemsAssignedToUser(userId: number, db: Db = getDb()): Item[]
         END,
         i.deadline ASC NULLS LAST,
         i.created_at DESC
-      LIMIT 50`
+      LIMIT ?`
 		)
-		.all(userId, userId, userId, userId);
+		.all(userId, userId, userId, userId, DASHBOARD_MAX_ITEMS_PER_SECTION);
 
 	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
 }
@@ -276,9 +277,9 @@ export function getItemsDueSoon(userId: number, daysAhead: number = 7, db: Db = 
         AND DATE(i.deadline) BETWEEN DATE('now') AND DATE('now', '+' || ? || ' days')
         AND (i.next_show_date IS NULL OR i.next_show_date <= CURRENT_TIMESTAMP)
       ORDER BY i.deadline ASC
-      LIMIT 50`
+      LIMIT ?`
 		)
-		.all(userId, userId, userId, daysAhead);
+		.all(userId, userId, userId, daysAhead, DASHBOARD_MAX_ITEMS_PER_SECTION);
 
 	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
 }
@@ -298,9 +299,9 @@ export function getHabitsNotLoggedToday(userId: number, db: Db = getDb()): Item[
         AND i.is_archived = 0
         AND he.id IS NULL
       ORDER BY i.created_at DESC
-      LIMIT 50`
+      LIMIT ?`
 		)
-		.all(userId, today, userId, userId);
+		.all(userId, today, userId, userId, DASHBOARD_MAX_ITEMS_PER_SECTION);
 
 	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
 }

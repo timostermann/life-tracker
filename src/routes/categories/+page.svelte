@@ -10,7 +10,7 @@
 	import { TemplatePicker } from '$lib/components/TemplatePicker';
 	import { ApplyTemplateDialog } from '$lib/components/ApplyTemplateDialog';
 	import Badge from '$lib/components/ui/Badge/Badge.svelte';
-	import { Plus, Users, FileText } from 'lucide-svelte';
+	import { Plus, Users, FileText, ArrowLeft } from 'lucide-svelte';
 	import { useCategoryActions } from './useCategoryActions.svelte';
 	import { resolve } from '$app/paths';
 
@@ -24,6 +24,12 @@
 </svelte:head>
 
 <div class="container mx-auto py-8">
+	<a href={resolve('/')} class="mb-4 inline-block">
+		<Button variant="ghost">
+			<ArrowLeft class="mr-2 size-4" />
+			Back to Dashboard
+		</Button>
+	</a>
 	<div class="mb-8 flex items-center justify-between">
 		<div>
 			<h1 class="text-3xl font-bold">Categories</h1>
