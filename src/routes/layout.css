@@ -89,7 +89,7 @@ body {
 		--color-secondary-foreground: oklch(98% 0 0);
 		--color-muted: oklch(27.59% 0.043 264.54);
 		--color-muted-foreground: oklch(67.69% 0.036 264.54);
-		--color-accent: oklch(27.59% 0.043 264.54);
+		--color-accent: oklch(21% 0.035 264.54);
 		--color-accent-foreground: oklch(98% 0 0);
 		--color-destructive: oklch(43.18% 0.179 29.23);
 		--color-destructive-foreground: oklch(98% 0 0);

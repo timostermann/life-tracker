@@ -77,7 +77,7 @@
 					{#each data.categories.shared as category (category.id)}
 						<a
 							href={resolve(`/categories/${category.id}`)}
-							class="rounded-lg border p-4 transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+							class="rounded-lg border p-4 transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 						>
 							<div class="flex items-center gap-3">
 								{#if category.icon}

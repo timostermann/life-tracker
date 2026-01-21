@@ -42,9 +42,9 @@
 	<button
 		type="button"
 		class={cn(
-			'flex gap-3 rounded-lg border border-gray-200 p-4 text-left',
+			'flex gap-3 rounded-lg border border-border p-4 text-left',
 			completed && 'opacity-60',
-			'cursor-pointer transition-colors hover:bg-gray-50'
+			'cursor-pointer transition-colors hover:bg-accent/30'
 		)}
 		aria-describedby={description ? descriptionId : undefined}
 		onclick={() => onclick?.()}
@@ -82,13 +82,13 @@
 			</div>
 
 			{#if description}
-				<p id={descriptionId} class="text-sm text-gray-600">
+				<p id={descriptionId} class="text-sm text-muted-foreground">
 					{description}
 				</p>
 			{/if}
 
 			{#if dueDate}
-				<time datetime={dueDate.toISOString()} class="text-xs text-gray-500">
+				<time datetime={dueDate.toISOString()} class="text-xs text-muted-foreground">
 					Due: {formattedDueDate}
 				</time>
 			{/if}
@@ -97,7 +97,7 @@
 {:else}
 	<article
 		class={cn(
-			'flex gap-3 rounded-lg border border-gray-200 p-4 text-left',
+			'flex gap-3 rounded-lg border border-border p-4 text-left',
 			completed && 'opacity-60'
 		)}
 		aria-describedby={description ? descriptionId : undefined}
@@ -129,13 +129,13 @@
 			</div>
 
 			{#if description}
-				<p id={descriptionId} class="text-sm text-gray-600">
+				<p id={descriptionId} class="text-sm text-muted-foreground">
 					{description}
 				</p>
 			{/if}
 
 			{#if dueDate}
-				<time datetime={dueDate.toISOString()} class="text-xs text-gray-500">
+				<time datetime={dueDate.toISOString()} class="text-xs text-muted-foreground">
 					Due: {formattedDueDate}
 				</time>
 			{/if}

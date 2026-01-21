@@ -138,7 +138,9 @@
 
 				{#if data.assigned_to_me.low.length > 0}
 					<div>
-						<h3 class="mb-3 text-sm font-semibold tracking-wide text-gray-600 uppercase">Low</h3>
+						<h3 class="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+							Low
+						</h3>
 						<div class="space-y-2">
 							{#each data.assigned_to_me.low as item (item.id)}
 								<ItemCard
@@ -187,7 +189,7 @@
 				{#each data.habits_today as habit (habit.id)}
 					<button
 						type="button"
-						class="flex flex-col gap-2 rounded-lg border border-gray-200 p-4 text-left transition-colors hover:bg-gray-50"
+						class="flex flex-col gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent/30"
 						aria-label="Log habit: {getItemTitle(habit.values)}"
 						onclick={() => goto(resolve(`/categories/${habit.category_id}`))}
 					>

@@ -43,7 +43,7 @@
 						</div>
 						{#if category.color && isTailwindColorName(category.color)}
 							<div
-								class="size-6 rounded-full border-2 border-gray-200 dark:border-gray-700 {getColorClass(
+								class="size-6 rounded-full border-2 border-border {getColorClass(
 									category.color,
 									'bg',
 									'500'

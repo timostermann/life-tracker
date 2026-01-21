@@ -55,7 +55,7 @@
 {#snippet daySnippet({ day, outsideMonth }: { day: DateValue; outsideMonth: boolean })}
 	{@const dateStr = `${day.year}-${String(day.month).padStart(2, '0')}-${String(day.day).padStart(2, '0')}`}
 	{@const statusClass = getStatusClass(dateStr)}
-	{@const className = `h-8 w-8 rounded-md ${statusClass} ${outsideMonth ? 'opacity-50' : ''} ${onDayClick ? 'cursor-pointer hover:bg-accent' : ''}`}
+	{@const className = `h-8 w-8 rounded-md ${statusClass} ${outsideMonth ? 'opacity-50' : ''} ${onDayClick ? 'cursor-pointer hover:bg-accent/30' : ''}`}
 	<CalendarComponents.Day class={className} />
 {/snippet}
 

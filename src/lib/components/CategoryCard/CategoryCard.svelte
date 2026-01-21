@@ -17,7 +17,7 @@
 {#if isInteractive}
 	<button
 		class={cn(
-			'flex flex-col gap-2 rounded-lg border border-gray-200 p-4 text-left transition-colors hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+			'flex flex-col gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
 		)}
 		{onclick}
 		aria-label="Category: {name}, {itemCount} items"
@@ -26,21 +26,21 @@
 			<span class="text-2xl" style="color: {color}">{icon}</span>
 			<h3 class="text-lg font-semibold">{name}</h3>
 		</div>
-		<p class="text-sm text-gray-600">
+		<p class="text-sm text-muted-foreground">
 			{itemCount}
 			{itemCount === 1 ? 'item' : 'items'}
 		</p>
 	</button>
 {:else}
 	<article
-		class={cn('flex flex-col gap-2 rounded-lg border border-gray-200 p-4')}
+		class={cn('flex flex-col gap-2 rounded-lg border border-border p-4')}
 		aria-label="Category: {name}, {itemCount} items"
 	>
 		<div class="flex items-center gap-2">
 			<span class="text-2xl" style="color: {color}">{icon}</span>
 			<h3 class="text-lg font-semibold">{name}</h3>
 		</div>
-		<p class="text-sm text-gray-600">
+		<p class="text-sm text-muted-foreground">
 			{itemCount}
 			{itemCount === 1 ? 'item' : 'items'}
 		</p>
