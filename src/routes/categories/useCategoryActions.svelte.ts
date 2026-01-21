@@ -13,6 +13,7 @@ type CategoryFormData = {
 	color?: string;
 	is_private: boolean;
 	fields: Array<{
+		id?: number;
 		name: string;
 		field_type: 'text' | 'number' | 'date' | 'boolean' | 'select';
 		options?: string;

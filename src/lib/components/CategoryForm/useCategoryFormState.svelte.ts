@@ -3,6 +3,7 @@ import type { TailwindColorName } from '$lib/schemas/categories';
 import { isTailwindColorName } from '$lib/utils/colors';
 
 export type FieldInput = {
+	id?: number;
 	name: string;
 	field_type: 'text' | 'number' | 'date' | 'boolean' | 'select';
 	options?: string;
@@ -38,6 +39,7 @@ export function useCategoryFormState() {
 		isPrivate = data.is_private ?? true;
 		fields =
 			data.fields?.map((f, i) => ({
+				id: f.id,
 				name: f.name,
 				field_type: f.field_type,
 				options: f.options ?? '',

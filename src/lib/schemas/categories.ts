@@ -29,6 +29,7 @@ export const tailwindColorNames = [
 export type TailwindColorName = (typeof tailwindColorNames)[number];
 
 export const categoryFieldSchema = z.object({
+	id: z.number().int().positive().optional(),
 	name: z.string().min(1).max(100),
 	field_type: fieldTypeSchema,
 	options: z.string().optional(),

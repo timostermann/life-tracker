@@ -8,27 +8,54 @@ import {
 	deleteCategory,
 	listFieldsForCategory,
 	deleteFieldsForCategory,
-	createField
+	createField,
+	updateField,
+	deleteField
 } from '$lib/server/db/queries';
 import { getDb } from '$lib/server/db';
 import type { Db } from '$lib/server/db/queries/utils';
 
 function updateCategoryFields(categoryId: number, fields: CategoryFieldInput[], db: Db) {
-	deleteFieldsForCategory(categoryId, db);
+	// Get existing field IDs for this category
+	const existingFields = listFieldsForCategory(categoryId, db);
+	const existingFieldIds = new Set(existingFields.map((f) => f.id));
+	const updatedFieldIds = new Set<number>();
 
-	if (fields.length === 0) return;
-
+	// Update or create fields
 	for (const [index, field] of fields.entries()) {
-		createField(
-			{
-				category_id: categoryId,
-				name: field.name,
-				field_type: field.field_type,
-				options: field.options,
-				field_order: field.field_order ?? index
-			},
-			db
-		);
+		if (field.id && existingFieldIds.has(field.id)) {
+			// Update existing field
+			updatedFieldIds.add(field.id);
+			updateField(
+				field.id,
+				{
+					name: field.name,
+					field_type: field.field_type,
+					options: field.options,
+					field_order: field.field_order ?? index
+				},
+				db
+			);
+		} else {
+			// Create new field
+			createField(
+				{
+					category_id: categoryId,
+					name: field.name,
+					field_type: field.field_type,
+					options: field.options,
+					field_order: field.field_order ?? index
+				},
+				db
+			);
+		}
+	}
+
+	// Delete fields that are no longer in the list
+	for (const existingField of existingFields) {
+		if (!updatedFieldIds.has(existingField.id)) {
+			deleteField(existingField.id, db);
+		}
 	}
 }
 
