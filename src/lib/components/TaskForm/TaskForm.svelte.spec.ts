@@ -86,8 +86,9 @@ describe('TaskForm', () => {
 			onCancel: vi.fn()
 		});
 
-		const checkbox = page.getByLabelText('Completed');
-		await expect.element(checkbox).toHaveAttribute('type', 'checkbox');
+		const checkbox = page.getByRole('checkbox', { name: 'Completed' });
+		await expect.element(checkbox).toBeInTheDocument();
+		await expect.element(checkbox).toHaveAttribute('role', 'checkbox');
 	});
 
 	it('displays initial data when provided', async () => {

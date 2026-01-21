@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { fetch as apiFetch, ApiError } from '$lib/api/fetch';
 	import { toast } from '$lib/utils/toast';
+	import { Input } from '$lib/components/ui/Input';
 
 	import { loginSchema } from '$lib/schemas';
 
@@ -61,8 +62,8 @@
 	<form class="mt-8 space-y-5" onsubmit={onSubmit} novalidate>
 		<div>
 			<label class="block text-sm font-medium" for="username">Username</label>
-			<input
-				class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2"
+			<Input
+				class="mt-2"
 				id="username"
 				name="username"
 				autocomplete="username"
@@ -78,8 +79,8 @@
 
 		<div>
 			<label class="block text-sm font-medium" for="password">Password</label>
-			<input
-				class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2"
+			<Input
+				class="mt-2"
 				id="password"
 				name="password"
 				type="password"

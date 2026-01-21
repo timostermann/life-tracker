@@ -8,6 +8,7 @@
 	import { RecurringConfigDialog } from '$lib/components/RecurringConfigDialog';
 	import { Input } from '$lib/components/ui/Input';
 	import { Label } from '$lib/components/ui/Label';
+	import { Checkbox } from '$lib/components/ui/Checkbox';
 	import type { Field, RecurringConfig } from '$lib/schemas';
 
 	type TaskFormData = {
@@ -83,13 +84,15 @@
 						oninput={(e) => state.setFieldValue(field.id.toString(), e.currentTarget.value)}
 					/>
 				{:else if field.field_type === 'boolean'}
-					<input
-						id="field-{field.id}"
-						type="checkbox"
-						checked={state.fieldValues[field.id.toString()] === 'true'}
-						onchange={(e) =>
-							state.setFieldValue(field.id.toString(), e.currentTarget.checked ? 'true' : 'false')}
-					/>
+					<div class="flex items-center gap-2">
+						<Checkbox
+							id="field-{field.id}"
+							checked={state.fieldValues[field.id.toString()] === 'true'}
+							onCheckedChange={(checked) =>
+								state.setFieldValue(field.id.toString(), checked ? 'true' : 'false')}
+						/>
+						<Label for="field-{field.id}" class="mb-0!">{field.name}</Label>
+					</div>
 				{/if}
 				{#if state.errors[field.id.toString()]}
 					<p class="text-sm text-destructive">{state.errors[field.id.toString()]}</p>

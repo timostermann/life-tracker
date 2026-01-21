@@ -5,6 +5,7 @@
 	import { RecurringConfigDialog } from '$lib/components/RecurringConfigDialog';
 	import { Input } from '$lib/components/ui/Input';
 	import { Label } from '$lib/components/ui/Label';
+	import { Checkbox } from '$lib/components/ui/Checkbox';
 	import type { Field, RecurringConfig } from '$lib/schemas';
 
 	type ChoreFormData = {
@@ -72,13 +73,15 @@
 						oninput={(e) => state.setFieldValue(field.id.toString(), e.currentTarget.value)}
 					/>
 				{:else if field.field_type === 'boolean'}
-					<input
-						id="field-{field.id}"
-						type="checkbox"
-						checked={state.fieldValues[field.id.toString()] === 'true'}
-						onchange={(e) =>
-							state.setFieldValue(field.id.toString(), e.currentTarget.checked ? 'true' : 'false')}
-					/>
+					<div class="flex items-center gap-2">
+						<Checkbox
+							id="field-{field.id}"
+							checked={state.fieldValues[field.id.toString()] === 'true'}
+							onCheckedChange={(checked) =>
+								state.setFieldValue(field.id.toString(), checked ? 'true' : 'false')}
+						/>
+						<Label for="field-{field.id}" class="mb-0!">{field.name}</Label>
+					</div>
 				{:else if field.field_type === 'date'}
 					<Input
 						id="field-{field.id}"
@@ -91,7 +94,7 @@
 						id="field-{field.id}"
 						value={state.fieldValues[field.id.toString()] ?? ''}
 						onchange={(e) => state.setFieldValue(field.id.toString(), e.currentTarget.value)}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<option value="">Select...</option>
 						{#if field.options}
