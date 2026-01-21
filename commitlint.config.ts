@@ -18,7 +18,8 @@ const rules: Partial<RulesConfig> = {
 				'ui',
 				'docs',
 				'api',
-				'pwa'
+				'pwa',
+				'ci'
 			];
 
 			if (!parsed.scope) {

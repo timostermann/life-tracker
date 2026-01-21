@@ -1,0 +1,5 @@
+# npm internal dependencies - not exploitable in runtime
+# These are build-time only dependencies in npm itself
+# Will be fixed when npm releases a new version
+CVE-2026-23745
+CVE-2026-23950
