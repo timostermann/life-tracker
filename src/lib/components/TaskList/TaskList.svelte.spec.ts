@@ -111,7 +111,7 @@ describe('TaskList', () => {
 			items: [mockItems[0]]
 		});
 
-		await expect.element(page.getByText('60m')).toBeInTheDocument();
+		await expect.element(page.getByText('1h')).toBeInTheDocument();
 	});
 
 	it('displays recurring config when set', async () => {

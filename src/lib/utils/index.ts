@@ -6,4 +6,5 @@ export * from './recurring';
 export * from './streaks';
 export * from './templates';
 export * from './dashboard';
+export * from './time';
 export type * from './types';

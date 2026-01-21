@@ -8,6 +8,7 @@
 	import { CheckCircle, Pencil, Trash2 } from 'lucide-svelte';
 	import type { RecurringConfig } from '$lib/schemas/items';
 	import { formatRecurringConfig } from '$lib/utils/recurring';
+	import { formatMinutes } from '$lib/utils/time';
 
 	type Item = {
 		id: number;
@@ -43,7 +44,7 @@
 	let priorityFilter = $state<string>('all');
 	let assigneeFilter = $state<string>('all');
 
-	let filteredItems = $derived(() => {
+	let filteredItems = $derived.by(() => {
 		let filtered = items;
 
 		if (priorityFilter !== 'all') {
@@ -104,7 +105,7 @@
 		{/if}
 	</div>
 
-	{#if filteredItems().length === 0}
+	{#if filteredItems.length === 0}
 		<div class="rounded-lg border border-dashed p-12 text-center">
 			<p class="text-lg text-muted-foreground">
 				{items.length === 0 ? 'No tasks yet' : 'No tasks match the filters'}
@@ -115,7 +116,7 @@
 		</div>
 	{:else}
 		<div class="space-y-3">
-			{#each filteredItems() as item (item.id)}
+			{#each filteredItems as item (item.id)}
 				<div class="group relative rounded-lg border p-4">
 					<div class="flex gap-4">
 						{#if onComplete && !item.is_archived}
@@ -165,7 +166,7 @@
 									</time>
 								{/if}
 								{#if item.time_estimate}
-									<span>{item.time_estimate}m</span>
+									<span>{formatMinutes(item.time_estimate)}</span>
 								{/if}
 								{#if item.recurring_config}
 									<span class="rounded bg-muted px-2 py-0.5">
