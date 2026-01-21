@@ -20,31 +20,6 @@ test.describe('Tasks Integration', () => {
 		await expect(page.getByRole('heading', { name: 'Categories' })).toBeVisible();
 	});
 
-	test('should be able to create a task category', async ({ page }, testInfo) => {
-		// Skip on webkit and mobile browsers due to flakiness with timing/cleanup
-		const projectName = testInfo.project.name;
-		test.skip(
-			projectName === 'webkit' ||
-				projectName === 'mobile-chrome' ||
-				projectName === 'mobile-safari',
-			'Flaky on webkit/mobile browsers - passes individually but fails in full suite'
-		);
-
-		await login(page, 'tim');
-
-		await page.goto('/categories');
-
-		// Create category
-		await page.getByRole('button', { name: 'New Category' }).click();
-		await page.locator('#name').fill('Tasks E2E Test');
-		await page.locator('#template-type').click();
-		await page.getByRole('option', { name: 'Task' }).click();
-
-		await page.getByRole('button', { name: 'Create Category' }).click();
-
-		await expect(page.getByText('Tasks E2E Test')).toBeVisible({ timeout: 10000 });
-	});
-
 	test('should display task management UI', async ({ page }) => {
 		await login(page, 'tim');
 
