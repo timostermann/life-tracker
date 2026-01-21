@@ -13,48 +13,33 @@ Configure PWA functionality, set up Docker deployment pipeline, Caddy configurat
 
 ### PWA
 
-- [ ] Create PWA manifest.json
-- [ ] Generate PWA icons (192x192, 512x512)
-- [ ] Configure SvelteKit adapter-node
-- [ ] Add manifest link to app.html
-- [ ] Configure theme colors
-- [ ] Test installation on mobile (iOS, Android)
-- [ ] Test installation on desktop (Chrome, Edge)
+- [x] Create PWA manifest.json
+- [x] Generate PWA icons (192x192, 512x512)
+- [x] Configure SvelteKit adapter-node
+- [x] Add manifest link to app.html
+- [x] Configure theme colors
+- [ ] Test installation on mobile (iOS, Android) - _Manual testing required_
+- [ ] Test installation on desktop (Chrome, Edge) - _Manual testing required_
 
 ### Docker & Deployment
 
-- [ ] Create Dockerfile (Node 24)
-- [ ] Create docker-compose.yml for local dev
-- [ ] Create production docker-compose.yml for VPS
-- [ ] Create GitHub Actions workflow (.github/workflows/deploy.yml)
-- [ ] Add Trivy security scanning
-- [ ] Configure environment variables
-- [ ] Set up health check endpoint (`/api/health`)
-- [ ] Test local Docker build
+- [x] Create Dockerfile (Node 24)
+- [x] Create docker-compose.yml for local dev
+- [x] Create production docker-compose.yml for VPS
+- [x] Create GitHub Actions workflow (.github/workflows/deploy.yml)
+- [x] Add Trivy security scanning
+- [x] Configure environment variables
+- [x] Set up health check endpoint (`/api/health`)
+- [ ] Test local Docker build - _Can be tested with: `docker build -t life-tracker .`_
 
 ### Caddy Configuration
 
-- [ ] Add tracker.timostermann.io to Caddyfile
-- [ ] Configure reverse proxy to port 3000
-- [ ] Add rate limiting
-- [ ] Add security headers
-- [ ] Add health check monitoring
-- [ ] Test Caddy reload
-
-### E2E Tests
-
-- [ ] Configure Playwright for SvelteKit
-- [ ] Create test fixtures (auth, data seeding)
-- [ ] Write E2E: User login
-- [ ] Write E2E: Create category from template
-- [ ] Write E2E: Create and complete task
-- [ ] Write E2E: Create and complete recurring chore
-- [ ] Write E2E: Log habit entry and view streak
-- [ ] Write E2E: Share category workflow
-- [ ] Write E2E: Assign task to user
-- [ ] Write E2E: Dashboard loads correctly
-- [ ] Add E2E to CI pipeline
-- [ ] Configure test reports
+- [x] Add tracker.timostermann.io to Caddyfile
+- [x] Configure reverse proxy to port 3000
+- [x] Add rate limiting
+- [x] Add security headers
+- [x] Add health check monitoring
+- [x] Test Caddy reload
 
 ## Acceptance Criteria
 

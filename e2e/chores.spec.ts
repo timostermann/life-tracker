@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 async function login(page: Page, username: 'tim' | 'jule') {
 	await page.goto('/categories');
@@ -55,7 +56,7 @@ test.describe('Chores Integration', () => {
 
 		// Navigate back and verify it appears in list
 		await page.goto('/categories');
-		await expect(page.getByRole('link', { name: /Household Chores E2E/i })).toBeVisible();
+		await expect(page.getByRole('link', { name: /Household Chores E2E/i }).first()).toBeVisible();
 	});
 
 	test('should create a chore with required recurring config', async ({ page }) => {

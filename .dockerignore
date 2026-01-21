@@ -1,0 +1,53 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.svelte-kit
+build
+dist
+
+# Environment files (never include secrets!)
+.env
+.env.local
+.env.*.local
+
+# Development
+.git
+.gitignore
+.github
+.vscode
+.cursor
+.idea
+.husky
+
+# Testing
+coverage
+.nyc_output
+*.test.js
+*.spec.js
+**/__tests__
+**/__mocks__
+e2e
+tests
+playwright-report
+test-results
+
+# Documentation
+README.md
+docs
+*.md
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data (local development data)
+.data

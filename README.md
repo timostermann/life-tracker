@@ -97,13 +97,21 @@ Daily tracking for building good habits or breaking bad ones:
 
 ## Development
 
+### Prerequisites
+
+- Node.js 24+
+- npm 11+
+
 ### Local dev (host-run + SQLite file)
 
 Create a local SQLite file (ignored by git) and run the dev server on your machine:
 
 ```bash
+npm install
 npm run dev
 ```
+
+The app will be available at `http://localhost:5173`.
 
 ### Database Seeding
 
@@ -124,10 +132,47 @@ npm run db:clean                 # Clean up test data pollution (removes test us
 Optional: start a DB browser UI (sqlite-web) via Docker (mounts the same `./.data/db.sqlite` file):
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.sqlite-web.yml up -d
 ```
 
 Then open `http://localhost:8080`.
+
+### Testing
+
+Run all tests:
+
+```bash
+npm test                     # Run all tests (unit + E2E)
+npm run test:unit            # Run unit tests in watch mode
+npm run test:unit -- --run   # Run unit tests once
+npm run test:e2e             # Run E2E tests
+```
+
+**E2E Tests**: Use a separate test database (`.data/db.test.sqlite`) that is completely isolated from your development database. The test database is automatically recreated before each test run.
+
+### Docker
+
+Build and run locally with Docker:
+
+```bash
+# Build the Docker image
+docker build -t life-tracker .
+
+# Run with docker-compose (includes sqlite-web)
+docker compose -f docker-compose.dev.yml up -d
+```
+
+The app will be available at `http://localhost:3000`.
+
+### PWA Icons
+
+PWA icons are generated from `src/lib/assets/favicon.svg`. To regenerate:
+
+```bash
+npm run generate:icons
+```
+
+This creates `icon-192.png` and `icon-512.png` in the `static/` directory.
 
 ### Docs
 
@@ -141,7 +186,7 @@ See [docs/](./docs/) for detailed documentation:
 
 ## Roadmap
 
-### 🚧 Phase 1: MVP
+### ✅ Phase 1: MVP
 
 - ✅ Task Management: Priority, assignment, deadlines, recurring
 - ✅ Chore Tracking: Recurring maintenance with assignment
@@ -150,7 +195,7 @@ See [docs/](./docs/) for detailed documentation:
 - ✅ Templates: Quick category creation from templates
 - ✅ Dashboard: Overview with recent categories, assigned items, due soon, habits today
 - ✅ Authentication: Lucia Auth with session management
-- 🚧 PWA + Deployment: Mobile installable, Docker, CI/CD (ticket-013)
+- ✅ PWA + Deployment: Mobile installable, Docker, CI/CD
 
 ### 🔜 Phase 2: Enhancements
 
@@ -160,7 +205,21 @@ See [docs/](./docs/) for detailed documentation:
 - Data export
 - Reminders/notifications
 - Offline sync
-- Dark mode
+- Layout improvements
+
+## Deployment
+
+Life Tracker is deployed as a Docker container on a VPS with Caddy as a reverse proxy.
+
+### Automated Deployment
+
+GitHub Actions automatically builds, tests, scans for vulnerabilities, and deploys to the VPS on every push to `main`.
+
+### Manual Deployment
+
+For VPS setup instructions, see [docs/VPS_SETUP.md](./docs/VPS_SETUP.md).
+
+For detailed deployment documentation, see [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
 ## License
 

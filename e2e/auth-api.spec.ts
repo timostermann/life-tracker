@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('auth API: login -> me -> logout -> me=401', async ({ request }) => {
 	const login = await request.post('/api/auth/login', {

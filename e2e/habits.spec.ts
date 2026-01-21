@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 async function createHabitCategoryFromTemplate(page: Page, name: string) {
 	await page.getByRole('button', { name: /use template/i }).click();

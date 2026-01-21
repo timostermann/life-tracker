@@ -23,7 +23,8 @@
 		"release": "commit-and-tag-version",
 		"release:test": "commit-and-tag-version --skip.commit --skip.tag",
 		"db:seed": "vite-node src/lib/server/db/seeds/run.ts",
-		"db:clean": "vite-node src/lib/server/db/seeds/run.ts -- --clean-test-data --skip-if-exists"
+		"db:clean": "vite-node src/lib/server/db/seeds/run.ts -- --clean-test-data --skip-if-exists",
+		"generate:icons": "node scripts/generate-icons.js"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^20.3.0",
@@ -35,6 +36,7 @@
 		"@lucide/svelte": "^0.561.0",
 		"@playwright/test": "^1.57.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-node": "^5.5.1",
 		"@sveltejs/kit": "^2.49.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/forms": "^0.5.10",
@@ -58,6 +60,7 @@
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.7.2",
 		"shadcn-svelte": "^1.1.0",
+		"sharp": "^0.34.5",
 		"svelte": "^5.45.6",
 		"svelte-check": "^4.3.4",
 		"svelte-sonner": "^1.0.7",
