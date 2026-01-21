@@ -61,26 +61,36 @@ Features and enhancements planned for post-MVP development.
 
 ## Reminders & Notifications
 
+> **Status:** ✅ Planned in [ticket-020](./tickets/ticket-020-pwa-notifications.md)
+
 ### Notification Types
 
 - Task deadline reminders
 - Chore due notifications
 - Habit tracking prompts
-- Assignment notifications
+- Streak milestone celebrations
+- Weekly summary notifications
 
 ### Delivery Methods
 
-- Web Push notifications
+- Web Push notifications (PWA)
 - Service Worker for background
-- Email notifications (optional)
+- VAPID protocol implementation
 - Configurable reminder times
 
 ### Reminder Settings
 
-- Advance notice (1 day, 1 week)
-- Snooze functionality
-- Quiet hours
-- Per-category settings
+- Advance notice (1 hour, 1 day before)
+- Silent hours (no night notifications)
+- Per-notification-type preferences
+- Test notification functionality
+
+### Future Enhancements (Post-ticket-020)
+
+- Rich notifications with action buttons (Complete, Snooze)
+- Email notifications (optional)
+- Notification history in-app
+- Smart timing based on user behavior
 
 ## Offline Support
 
@@ -296,8 +306,8 @@ Features will be prioritized based on:
 
 Most likely next features:
 
-1. Search and filtering
-2. Basic statistics
-3. Reminders
+1. Push notifications (✅ ticket-020 created)
+2. Search and filtering
+3. Basic statistics
 4. Calendar view
 5. Tags

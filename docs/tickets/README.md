@@ -37,14 +37,15 @@ Core functionality to get a working app deployed.
 
 Improvements to add after MVP is complete and deployed.
 
-| ID  | Status | Ticket                                                             | Scope                      | Description                                                  |
-| --- | ------ | ------------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------ |
-| 014 | ✅     | [Storybook Setup](./ticket-014-storybook-setup.md)                 | `storybook`, `ticket-014`  | Add Storybook 8.4+ with Svelte 5 support for component docs  |
-| 015 | ✅     | [Emoji Picker Component](./ticket-015-emoji-picker.md)             | `ui`, `ticket-015`         | Replace text input with interactive emoji picker like Slack  |
-| 016 | ✅     | [Internationalization (i18n)](./ticket-016-i18n-implementation.md) | `i18n`, `ticket-016`       | Extract all texts to JSON and implement svelte-i18n solution |
-| 017 | ✅     | [Copy Share Link](./ticket-017-copy-share-link.md)                 | `categories`, `ticket-017` | Add copy-to-clipboard for category share links               |
-| 018 | ✅     | [Zod Error Mapping](./ticket-018-zod-error-mapping.md)             | `api`, `ticket-018`        | Human-readable validation error messages with field mapping  |
-| 019 | 📋     | [Category Favorites](./ticket-019-category-favorites.md)           | `categories`, `ticket-019` | Pin favorite categories to dashboard instead of most recent  |
+| ID  | Status | Ticket                                                             | Scope                         | Description                                                  |
+| --- | ------ | ------------------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------ |
+| 014 | ✅     | [Storybook Setup](./ticket-014-storybook-setup.md)                 | `storybook`, `ticket-014`     | Add Storybook 8.4+ with Svelte 5 support for component docs  |
+| 015 | ✅     | [Emoji Picker Component](./ticket-015-emoji-picker.md)             | `ui`, `ticket-015`            | Replace text input with interactive emoji picker like Slack  |
+| 016 | ✅     | [Internationalization (i18n)](./ticket-016-i18n-implementation.md) | `i18n`, `ticket-016`          | Extract all texts to JSON and implement svelte-i18n solution |
+| 017 | ✅     | [Copy Share Link](./ticket-017-copy-share-link.md)                 | `categories`, `ticket-017`    | Add copy-to-clipboard for category share links               |
+| 018 | ✅     | [Zod Error Mapping](./ticket-018-zod-error-mapping.md)             | `api`, `ticket-018`           | Human-readable validation error messages with field mapping  |
+| 019 | 📋     | [Category Favorites](./ticket-019-category-favorites.md)           | `categories`, `ticket-019`    | Pin favorite categories to dashboard instead of most recent  |
+| 020 | ⏳     | [PWA Notifications](./ticket-020-pwa-notifications.md)             | `notifications`, `ticket-020` | Push notifications for habit/task/chore reminders            |
 
 ---
 
@@ -96,12 +97,13 @@ Use these scopes in conventional commits:
 - `docs`: Documentation
 - `api`: API endpoints
 - `pwa`: PWA functionality
+- `notifications`: Push notifications, reminders
 - `i18n`: Internationalization, translations
 - `storybook`: Component documentation
 
 **Ticket scopes:**
 
-- `ticket-001` through `ticket-013`
+- `ticket-001` through `ticket-020`
 
 **Example commits:**
 
@@ -178,6 +180,5 @@ See [../FUTURE_IMPROVEMENTS.md](../FUTURE_IMPROVEMENTS.md) for deferred features
 - Search and filtering
 - Statistics and analytics
 - Data export
-- Reminders/notifications
 - Offline sync
 - And more...
