@@ -4,10 +4,11 @@
 	import CategoryCard from '$lib/components/CategoryCard/CategoryCard.svelte';
 	import ItemCard from '$lib/components/ItemCard/ItemCard.svelte';
 	import { Button } from '$lib/components/ui/Button';
-	import { Plus } from 'lucide-svelte';
+	import { Plus, LogOut } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { getDaysUntilDue, getItemTitle, getItemDescription } from '$lib/utils/dashboard';
+	import { apiRequest } from '$lib/utils/api';
 
 	let { data }: { data: PageData } = $props();
 
@@ -20,6 +21,17 @@
 	);
 	const hasDueSoon = $derived(data.due_soon.length > 0);
 	const hasHabits = $derived(data.habits_today.length > 0);
+
+	async function handleLogout() {
+		const result = await apiRequest('/api/auth/logout', {
+			method: 'POST',
+			successMessage: 'Logged out successfully'
+		});
+
+		if (result.success) {
+			await goto(resolve('/login'));
+		}
+	}
 </script>
 
 <svelte:head>
@@ -27,9 +39,15 @@
 </svelte:head>
 
 <div class="container mx-auto py-8">
-	<div class="mb-8">
-		<h1 class="text-4xl font-bold">Dashboard</h1>
-		<p class="mt-2 text-muted-foreground">Your overview at a glance</p>
+	<div class="mb-8 flex items-start justify-between">
+		<div>
+			<h1 class="text-4xl font-bold">Dashboard</h1>
+			<p class="mt-2 text-muted-foreground">Your overview at a glance</p>
+		</div>
+		<Button variant="outline" onclick={handleLogout}>
+			<LogOut class="mr-2 size-4" />
+			Logout
+		</Button>
 	</div>
 
 	<div class="mb-8">
