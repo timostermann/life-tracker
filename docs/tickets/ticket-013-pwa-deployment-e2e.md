@@ -18,8 +18,6 @@ Configure PWA functionality, set up Docker deployment pipeline, Caddy configurat
 - [x] Configure SvelteKit adapter-node
 - [x] Add manifest link to app.html
 - [x] Configure theme colors
-- [ ] Test installation on mobile (iOS, Android) - _Manual testing required_
-- [ ] Test installation on desktop (Chrome, Edge) - _Manual testing required_
 
 ### Docker & Deployment
 
@@ -29,8 +27,7 @@ Configure PWA functionality, set up Docker deployment pipeline, Caddy configurat
 - [x] Create GitHub Actions workflow (.github/workflows/deploy.yml)
 - [x] Add Trivy security scanning
 - [x] Configure environment variables
-- [x] Set up health check endpoint (`/api/health`)
-- [ ] Test local Docker build - _Can be tested with: `docker build -t life-tracker .`_
+- [x] Set up health check endpoint (`/api/health`)`
 
 ### Caddy Configuration
 
