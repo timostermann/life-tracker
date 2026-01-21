@@ -17,7 +17,7 @@
 {#if isInteractive}
 	<button
 		class={cn(
-			'flex flex-col gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+			'flex flex-col gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:cursor-pointer hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
 		)}
 		{onclick}
 		aria-label="Category: {name}, {itemCount} items"
