@@ -65,7 +65,7 @@
 
 	<Dialog.Dialog bind:open>
 		<Dialog.Content class="w-auto p-0">
-			<Calendar.Calendar bind:value={calendarValue} class="rounded-md border" />
+			<Calendar.Calendar bind:value={calendarValue} class="rounded-md border" locale="de-DE" />
 			{#if value}
 				<div class="border-t p-3">
 					<Button variant="ghost" onclick={handleClear} class="w-full">

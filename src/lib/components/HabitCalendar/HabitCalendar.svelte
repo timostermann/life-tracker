@@ -59,7 +59,7 @@
 	<CalendarComponents.Day class={className} />
 {/snippet}
 
-<Calendar bind:value={selectedDate} day={daySnippet} />
+<Calendar bind:value={selectedDate} day={daySnippet} locale="de-DE" />
 
 <div class="mt-4 flex gap-4 text-sm">
 	<div class="flex items-center gap-2">
