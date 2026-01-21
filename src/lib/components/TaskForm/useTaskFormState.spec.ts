@@ -47,6 +47,30 @@ describe('useTaskFormState', () => {
 			const state = useTaskFormState(() => mockFields);
 			expect(state.fieldValues).toEqual({});
 		});
+
+		it('should initialize assignedTo with currentUserId when provided as number', () => {
+			const state = useTaskFormState(mockFields, 5);
+
+			expect(state.assignedTo).toBe(5);
+		});
+
+		it('should initialize assignedTo with currentUserId when provided as getter function', () => {
+			const state = useTaskFormState(mockFields, () => 7);
+
+			expect(state.assignedTo).toBe(7);
+		});
+
+		it('should initialize assignedTo with null when currentUserId is undefined', () => {
+			const state = useTaskFormState(mockFields, undefined);
+
+			expect(state.assignedTo).toBeNull();
+		});
+
+		it('should initialize assignedTo with null when currentUserId getter returns undefined', () => {
+			const state = useTaskFormState(mockFields, () => undefined);
+
+			expect(state.assignedTo).toBeNull();
+		});
 	});
 
 	describe('loadData', () => {

@@ -14,15 +14,17 @@
 		onValueChange?: (value: number | null) => void;
 		label?: string;
 		id?: string;
+		categoryId?: number;
 	};
 
-	let { value = null, onValueChange, label = 'Assign to', id }: Props = $props();
+	let { value = null, onValueChange, label = 'Assign to', id, categoryId }: Props = $props();
 
 	let users = $state<User[]>([]);
 	let loading = $state(true);
 
 	onMount(async () => {
-		const result = await fetchResource<{ users: User[] }>('/api/users');
+		const endpoint = categoryId ? `/api/users?categoryId=${categoryId}` : '/api/users';
+		const result = await fetchResource<{ users: User[] }>(endpoint);
 		if (result.success && result.data) {
 			users = result.data.users;
 		}

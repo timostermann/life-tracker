@@ -16,6 +16,7 @@
 
 	type Props = {
 		fields: Field[];
+		categoryId?: number;
 		initialData?: {
 			id: number;
 			assigned_to_user_id?: number | null;
@@ -26,7 +27,7 @@
 		onCancel: () => void;
 	};
 
-	let { fields, initialData, onSubmit, onCancel }: Props = $props();
+	let { fields, categoryId, initialData, onSubmit, onCancel }: Props = $props();
 
 	const state = useChoreFormState(() => fields);
 
@@ -114,7 +115,11 @@
 	<div class="space-y-4">
 		<h3 class="text-sm font-medium">Chore Settings</h3>
 
-		<AssigneeSelector value={state.assignedTo} onValueChange={(v) => (state.assignedTo = v)} />
+		<AssigneeSelector
+			value={state.assignedTo}
+			onValueChange={(v) => (state.assignedTo = v)}
+			{categoryId}
+		/>
 
 		<div>
 			<RecurringConfigDialog

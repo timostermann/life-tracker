@@ -22,15 +22,21 @@ type InitialData = {
 	values?: Record<string, string>;
 };
 
-export function useTaskFormState(fields: Field[] | (() => Field[])) {
+export function useTaskFormState(
+	fields: Field[] | (() => Field[]),
+	currentUserId?: number | (() => number | undefined)
+) {
 	// Store fields reactively - handle both direct array and getter function
 	// Access fields reactively to avoid capturing initial value
 	const fieldsReactive = $derived.by(() => (typeof fields === 'function' ? fields() : fields));
 
+	// Initialize default user ID (intentionally capturing initial value)
+	const initialUserId = typeof currentUserId === 'function' ? currentUserId() : currentUserId;
+
 	let priority = $state<Priority | null>(null);
 	let deadline = $state<string | null>(null);
 	let timeEstimate = $state<number | null>(null);
-	let assignedTo = $state<number | null>(null);
+	let assignedTo = $state<number | null>(initialUserId ?? null);
 	let recurringConfig = $state<RecurringConfig | null>(null);
 	let fieldValues = $state<Record<string, string>>({});
 	let loading = $state(false);

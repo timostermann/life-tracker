@@ -305,6 +305,7 @@
 				</Dialog.Header>
 				<ChoreForm
 					fields={data.fields}
+					categoryId={data.category.id}
 					onSubmit={choreActions.handleCreate}
 					onCancel={choreActions.closeCreate}
 				/>
@@ -319,6 +320,7 @@
 				{#if choreActions.selectedItem}
 					<ChoreForm
 						fields={data.fields}
+						categoryId={data.category.id}
 						initialData={choreActions.selectedItem}
 						onSubmit={choreActions.handleEdit}
 						onCancel={choreActions.closeEdit}
@@ -349,6 +351,8 @@
 				</Dialog.Header>
 				<TaskForm
 					fields={data.fields}
+					currentUserId={data.currentUserId}
+					categoryId={data.category.id}
 					onSubmit={taskActions.handleCreate}
 					onCancel={taskActions.closeCreate}
 				/>
@@ -363,6 +367,8 @@
 				{#if taskActions.selectedItem}
 					<TaskForm
 						fields={data.fields}
+						currentUserId={data.currentUserId}
+						categoryId={data.category.id}
 						initialData={taskActions.selectedItem}
 						onSubmit={taskActions.handleEdit}
 						onCancel={taskActions.closeEdit}

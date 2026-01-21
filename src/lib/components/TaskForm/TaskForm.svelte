@@ -22,6 +22,8 @@
 
 	type Props = {
 		fields: Field[];
+		currentUserId?: number;
+		categoryId?: number;
 		initialData?: {
 			id: number;
 			priority?: 'urgent' | 'high' | 'medium' | 'low' | null;
@@ -35,11 +37,14 @@
 		onCancel: () => void;
 	};
 
-	let { fields, initialData, onSubmit, onCancel }: Props = $props();
+	let { fields, currentUserId, categoryId, initialData, onSubmit, onCancel }: Props = $props();
 
 	// Create state once - fields structure is stable during component lifecycle
 	// Pass getter function to access prop reactively
-	const state = useTaskFormState(() => fields);
+	const state = useTaskFormState(
+		() => fields,
+		() => currentUserId
+	);
 
 	$effect(() => {
 		if (initialData) {
@@ -106,7 +111,11 @@
 
 		<PrioritySelector value={state.priority} onValueChange={(v) => (state.priority = v)} />
 
-		<AssigneeSelector value={state.assignedTo} onValueChange={(v) => (state.assignedTo = v)} />
+		<AssigneeSelector
+			value={state.assignedTo}
+			onValueChange={(v) => (state.assignedTo = v)}
+			{categoryId}
+		/>
 
 		<div class="grid gap-4 sm:grid-cols-2">
 			<DeadlinePicker value={state.deadline} onValueChange={(v) => (state.deadline = v)} />

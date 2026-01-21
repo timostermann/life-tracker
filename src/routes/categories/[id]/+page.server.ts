@@ -87,6 +87,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		archivedItems: enrichedArchivedItems,
 		upcomingChores,
 		habitEntries,
-		canEdit
+		canEdit,
+		currentUserId: user.id
 	};
 };

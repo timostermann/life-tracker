@@ -36,3 +36,20 @@ export function listOtherUsers(
 		.all(currentUserId);
 	return rows.map((row) => parseRow(dbSchemas.userSchema.pick({ id: true, username: true }), row));
 }
+
+export function listUsersWithCategoryAccess(
+	categoryId: number,
+	db: Db = getDb()
+): Array<Pick<User, 'id' | 'username'>> {
+	const rows = db
+		.prepare(
+			`SELECT DISTINCT u.id, u.username
+       FROM users u
+       LEFT JOIN categories c ON c.user_id = u.id AND c.id = ?
+       LEFT JOIN shared_access sa ON sa.shared_with_user_id = u.id AND sa.category_id = ?
+       WHERE c.id IS NOT NULL OR sa.category_id IS NOT NULL
+       ORDER BY u.username ASC`
+		)
+		.all(categoryId, categoryId);
+	return rows.map((row) => parseRow(dbSchemas.userSchema.pick({ id: true, username: true }), row));
+}

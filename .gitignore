@@ -32,3 +32,5 @@ vite.config.ts.timestamp-*
 # Local SQLite db (host dev)
 .data
 coverage
+
+playwright-report
