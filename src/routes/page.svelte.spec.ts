@@ -15,7 +15,8 @@ describe('/+page.svelte', () => {
 					low: []
 				},
 				due_soon: [],
-				habits_today: []
+				habits_today: [],
+				apiTokens: []
 			}
 		});
 

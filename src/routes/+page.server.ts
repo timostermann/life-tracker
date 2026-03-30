@@ -8,6 +8,7 @@ import {
 } from '$lib/server/db/queries/items';
 import { getFieldValuesForItem } from '$lib/server/db/queries/fieldValues';
 import { getHabitStats } from '$lib/server/db/queries/habits';
+import { listUserApiTokens } from '$lib/server/db/queries/apiTokens';
 import type { Item, Priority } from '$lib/server/db/queries/types';
 import type { Database } from 'better-sqlite3';
 import { DASHBOARD_MAX_CATEGORIES, DASHBOARD_DUE_SOON_DAYS } from '$lib/utils/dashboard';
@@ -84,6 +85,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		getHabitsNotLoggedToday(userId, db)
 	]);
 
+	const apiTokens = listUserApiTokens(userId, db);
+
 	// Enrich items with field values
 	const enrichedAssignedItems = assignedItems.map((item) => enrichItemWithValues(item, db));
 	const enrichedDueSoonItems = dueSoonItems.map((item) => enrichItemWithValues(item, db));
@@ -96,6 +99,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		categories,
 		assigned_to_me: assignedByPriority,
 		due_soon: enrichedDueSoonItems,
-		habits_today: enrichedHabitsToday
+		habits_today: enrichedHabitsToday,
+		apiTokens
 	};
 };

@@ -9,6 +9,7 @@
 	import { resolve } from '$app/paths';
 	import { getDaysUntilDue, getItemTitle, getItemDescription } from '$lib/utils/dashboard';
 	import { apiRequest } from '$lib/utils/api';
+	import { DashboardApiTokensSection } from '$lib/components/DashboardApiTokensSection';
 
 	let { data }: { data: PageData } = $props();
 
@@ -207,5 +208,7 @@
 				{/each}
 			</div>
 		</DashboardSection>
+
+		<DashboardApiTokensSection tokens={data.apiTokens} />
 	</div>
 </div>
