@@ -28,6 +28,17 @@ export const tailwindColorNames = [
 
 export type TailwindColorName = (typeof tailwindColorNames)[number];
 
+/** Shown when API clients send hex or other invalid category colors */
+export const categoryColorValidationMessage =
+	'Must be a Tailwind palette name (e.g. blue, sky, emerald). Hex color codes are not supported.';
+
+const optionalTailwindColor = z
+	.string()
+	.optional()
+	.refine((v) => v === undefined || (tailwindColorNames as readonly string[]).includes(v), {
+		message: categoryColorValidationMessage
+	});
+
 export const categoryFieldSchema = z.object({
 	id: z.number().int().positive().optional(),
 	name: z.string().min(1).max(100),
@@ -42,7 +53,7 @@ export const createCategorySchema = z.object({
 	name: z.string().min(1).max(100),
 	template_type: templateTypeSchema,
 	icon: z.string().optional(),
-	color: z.enum(tailwindColorNames).optional(),
+	color: optionalTailwindColor,
 	is_private: z.boolean().default(true),
 	fields: z.array(categoryFieldSchema).default([])
 });
@@ -52,7 +63,7 @@ export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export const updateCategorySchema = z.object({
 	name: z.string().min(1).max(100).optional(),
 	icon: z.string().optional(),
-	color: z.enum(tailwindColorNames).optional(),
+	color: optionalTailwindColor,
 	is_private: z.boolean().optional(),
 	fields: z.array(categoryFieldSchema).optional()
 });

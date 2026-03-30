@@ -7,8 +7,10 @@ import {
 	checkCategoryAccess,
 	createItem,
 	listItemsForCategory,
-	getFieldValuesAsRecord
+	getFieldValuesAsRecord,
+	listFieldsForCategory
 } from '$lib/server/db/queries';
+import { resolveCategoryFieldValues } from '$lib/server/api/resolveCategoryFieldValues';
 import { getDb } from '$lib/server/db';
 import type { Db } from '$lib/server/db/queries/utils';
 import { stringifyRecurringConfig, parseRecurringConfig } from '$lib/utils/recurring';
@@ -162,8 +164,23 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				? restData
 				: {};
 
+	const categoryFields = listFieldsForCategory(categoryId, db);
+	const resolvedFieldValues = resolveCategoryFieldValues(values, categoryFields);
+	if (!resolvedFieldValues.ok) {
+		const err = resolvedFieldValues.error;
+		return json(
+			{
+				error: err.code === 'unknown_field' ? 'Unknown field' : 'Ambiguous field',
+				message: err.message,
+				...(err.code === 'unknown_field' ? { keys: err.keys } : { field_order: err.field_order }),
+				toast: 'error'
+			},
+			{ status: 400 }
+		);
+	}
+
 	const createItemTransaction = db.transaction(() => {
-		const fieldValues = Object.entries(values).map(([fieldId, value]) => ({
+		const fieldValues = Object.entries(resolvedFieldValues.resolved).map(([fieldId, value]) => ({
 			field_id: Number(fieldId),
 			value
 		}));

@@ -9,8 +9,10 @@ import {
 	updateItem,
 	deleteItem,
 	getFieldValuesAsRecord,
-	upsertFieldValues
+	upsertFieldValues,
+	listFieldsForCategory
 } from '$lib/server/db/queries';
+import { resolveCategoryFieldValues } from '$lib/server/api/resolveCategoryFieldValues';
 import { getDb } from '$lib/server/db';
 import type { Db } from '$lib/server/db/queries/utils';
 import { stringifyRecurringConfig, parseRecurringConfig } from '$lib/utils/recurring';
@@ -143,6 +145,25 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 				? restData
 				: {};
 
+	let valuesForUpsert: Record<string, string> | undefined;
+	if (values !== undefined) {
+		const categoryFields = listFieldsForCategory(item.category_id, db);
+		const resolvedFieldValues = resolveCategoryFieldValues(values, categoryFields);
+		if (!resolvedFieldValues.ok) {
+			const err = resolvedFieldValues.error;
+			return json(
+				{
+					error: err.code === 'unknown_field' ? 'Unknown field' : 'Ambiguous field',
+					message: err.message,
+					...(err.code === 'unknown_field' ? { keys: err.keys } : { field_order: err.field_order }),
+					toast: 'error'
+				},
+				{ status: 400 }
+			);
+		}
+		valuesForUpsert = resolvedFieldValues.resolved;
+	}
+
 	const updateItemTransaction = db.transaction(() => {
 		const isChore = category.template_type === 'chore';
 		const isHabit = category.template_type === 'habit';
@@ -180,8 +201,8 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
 		const updated = updateItem(itemId, updateData, db);
 
-		if (values !== undefined) {
-			upsertFieldValues(itemId, values, db);
+		if (valuesForUpsert !== undefined) {
+			upsertFieldValues(itemId, valuesForUpsert, db);
 		}
 
 		return updated;

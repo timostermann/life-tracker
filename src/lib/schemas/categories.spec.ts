@@ -128,6 +128,10 @@ describe('createCategorySchema', () => {
 
 		const result = createCategorySchema.safeParse(invalidCategory);
 		expect(result.success).toBe(false);
+		if (!result.success) {
+			const colorIssue = result.error.flatten().fieldErrors.color?.[0];
+			expect(colorIssue).toMatch(/Tailwind|Hex/i);
+		}
 	});
 
 	it('rejects invalid color names', () => {
