@@ -2,6 +2,9 @@
 FROM node:24-alpine AS builder
 WORKDIR /app
 
+# Apply Alpine security updates (e.g. zlib CVE fixes) before installing packages
+RUN apk update && apk upgrade --no-cache
+
 # Update npm to latest version (fixes glob and tar vulnerabilities)
 RUN npm install -g npm@latest
 
@@ -24,6 +27,9 @@ RUN npm run build
 # Stage 2: Runtime
 FROM node:24-alpine AS runtime
 WORKDIR /app
+
+# Apply Alpine security updates (e.g. zlib CVE fixes) before installing packages
+RUN apk update && apk upgrade --no-cache
 
 ENV NODE_ENV=production
 ENV PORT=3000
