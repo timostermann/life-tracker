@@ -126,3 +126,23 @@ export const sessionSchema = z.object({
 	expires_at: z.number().int().positive()
 });
 export type DbSession = z.infer<typeof sessionSchema>;
+
+/** API token row (hash stored; raw token only returned once on create) */
+export const apiTokenSchema = z.object({
+	id: z.number().int().positive(),
+	user_id: z.number().int().positive(),
+	name: z.string().min(1),
+	token_hash: z.string().min(1),
+	created_at: z.number().int().positive(),
+	last_used_at: z.number().int().nullable()
+});
+export type ApiToken = z.infer<typeof apiTokenSchema>;
+
+/** Safe shape for listing tokens (no hash) */
+export const apiTokenListItemSchema = z.object({
+	id: z.number().int().positive(),
+	name: z.string().min(1),
+	created_at: z.number().int().positive(),
+	last_used_at: z.number().int().nullable()
+});
+export type ApiTokenListItem = z.infer<typeof apiTokenListItemSchema>;

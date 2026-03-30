@@ -2,6 +2,8 @@ import type { z } from 'zod';
 
 import type { Category, HabitEntry, Item, Template, User, Field, FieldValue } from '$lib/schemas';
 import {
+	apiTokenListItemSchema,
+	apiTokenSchema,
 	categorySchema,
 	fieldSchema,
 	fieldValueSchema,
@@ -98,5 +100,7 @@ export const dbSchemas = {
 	itemSchema,
 	itemWithAssigneeSchema,
 	habitEntrySchema,
-	permissionSchema
+	permissionSchema,
+	apiTokenSchema,
+	apiTokenListItemSchema
 };

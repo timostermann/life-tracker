@@ -88,6 +88,73 @@ Get current authenticated user.
 
 ---
 
+## API tokens (machine / assistant access)
+
+For scripts and AI assistants, authenticate with a **Bearer token** instead of cookies.
+
+1. Log in via the web UI (or `POST /api/auth/login` with a cookie jar).
+2. Create a token with `POST /api/tokens` (session cookie required).
+3. Call protected endpoints with header: `Authorization: Bearer <64-char-hex-token>`.
+
+The raw secret is returned **only once** on create; the server stores a SHA-256 hash.
+
+### GET /api/tokens
+
+List your tokens (no secret shown).
+
+**Response (200):**
+
+```json
+{
+	"tokens": [
+		{
+			"id": 1,
+			"name": "assistant",
+			"created_at": 1700000000,
+			"last_used_at": 1700003600
+		}
+	]
+}
+```
+
+### POST /api/tokens
+
+Create a token. `name` must be 1–128 characters.
+
+**Request:**
+
+```json
+{
+	"name": "My assistant"
+}
+```
+
+**Response (200):**
+
+```json
+{
+	"id": 1,
+	"name": "My assistant",
+	"token": "<64 hex characters>",
+	"created_at": 1700000000
+}
+```
+
+### DELETE /api/tokens/:id
+
+Revoke a token. Returns 404 if the id does not belong to the current user.
+
+**Response (200):**
+
+```json
+{
+	"toast": "success",
+	"message": "API token revoked"
+}
+```
+
+---
+
 ## Users
 
 ### GET /api/users

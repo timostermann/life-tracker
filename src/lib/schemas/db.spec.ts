@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { itemWithAssigneeSchema } from './db';
+import { apiTokenListItemSchema, apiTokenSchema, itemWithAssigneeSchema } from './db';
 
 /** Minimal SQLite-shaped row for list queries with join */
 const baseItemRow = {
@@ -38,5 +38,29 @@ describe('itemWithAssigneeSchema', () => {
 	it('accepts omitted assigned_to_username', () => {
 		const parsed = itemWithAssigneeSchema.parse({ ...baseItemRow });
 		expect(parsed.assigned_to_username).toBeUndefined();
+	});
+});
+
+describe('apiTokenSchema', () => {
+	it('parses a full api_tokens row', () => {
+		const parsed = apiTokenSchema.parse({
+			id: 1,
+			user_id: 2,
+			name: 'assistant',
+			token_hash: 'abc',
+			created_at: 1700000000,
+			last_used_at: null
+		});
+		expect(parsed.last_used_at).toBeNull();
+	});
+
+	it('parses list item rows without token_hash', () => {
+		const parsed = apiTokenListItemSchema.parse({
+			id: 1,
+			name: 'assistant',
+			created_at: 1700000000,
+			last_used_at: 1700000100
+		});
+		expect(parsed.name).toBe('assistant');
 	});
 });

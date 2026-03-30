@@ -13,7 +13,8 @@ const migrations: Migration[] = [
 	{ version: 3, filename: '003_lucia_auth.sql' },
 	{ version: 4, filename: '004_seed_tasks.sql' },
 	{ version: 5, filename: '005_seed_chores.sql' },
-	{ version: 6, filename: '006_seed_habits.sql' }
+	{ version: 6, filename: '006_seed_habits.sql' },
+	{ version: 7, filename: '007_api_tokens.sql' }
 ];
 
 // Bundle SQL migrations into the server build so production builds don't depend on .sql files existing on disk.

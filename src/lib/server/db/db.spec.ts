@@ -33,6 +33,7 @@ describe('db bootstrap', () => {
 		expect(tables).toContain('templates');
 		expect(tables).toContain('schema_version');
 		expect(tables).toContain('sessions');
+		expect(tables).toContain('api_tokens');
 
 		const templateCount = db
 			.prepare<[], { c: number }>('SELECT COUNT(*) AS c FROM templates')

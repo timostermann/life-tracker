@@ -4,7 +4,7 @@ import { getDb } from '$lib/server/db';
 import { lucia, clearLuciaSessionCookie, setLuciaSessionCookie } from '$lib/server/auth';
 import { ensureSeedUsers } from '$lib/server/auth/seed';
 import { redirect } from '@sveltejs/kit';
-import { getUserById } from '$lib/server/db/queries';
+import { getUserById, resolveUserFromBearerToken } from '$lib/server/db/queries';
 
 // Initialize DB + run migrations when the server module loads.
 getDb();
@@ -46,6 +46,19 @@ export const handle: Handle = async ({ event, resolve }) => {
 			}
 		} else {
 			event.locals.user = null;
+		}
+	}
+
+	if (!event.locals.user) {
+		const authHeader = event.request.headers.get('authorization');
+		if (authHeader?.startsWith('Bearer ')) {
+			const raw = authHeader.slice(7).trim();
+			if (raw) {
+				const tokenUser = resolveUserFromBearerToken(raw);
+				if (tokenUser) {
+					event.locals.user = tokenUser;
+				}
+			}
 		}
 	}
 
