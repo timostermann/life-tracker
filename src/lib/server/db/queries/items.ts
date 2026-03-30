@@ -3,6 +3,7 @@ import {
 	dbSchemas,
 	type CreateItemInput,
 	type Item,
+	type ItemWithAssignee,
 	type ListItemsOptions,
 	type UpdateItemInput
 } from './types';
@@ -150,7 +151,7 @@ export function listItemsForCategory(
 	categoryId: number,
 	opts: ListItemsOptions = {},
 	db: Db = getDb()
-): Item[] {
+): ItemWithAssignee[] {
 	const limit = opts.limit ?? 50;
 	const offset = opts.offset ?? 0;
 
@@ -158,8 +159,9 @@ export function listItemsForCategory(
 
 	const rows = db
 		.prepare(
-			`SELECT i.*
+			`SELECT i.*, u.username as assigned_to_username
       FROM items i
+      LEFT JOIN users u ON u.id = i.assigned_to_user_id
       WHERE i.category_id = ?
         ${whereArchived}
         AND (i.next_show_date IS NULL OR i.next_show_date <= CURRENT_TIMESTAMP)
@@ -177,7 +179,7 @@ export function listItemsForCategory(
 		)
 		.all(categoryId, limit, offset);
 
-	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
+	return rows.map((r) => parseRow(dbSchemas.itemWithAssigneeSchema, r));
 }
 
 export function listArchivedItemsForCategory(
@@ -213,12 +215,13 @@ export function listUpcomingChores(
 	categoryId: number,
 	daysAhead: number = 30,
 	db: Db = getDb()
-): Item[] {
+): ItemWithAssignee[] {
 	const rows = db
 		.prepare(
-			`SELECT i.*
+			`SELECT i.*, u.username as assigned_to_username
       FROM items i
       JOIN categories c ON c.id = i.category_id
+      LEFT JOIN users u ON u.id = i.assigned_to_user_id
       WHERE i.category_id = ?
         AND c.template_type = 'chore'
         AND i.is_archived = 0
@@ -233,7 +236,7 @@ export function listUpcomingChores(
 		)
 		.all(categoryId, daysAhead);
 
-	return rows.map((r) => parseRow(dbSchemas.itemSchema, r));
+	return rows.map((r) => parseRow(dbSchemas.itemWithAssigneeSchema, r));
 }
 
 export function getItemsAssignedToUser(userId: number, db: Db = getDb()): Item[] {

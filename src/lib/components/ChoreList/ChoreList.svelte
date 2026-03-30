@@ -11,6 +11,7 @@
 	type Item = {
 		id: number;
 		assigned_to_user_id?: number | null;
+		assigned_to_username?: string | null;
 		is_archived: boolean;
 		recurring_config?: RecurringConfig | null;
 		next_show_date?: string | null;
@@ -155,8 +156,8 @@
 									{getTitle(item)}
 								</h3>
 								<div class="flex items-center gap-2">
-									{#if item.assigned_to_user_id}
-										<AssigneeAvatar name="Assigned" size="sm" />
+									{#if item.assigned_to_user_id && item.assigned_to_username}
+										<AssigneeAvatar name={item.assigned_to_username} size="sm" />
 									{/if}
 								</div>
 							</div>

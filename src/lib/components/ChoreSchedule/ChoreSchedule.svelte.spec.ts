@@ -192,12 +192,13 @@ describe('ChoreSchedule', () => {
 		expect(container.textContent).not.toContain('Chore 1');
 	});
 
-	it('displays assignee avatar when assigned_to_user_id is present', async () => {
+	it('displays assignee avatar when assigned with username', async () => {
 		const today = new Date();
 		const items = [
 			{
 				...createMockItem(1, today.toISOString(), { frequency: 'daily', interval: 1 }),
-				assigned_to_user_id: 1
+				assigned_to_user_id: 1,
+				assigned_to_username: 'TestUser'
 			}
 		];
 
@@ -205,8 +206,8 @@ describe('ChoreSchedule', () => {
 			items
 		});
 
-		// AssigneeAvatar should be rendered
-		const avatar = page.getByLabelText('Assigned');
+		// AssigneeAvatar should be rendered with the username
+		const avatar = page.getByLabelText('TestUser');
 		await expect.element(avatar).toBeInTheDocument();
 	});
 });

@@ -2,15 +2,20 @@ export const DASHBOARD_MAX_CATEGORIES = 6;
 export const DASHBOARD_DUE_SOON_DAYS = 7;
 export const DASHBOARD_MAX_ITEMS_PER_SECTION = 50;
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+/** Difference in calendar days (local) between two dates; DST-safe. */
+function localCalendarDayDiff(from: Date, to: Date): number {
+	const fromUTC = Date.UTC(from.getFullYear(), from.getMonth(), from.getDate());
+	const toUTC = Date.UTC(to.getFullYear(), to.getMonth(), to.getDate());
+	return Math.round((toUTC - fromUTC) / MS_PER_DAY);
+}
+
 export function getDaysUntilDue(deadline: string): string {
 	const now = new Date();
-	now.setHours(0, 0, 0, 0);
-
 	const due = new Date(deadline);
-	due.setHours(0, 0, 0, 0);
 
-	const diffTime = due.getTime() - now.getTime();
-	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	const diffDays = localCalendarDayDiff(now, due);
 
 	if (diffDays === 0) return 'Due today';
 	if (diffDays === 1) return 'Due tomorrow';

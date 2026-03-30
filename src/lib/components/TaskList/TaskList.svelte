@@ -16,6 +16,7 @@
 		deadline?: string | null;
 		time_estimate?: number | null;
 		assigned_to_user_id?: number | null;
+		assigned_to_username?: string | null;
 		is_archived: boolean;
 		recurring_config?: RecurringConfig | null;
 		values: Record<string, string>;
@@ -147,8 +148,8 @@
 									{#if item.priority}
 										<PriorityBadge priority={item.priority} showLabel={false} />
 									{/if}
-									{#if item.assigned_to_user_id}
-										<AssigneeAvatar name="Assigned" size="sm" />
+									{#if item.assigned_to_user_id && item.assigned_to_username}
+										<AssigneeAvatar name={item.assigned_to_username} size="sm" />
 									{/if}
 								</div>
 							</div>

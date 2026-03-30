@@ -70,6 +70,12 @@ export const itemSchema = z.object({
 });
 export type Item = z.infer<typeof itemSchema>;
 
+/** Row from list queries that LEFT JOIN users for assignee display */
+export const itemWithAssigneeSchema = itemSchema.extend({
+	assigned_to_username: z.string().nullable().optional()
+});
+export type ItemWithAssignee = z.infer<typeof itemWithAssigneeSchema>;
+
 export const fieldValueSchema = z.object({
 	id: z.number().int().positive(),
 	item_id: z.number().int().positive(),

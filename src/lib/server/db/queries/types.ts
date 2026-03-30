@@ -7,6 +7,7 @@ import {
 	fieldValueSchema,
 	habitEntrySchema,
 	itemSchema,
+	itemWithAssigneeSchema,
 	permissionSchema,
 	templateSchema,
 	userSchema
@@ -81,6 +82,8 @@ export type ListEntriesOptions = {
 	to_date?: string;
 };
 
+export type { ItemWithAssignee } from '$lib/schemas';
+
 export type UpsertHabitEntryInput = Pick<HabitEntry, 'item_id' | 'logged_date' | 'status'> & {
 	notes?: string | null;
 };
@@ -93,6 +96,7 @@ export const dbSchemas = {
 	fieldSchema,
 	fieldValueSchema,
 	itemSchema,
+	itemWithAssigneeSchema,
 	habitEntrySchema,
 	permissionSchema
 };

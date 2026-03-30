@@ -8,6 +8,7 @@ import {
 	deleteItem,
 	completeItem,
 	listItemsForCategory,
+	listUpcomingChores,
 	listArchivedItemsForCategory,
 	countItemsForCategory,
 	getItemsAssignedToUser,
@@ -280,6 +281,54 @@ describe('items queries', () => {
 		it('should respect limit and offset', () => {
 			const items = listItemsForCategory(categoryId, { limit: 2, offset: 1 }, db);
 			expect(items).toHaveLength(2);
+		});
+
+		it('includes assigned_to_username from joined user', () => {
+			const assignee = createUser({ username: 'alice', password_hash: 'h' }, db);
+			createItem(
+				{
+					category_id: categoryId,
+					user_id: userId,
+					assigned_to_user_id: assignee.id,
+					priority: 'low'
+				},
+				db
+			);
+			const items = listItemsForCategory(categoryId, {}, db);
+			const assigned = items.find((i) => i.assigned_to_user_id === assignee.id);
+			expect(assigned?.assigned_to_username).toBe('alice');
+		});
+
+		it('sets assigned_to_username to null when unassigned', () => {
+			const items = listItemsForCategory(categoryId, {}, db);
+			for (const item of items) {
+				if (item.assigned_to_user_id == null) {
+					expect(item.assigned_to_username).toBeNull();
+				}
+			}
+		});
+	});
+
+	describe('listUpcomingChores', () => {
+		it('includes assigned_to_username for assigned chores in window', () => {
+			const choreCat = createCategory(
+				{ user_id: userId, name: 'Chores', template_type: 'chore' },
+				db
+			);
+			const assignee = createUser({ username: 'bob', password_hash: 'x' }, db);
+			const today = new Date().toISOString().slice(0, 10);
+			createItem(
+				{
+					category_id: choreCat.id,
+					user_id: userId,
+					assigned_to_user_id: assignee.id,
+					next_show_date: `${today}T15:00:00.000Z`
+				},
+				db
+			);
+			const upcoming = listUpcomingChores(choreCat.id, 30, db);
+			expect(upcoming).toHaveLength(1);
+			expect(upcoming[0].assigned_to_username).toBe('bob');
 		});
 	});
 
