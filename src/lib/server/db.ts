@@ -1,85 +1,58 @@
-import Database from 'better-sqlite3';
-import fs from 'node:fs';
-import path from 'node:path';
-
-import type { Database as BetterSqlite3Database } from 'better-sqlite3';
+import postgres from 'postgres';
 
 import { env } from '$env/dynamic/private';
 import { migrate } from './db/migrate';
 import { createLogger } from './logging';
 
-let singletonDb: BetterSqlite3Database | null = null;
+export type { Sql } from 'postgres';
 
 const logger = createLogger('db', { envFlag: 'DB_LOG' });
 
-function resolveDatabasePath(): string {
-	const configured = process.env.DATABASE_PATH?.trim() || env.DATABASE_PATH?.trim();
-	if (configured) return configured;
+let sql: postgres.Sql | undefined;
+const isTest = import.meta.env.VITEST || process.env.VITEST || process.env.NODE_ENV === 'test';
 
-	if (process.env.NODE_ENV !== 'production') return './.data/db.sqlite';
-
-	return '/data/db.sqlite';
-}
-
-function ensureParentDirExists(dbPath: string) {
-	if (dbPath === ':memory:') return;
-
-	const absolutePath = path.isAbsolute(dbPath) ? dbPath : path.resolve(process.cwd(), dbPath);
-	const dir = path.dirname(absolutePath);
-	fs.mkdirSync(dir, { recursive: true });
-}
-
-function configureDb(db: BetterSqlite3Database) {
-	db.pragma('foreign_keys = ON');
-
-	try {
-		// WAL (Write-Ahead Logging) mode provides better concurrency:
-		// - Readers don't block writers
-		// - Writers don't block readers
-		// - Better performance for web apps with multiple connections
-		// See: https://www.sqlite.org/wal.html
-		db.pragma('journal_mode = WAL');
-		db.pragma('busy_timeout = 5000');
-	} catch (error) {
-		// In test environments, WAL mode may fail due to filesystem limitations
-		// or when using in-memory databases. Fall back to DELETE mode:
-		// - Traditional rollback journal
-		// - More restrictive locking (writers block readers)
-		// - Acceptable for tests since they use isolated databases
-		if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
-			try {
-				db.pragma('journal_mode = DELETE');
-				db.pragma('busy_timeout = 5000');
-			} catch {
-				console.error('Failed to configure database journal mode:', error);
+function createDb() {
+	if (!env.POSTGRES_URL) throw new Error('POSTGRES_URL is required');
+	return postgres(env.POSTGRES_URL, {
+		max: 10,
+		types: {
+			// bigint (OID 20) returned as JS number instead of string
+			bigint: {
+				to: 20,
+				from: [20],
+				serialize: (x: unknown) => String(x),
+				parse: (x: string) => Number(x)
 			}
-		} else {
-			console.error('Failed to configure database journal mode:', error);
-			throw error;
 		}
+	});
+}
+
+// Run migrations once at module load; callers await this before first query.
+let dbReadyPromise: Promise<void> | undefined;
+
+export function ensureDbReady() {
+	if (isTest) return Promise.resolve();
+	dbReadyPromise ??= migrate(getDb(), { log: logger.info }).then(() => {
+		logger.info('ready');
+	});
+	return dbReadyPromise;
+}
+
+export const dbReady = {
+	then<TResult1 = void, TResult2 = never>(
+		onfulfilled?: ((value: void) => TResult1 | PromiseLike<TResult1>) | null,
+		onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+	) {
+		return ensureDbReady().then(onfulfilled, onrejected);
 	}
+};
+
+export function getDb() {
+	sql ??= createDb();
+	return sql;
 }
 
-export function getDb(): BetterSqlite3Database {
-	if (singletonDb) return singletonDb;
-
-	const dbPath = resolveDatabasePath();
-	ensureParentDirExists(dbPath);
-
-	logger.info('opening', dbPath);
-
-	const db = new Database(dbPath);
-	configureDb(db);
-	migrate(db, { log: logger.info });
-
-	singletonDb = db;
-	logger.info('ready');
-	return singletonDb;
-}
-
-export function closeDbForTests() {
-	if (!singletonDb) return;
-	logger.info('closing');
-	singletonDb.close();
-	singletonDb = null;
+export async function closeDbForTests() {
+	await sql?.end();
+	sql = undefined;
 }

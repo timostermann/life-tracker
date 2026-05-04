@@ -15,9 +15,9 @@ import {
 import { getDb } from '$lib/server/db';
 import type { Db } from '$lib/server/db/queries/utils';
 
-function updateCategoryFields(categoryId: number, fields: CategoryFieldInput[], db: Db) {
+async function updateCategoryFields(categoryId: number, fields: CategoryFieldInput[], tx: Db) {
 	// Get existing field IDs for this category
-	const existingFields = listFieldsForCategory(categoryId, db);
+	const existingFields = await listFieldsForCategory(categoryId, tx);
 	const existingFieldIds = new Set(existingFields.map((f) => f.id));
 	const updatedFieldIds = new Set<number>();
 
@@ -26,7 +26,7 @@ function updateCategoryFields(categoryId: number, fields: CategoryFieldInput[], 
 		if (field.id && existingFieldIds.has(field.id)) {
 			// Update existing field
 			updatedFieldIds.add(field.id);
-			updateField(
+			await updateField(
 				field.id,
 				{
 					name: field.name,
@@ -34,11 +34,11 @@ function updateCategoryFields(categoryId: number, fields: CategoryFieldInput[], 
 					options: field.options,
 					field_order: field.field_order ?? index
 				},
-				db
+				tx
 			);
 		} else {
 			// Create new field
-			createField(
+			await createField(
 				{
 					category_id: categoryId,
 					name: field.name,
@@ -46,7 +46,7 @@ function updateCategoryFields(categoryId: number, fields: CategoryFieldInput[], 
 					options: field.options,
 					field_order: field.field_order ?? index
 				},
-				db
+				tx
 			);
 		}
 	}
@@ -54,7 +54,7 @@ function updateCategoryFields(categoryId: number, fields: CategoryFieldInput[], 
 	// Delete fields that are no longer in the list
 	for (const existingField of existingFields) {
 		if (!updatedFieldIds.has(existingField.id)) {
-			deleteField(existingField.id, db);
+			await deleteField(existingField.id, tx);
 		}
 	}
 }
@@ -70,19 +70,19 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const db = (locals as { db?: Db }).db ?? getDb();
+	const sql = getDb();
 
-	const category = getCategoryById(categoryId, db);
+	const category = await getCategoryById(categoryId, sql);
 	if (!category) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
-	const canView = checkCategoryAccess(user.id, categoryId, 'view', db);
+	const canView = await checkCategoryAccess(user.id, categoryId, 'view', sql);
 	if (!canView) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
-	const fields = listFieldsForCategory(categoryId, db);
+	const fields = await listFieldsForCategory(categoryId, sql);
 
 	return json({
 		category: {
@@ -103,8 +103,8 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const db = (locals as { db?: Db }).db ?? getDb();
-	const category = getCategoryById(categoryId, db);
+	const sql = getDb();
+	const category = await getCategoryById(categoryId, sql);
 	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
@@ -131,17 +131,15 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
 	const { fields, ...categoryData } = parsed.data;
 
-	const updateCategoryWithFields = db.transaction(() => {
-		const updatedCategory = updateCategory(categoryId, categoryData, db);
+	const updatedCategory = await sql.begin(async (tx) => {
+		const updated = await updateCategory(categoryId, categoryData, tx);
 
 		if (fields !== undefined) {
-			updateCategoryFields(categoryId, fields, db);
+			await updateCategoryFields(categoryId, fields, tx);
 		}
 
-		return updatedCategory;
+		return updated;
 	});
-
-	const updatedCategory = updateCategoryWithFields();
 
 	return json({
 		category: updatedCategory,
@@ -161,18 +159,16 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const db = (locals as { db?: Db }).db ?? getDb();
-	const category = getCategoryById(categoryId, db);
+	const sql = getDb();
+	const category = await getCategoryById(categoryId, sql);
 	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
-	const deleteCategoryWithFields = db.transaction(() => {
-		deleteFieldsForCategory(categoryId, db);
-		deleteCategory(categoryId, db);
+	await sql.begin(async (tx) => {
+		await deleteFieldsForCategory(categoryId, tx);
+		await deleteCategory(categoryId, tx);
 	});
-
-	deleteCategoryWithFields();
 
 	return json({
 		toast: 'success',

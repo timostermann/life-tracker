@@ -7,7 +7,6 @@ import {
 	getFieldValuesAsRecord
 } from '$lib/server/db/queries';
 import { getDb } from '$lib/server/db';
-import type { Db } from '$lib/server/db/queries/utils';
 import { parseRecurringConfig } from '$lib/utils/recurring';
 
 export const POST: RequestHandler = async ({ params, locals }) => {
@@ -21,30 +20,30 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid item ID' }, { status: 400 });
 	}
 
-	const db = (locals as { db?: Db }).db ?? getDb();
+	const sql = getDb();
 
-	const item = getItemById(itemId, db);
+	const item = await getItemById(itemId, sql);
 	if (!item) {
 		return json({ error: 'Item not found' }, { status: 404 });
 	}
 
-	const canEdit = checkCategoryAccess(user.id, item.category_id, 'edit', db);
+	const canEdit = await checkCategoryAccess(user.id, item.category_id, 'edit', sql);
 	if (!canEdit) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
-	const { completed, nextOccurrence } = completeItem(itemId, db);
+	const { completed, nextOccurrence } = await completeItem(itemId, sql);
 
 	const enrichedCompleted = {
 		...completed,
-		values: getFieldValuesAsRecord(completed.id, db),
+		values: await getFieldValuesAsRecord(completed.id, sql),
 		recurring_config: parseRecurringConfig(completed.recurring_config)
 	};
 
 	const enrichedNext = nextOccurrence
 		? {
 				...nextOccurrence,
-				values: getFieldValuesAsRecord(nextOccurrence.id, db),
+				values: await getFieldValuesAsRecord(nextOccurrence.id, sql),
 				recurring_config: parseRecurringConfig(nextOccurrence.recurring_config)
 			}
 		: null;

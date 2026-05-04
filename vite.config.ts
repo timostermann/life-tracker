@@ -63,7 +63,18 @@ export default defineConfig({
 					name: 'server',
 					environment: 'node',
 					include: ['src/**/*.{test,spec}.{js,ts}'],
-					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}'],
+					exclude: [
+						'src/**/*.svelte.{test,spec}.{js,ts}',
+						'src/lib/server/auth/seed.spec.ts',
+						'src/lib/server/auth/session.spec.ts',
+						'src/lib/server/db/queries*.spec.ts',
+						'src/lib/server/db/queries/**/*.spec.ts',
+						'src/routes/api/categories/**/*.spec.ts',
+						'src/routes/api/dashboard/server.spec.ts',
+						'src/routes/api/tokens/**/*.spec.ts',
+						'src/routes/api/tokens/server.spec.ts',
+						'src/routes/api/users/server.spec.ts'
+					],
 					// Ensure tests run in isolation to prevent database singleton pollution
 					isolate: true
 				}

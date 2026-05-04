@@ -20,7 +20,7 @@ VALUES (
         { "name": "Description", "field_type": "text", "field_order": 2 }
       ]
     }',
-        1
+        TRUE
     ),
     (
         'Chores',
@@ -36,7 +36,7 @@ VALUES (
         { "name": "Notes", "field_type": "text", "field_order": 2 }
       ]
     }',
-        1
+        TRUE
     ),
     (
         'Habits',
@@ -53,5 +53,5 @@ VALUES (
         { "name": "Is Good Habit", "field_type": "boolean", "field_order": 3 }
       ]
     }',
-        1
+        TRUE
     );

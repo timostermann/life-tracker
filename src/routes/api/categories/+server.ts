@@ -15,7 +15,8 @@ export const GET: RequestHandler = async ({ locals }) => {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const categories = listCategoriesForUser(user.id);
+	const sql = getDb();
+	const categories = await listCategoriesForUser(user.id, sql);
 	return json({ categories });
 };
 
@@ -47,14 +48,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	const { fields, ...categoryData } = parsed.data;
 
-	const db = getDb();
-	const createCategoryWithFields = db.transaction(() => {
-		const category = createCategory(
+	const sql = getDb();
+	const category = await sql.begin(async (tx) => {
+		const category = await createCategory(
 			{
 				user_id: user.id,
 				...categoryData
 			},
-			db
+			tx
 		);
 
 		if (fields && fields.length > 0) {
@@ -67,14 +68,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			}));
 
 			for (const fieldInput of fieldInputs) {
-				createField(fieldInput, db);
+				await createField(fieldInput, tx);
 			}
 		}
 
 		return category;
 	});
-
-	const category = createCategoryWithFields();
 
 	return json(
 		{

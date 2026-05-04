@@ -1,5 +1,5 @@
 import { Lucia, TimeSpan } from 'lucia';
-import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite';
+import { PostgresJsAdapter } from '@lucia-auth/adapter-postgresql';
 import type { Cookies } from '@sveltejs/kit';
 
 import { env } from '$env/dynamic/private';
@@ -18,23 +18,38 @@ function resolveSecureCookie(): boolean {
 	return configured ?? import.meta.env.PROD;
 }
 
-const adapter = new BetterSqlite3Adapter(getDb(), {
-	user: 'users',
-	session: 'sessions'
-});
+function createLucia() {
+	const adapter = new PostgresJsAdapter(getDb(), {
+		user: 'users',
+		session: 'sessions'
+	});
 
-export const lucia = new Lucia(adapter, {
-	sessionExpiresIn: new TimeSpan(7, 'd'),
-	getUserAttributes: (attributes) => {
-		// Do not expose password_hash to app code
-		return {
-			username: attributes.username
-		};
-	},
-	sessionCookie: {
-		attributes: {
-			secure: resolveSecureCookie()
+	return new Lucia(adapter, {
+		sessionExpiresIn: new TimeSpan(7, 'd'),
+		getUserAttributes: (attributes) => {
+			// Do not expose password_hash to app code
+			return {
+				username: attributes.username
+			};
+		},
+		sessionCookie: {
+			attributes: {
+				secure: resolveSecureCookie()
+			}
 		}
+	});
+}
+
+let luciaInstance: ReturnType<typeof createLucia> | undefined;
+
+export function getLucia() {
+	luciaInstance ??= createLucia();
+	return luciaInstance;
+}
+
+export const lucia = new Proxy({} as ReturnType<typeof createLucia>, {
+	get(_target, prop, receiver) {
+		return Reflect.get(getLucia(), prop, receiver);
 	}
 });
 

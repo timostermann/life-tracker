@@ -23,38 +23,36 @@ export function hashApiToken(raw: string): string {
 	return sha256hex(raw);
 }
 
-export function getApiTokenByHash(tokenHash: string, db: Db = getDb()): ApiToken | undefined {
-	const row = db.prepare('SELECT * FROM api_tokens WHERE token_hash = ?').get(tokenHash);
+export async function getApiTokenByHash(
+	tokenHash: string,
+	sql: Db = getDb()
+): Promise<ApiToken | undefined> {
+	const [row] = await sql`SELECT * FROM api_tokens WHERE token_hash = ${tokenHash}`;
 	return parseOptionalRow(apiTokenSchema, row);
 }
 
-/**
- * Bumps `last_used_at` only if it is unset or older than `minIntervalSec`
- * (avoids a write on every API call when using Bearer tokens).
- */
-export function touchApiTokenLastUsedIfStale(
+export async function touchApiTokenLastUsedIfStale(
 	id: number,
-	db: Db = getDb(),
+	sql: Db = getDb(),
 	minIntervalSec: number = API_TOKEN_LAST_USED_TOUCH_INTERVAL_SEC
-): void {
-	db.prepare(
-		`UPDATE api_tokens SET last_used_at = unixepoch()
-     WHERE id = ? AND (last_used_at IS NULL OR last_used_at < unixepoch() - ?)`
-	).run(id, minIntervalSec);
+): Promise<void> {
+	await sql`
+		UPDATE api_tokens SET last_used_at = EXTRACT(EPOCH FROM NOW())::BIGINT
+		WHERE id = ${id} AND (last_used_at IS NULL OR last_used_at < EXTRACT(EPOCH FROM NOW())::BIGINT - ${minIntervalSec})
+	`;
 }
 
-export function createApiToken(
+export async function createApiToken(
 	userId: number,
 	name: string,
-	db: Db = getDb()
-): { id: number; name: string; token: string; created_at: number } {
+	sql: Db = getDb()
+): Promise<{ id: number; name: string; token: string; created_at: number }> {
 	const token = randomBytes(32).toString('hex');
 	const token_hash = sha256hex(token);
-	const res = db
-		.prepare('INSERT INTO api_tokens (user_id, name, token_hash) VALUES (?, ?, ?)')
-		.run(userId, name, token_hash);
-	const id = Number(res.lastInsertRowid);
-	const row = db.prepare('SELECT * FROM api_tokens WHERE id = ?').get(id);
+	const [row] = await sql`
+		INSERT INTO api_tokens (user_id, name, token_hash) VALUES (${userId}, ${name}, ${token_hash})
+		RETURNING *
+	`;
 	const parsed = parseRow(apiTokenSchema, row);
 	return {
 		id: parsed.id,
@@ -64,39 +62,41 @@ export function createApiToken(
 	};
 }
 
-export function listUserApiTokens(userId: number, db: Db = getDb()): ApiTokenListItem[] {
-	const rows = db
-		.prepare(
-			`SELECT id, name, created_at, last_used_at
-       FROM api_tokens
-       WHERE user_id = ?
-       ORDER BY id ASC`
-		)
-		.all(userId);
+export async function listUserApiTokens(
+	userId: number,
+	sql: Db = getDb()
+): Promise<ApiTokenListItem[]> {
+	const rows = await sql`
+		SELECT id, name, created_at, last_used_at
+		FROM api_tokens
+		WHERE user_id = ${userId}
+		ORDER BY id ASC
+	`;
 	return rows.map((row) => parseRow(apiTokenListItemSchema, row));
 }
 
-export function deleteApiToken(id: number, userId: number, db: Db = getDb()): boolean {
-	const res = db.prepare('DELETE FROM api_tokens WHERE id = ? AND user_id = ?').run(id, userId);
-	return res.changes > 0;
+export async function deleteApiToken(
+	id: number,
+	userId: number,
+	sql: Db = getDb()
+): Promise<boolean> {
+	const result = await sql`DELETE FROM api_tokens WHERE id = ${id} AND user_id = ${userId}`;
+	return result.count > 0;
 }
 
-/**
- * Validates raw Bearer secret and returns app user for `event.locals`.
- */
-export function resolveUserFromBearerToken(
+export async function resolveUserFromBearerToken(
 	rawToken: string,
-	db: Db = getDb()
-): { id: number; username: string } | null {
+	sql: Db = getDb()
+): Promise<{ id: number; username: string } | null> {
 	const trimmed = rawToken.trim();
 	if (!trimmed) return null;
 
-	const tokenRow = getApiTokenByHash(hashApiToken(trimmed), db);
+	const tokenRow = await getApiTokenByHash(hashApiToken(trimmed), sql);
 	if (!tokenRow) return null;
 
-	touchApiTokenLastUsedIfStale(tokenRow.id, db);
+	await touchApiTokenLastUsedIfStale(tokenRow.id, sql);
 
-	const dbUser = getUserById(tokenRow.user_id, db);
+	const dbUser = await getUserById(tokenRow.user_id, sql);
 	if (!dbUser) return null;
 
 	return { id: dbUser.id, username: dbUser.username };

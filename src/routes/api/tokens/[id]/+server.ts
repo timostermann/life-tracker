@@ -2,11 +2,6 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getDb } from '$lib/server/db';
 import { deleteApiToken } from '$lib/server/db/queries';
-import type { Db } from '$lib/server/db/queries/utils';
-
-function dbFromLocals(locals: App.Locals): Db {
-	return locals.db ?? getDb();
-}
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	const user = locals.user;
@@ -19,7 +14,8 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid token id' }, { status: 400 });
 	}
 
-	const deleted = deleteApiToken(id, user.id, dbFromLocals(locals));
+	const sql = getDb();
+	const deleted = await deleteApiToken(id, user.id, sql);
 	if (!deleted) {
 		return json({ error: 'Token not found' }, { status: 404 });
 	}

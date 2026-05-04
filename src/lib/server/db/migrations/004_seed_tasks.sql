@@ -17,7 +17,7 @@ SELECT u.id,
   'task',
   '💼',
   'blue',
-  0,
+  FALSE,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM users u
@@ -103,9 +103,9 @@ SELECT cat.id,
     LIMIT 1
   ), NULL,
   'urgent',
-  datetime('now', '+2 days'),
+  NOW() + INTERVAL '2 days',
   30,
-  0,
+  FALSE,
   NULL,
   NULL,
   NULL,
@@ -134,9 +134,9 @@ SELECT cat.id,
     LIMIT 1
   ), NULL,
   'high',
-  datetime('now', '+5 days'),
+  NOW() + INTERVAL '5 days',
   60,
-  0,
+  FALSE,
   NULL,
   NULL,
   NULL,
@@ -165,9 +165,9 @@ SELECT cat.id,
     LIMIT 1
   ), NULL,
   'medium',
-  datetime('now', '+3 days'),
+  NOW() + INTERVAL '3 days',
   90,
-  0,
+  FALSE,
   NULL,
   '{"frequency":"weekly","interval":1}',
   NULL,
@@ -196,9 +196,9 @@ SELECT cat.id,
     LIMIT 1
   ), NULL,
   'low',
-  datetime('now', '+14 days'),
+  NOW() + INTERVAL '14 days',
   120,
-  0,
+  FALSE,
   NULL,
   NULL,
   NULL,
@@ -227,9 +227,9 @@ SELECT cat.id,
     LIMIT 1
   ), NULL,
   'high',
-  datetime('now', '+25 days'),
+  NOW() + INTERVAL '25 days',
   15,
-  0,
+  FALSE,
   NULL,
   '{"frequency":"monthly","interval":1}',
   NULL,
@@ -258,9 +258,9 @@ SELECT cat.id,
     LIMIT 1
   ), NULL,
   'medium',
-  datetime('now', '+10 days'),
+  NOW() + INTERVAL '10 days',
   45,
-  0,
+  FALSE,
   NULL,
   NULL,
   NULL,
@@ -289,9 +289,9 @@ SELECT cat.id,
     LIMIT 1
   ), NULL,
   'urgent',
-  datetime('now', '+7 days'),
+  NOW() + INTERVAL '7 days',
   180,
-  0,
+  FALSE,
   NULL,
   NULL,
   NULL,
@@ -322,7 +322,7 @@ SELECT cat.id,
   'low',
   NULL,
   60,
-  0,
+  FALSE,
   NULL,
   NULL,
   NULL,
@@ -351,14 +351,14 @@ SELECT cat.id,
     LIMIT 1
   ), NULL,
   'high',
-  datetime('now', '-2 days'),
+  NOW() - INTERVAL '2 days',
   30,
-  1,
-  datetime('now', '-1 days'),
+  TRUE,
+  NOW() - INTERVAL '1 days',
   NULL,
   NULL,
-  datetime('now', '-5 days'),
-  datetime('now', '-1 days')
+  NOW() - INTERVAL '5 days',
+  NOW() - INTERVAL '1 days'
 FROM categories cat
 WHERE cat.name = 'Work Tasks'
   AND cat.user_id = (
@@ -1317,7 +1317,7 @@ FROM categories cat
           )
         LIMIT 1
       )
-      AND is_archived = 1
+      AND is_archived = TRUE
     LIMIT 1
   ) item
   CROSS JOIN (
@@ -1374,7 +1374,7 @@ FROM categories cat
           )
         LIMIT 1
       )
-      AND is_archived = 1
+      AND is_archived = TRUE
     LIMIT 1
   ) item
   CROSS JOIN (

@@ -3,15 +3,19 @@ import { dbSchemas, type FieldValue } from './types';
 import type { Db } from './utils';
 import { parseRow } from './utils';
 
-export function getFieldValuesForItem(itemId: number, db: Db = getDb()): FieldValue[] {
-	const rows = db
-		.prepare('SELECT * FROM field_values WHERE item_id = ? ORDER BY field_id')
-		.all(itemId);
+export async function getFieldValuesForItem(
+	itemId: number,
+	sql: Db = getDb()
+): Promise<FieldValue[]> {
+	const rows = await sql`SELECT * FROM field_values WHERE item_id = ${itemId} ORDER BY field_id`;
 	return rows.map((r) => parseRow(dbSchemas.fieldValueSchema, r));
 }
 
-export function getFieldValuesAsRecord(itemId: number, db: Db = getDb()): Record<string, string> {
-	const values = getFieldValuesForItem(itemId, db);
+export async function getFieldValuesAsRecord(
+	itemId: number,
+	sql: Db = getDb()
+): Promise<Record<string, string>> {
+	const values = await getFieldValuesForItem(itemId, sql);
 	const record: Record<string, string> = {};
 	for (const fv of values) {
 		if (fv.value !== null) {
@@ -21,27 +25,22 @@ export function getFieldValuesAsRecord(itemId: number, db: Db = getDb()): Record
 	return record;
 }
 
-export function upsertFieldValues(
+export async function upsertFieldValues(
 	itemId: number,
 	values: Record<string, string>,
-	db: Db = getDb()
-): void {
-	const upsert = db.transaction(() => {
-		db.prepare('DELETE FROM field_values WHERE item_id = ?').run(itemId);
-
-		if (Object.keys(values).length > 0) {
-			const stmt = db.prepare(
-				'INSERT INTO field_values (item_id, field_id, value) VALUES (?, ?, ?)'
-			);
-			for (const [fieldId, value] of Object.entries(values)) {
-				stmt.run(itemId, Number(fieldId), value);
-			}
-		}
-	});
-
-	upsert();
+	sql: Db = getDb()
+): Promise<void> {
+	await sql`DELETE FROM field_values WHERE item_id = ${itemId}`;
+	if (Object.keys(values).length > 0) {
+		const rows = Object.entries(values).map(([fieldId, value]) => ({
+			item_id: itemId,
+			field_id: Number(fieldId),
+			value
+		}));
+		await sql`INSERT INTO field_values ${sql(rows)}`;
+	}
 }
 
-export function deleteFieldValuesForItem(itemId: number, db: Db = getDb()): void {
-	db.prepare('DELETE FROM field_values WHERE item_id = ?').run(itemId);
+export async function deleteFieldValuesForItem(itemId: number, sql: Db = getDb()): Promise<void> {
+	await sql`DELETE FROM field_values WHERE item_id = ${itemId}`;
 }

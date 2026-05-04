@@ -14,7 +14,6 @@ import {
 } from '$lib/server/db/queries';
 import { resolveCategoryFieldValues } from '$lib/server/api/resolveCategoryFieldValues';
 import { getDb } from '$lib/server/db';
-import type { Db } from '$lib/server/db/queries/utils';
 import { stringifyRecurringConfig, parseRecurringConfig } from '$lib/utils/recurring';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
@@ -28,21 +27,21 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid item ID' }, { status: 400 });
 	}
 
-	const db = (locals as { db?: Db }).db ?? getDb();
+	const sql = getDb();
 
-	const item = getItemById(itemId, db);
+	const item = await getItemById(itemId, sql);
 	if (!item) {
 		return json({ error: 'Item not found' }, { status: 404 });
 	}
 
-	const canView = checkCategoryAccess(user.id, item.category_id, 'view', db);
+	const canView = await checkCategoryAccess(user.id, item.category_id, 'view', sql);
 	if (!canView) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
 	const enrichedItem = {
 		...item,
-		values: getFieldValuesAsRecord(item.id, db),
+		values: await getFieldValuesAsRecord(item.id, sql),
 		recurring_config: parseRecurringConfig(item.recurring_config)
 	};
 
@@ -60,19 +59,19 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid item ID' }, { status: 400 });
 	}
 
-	const db = (locals as { db?: Db }).db ?? getDb();
+	const sql = getDb();
 
-	const item = getItemById(itemId, db);
+	const item = await getItemById(itemId, sql);
 	if (!item) {
 		return json({ error: 'Item not found' }, { status: 404 });
 	}
 
-	const canEdit = checkCategoryAccess(user.id, item.category_id, 'edit', db);
+	const canEdit = await checkCategoryAccess(user.id, item.category_id, 'edit', sql);
 	if (!canEdit) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
-	const category = getCategoryById(item.category_id, db);
+	const category = await getCategoryById(item.category_id, sql);
 	if (!category) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
@@ -147,7 +146,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
 	let valuesForUpsert: Record<string, string> | undefined;
 	if (values !== undefined) {
-		const categoryFields = listFieldsForCategory(item.category_id, db);
+		const categoryFields = await listFieldsForCategory(item.category_id, sql);
 		const resolvedFieldValues = resolveCategoryFieldValues(values, categoryFields);
 		if (!resolvedFieldValues.ok) {
 			const err = resolvedFieldValues.error;
@@ -164,7 +163,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		valuesForUpsert = resolvedFieldValues.resolved;
 	}
 
-	const updateItemTransaction = db.transaction(() => {
+	const updatedItem = await sql.begin(async (tx) => {
 		const isChore = category.template_type === 'chore';
 		const isHabit = category.template_type === 'habit';
 		const updateData: Parameters<typeof updateItem>[1] = {
@@ -199,20 +198,18 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 					: undefined
 		};
 
-		const updated = updateItem(itemId, updateData, db);
+		const updated = await updateItem(itemId, updateData, tx);
 
 		if (valuesForUpsert !== undefined) {
-			upsertFieldValues(itemId, valuesForUpsert, db);
+			await upsertFieldValues(itemId, valuesForUpsert, tx);
 		}
 
 		return updated;
 	});
 
-	const updatedItem = updateItemTransaction();
-
 	const enrichedItem = {
 		...updatedItem,
-		values: getFieldValuesAsRecord(updatedItem.id, db),
+		values: await getFieldValuesAsRecord(updatedItem.id, sql),
 		recurring_config: parseRecurringConfig(updatedItem.recurring_config)
 	};
 
@@ -240,19 +237,19 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid item ID' }, { status: 400 });
 	}
 
-	const db = (locals as { db?: Db }).db ?? getDb();
+	const sql = getDb();
 
-	const item = getItemById(itemId, db);
+	const item = await getItemById(itemId, sql);
 	if (!item) {
 		return json({ error: 'Item not found' }, { status: 404 });
 	}
 
-	const canEdit = checkCategoryAccess(user.id, item.category_id, 'edit', db);
+	const canEdit = await checkCategoryAccess(user.id, item.category_id, 'edit', sql);
 	if (!canEdit) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
-	deleteItem(itemId, db);
+	await deleteItem(itemId, sql);
 
 	return json({
 		toast: 'success',

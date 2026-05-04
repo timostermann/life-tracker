@@ -44,7 +44,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	const template = getTemplateById(templateId);
+	const sql = locals.db ?? getDb();
+	const template = await getTemplateById(templateId, sql);
 	if (!template) {
 		return json(
 			{
@@ -68,9 +69,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	const db = getDb();
-	const applyTemplateTransaction = db.transaction(() => {
-		const category = createCategory(
+	const category = await sql.begin(async (tx) => {
+		const cat = await createCategory(
 			{
 				user_id: user.id,
 				name: parsed.data.name,
@@ -79,26 +79,24 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				color: config.color ?? null,
 				is_private: true
 			},
-			db
+			tx
 		);
 
 		if (config.fields && config.fields.length > 0) {
 			for (const field of config.fields) {
 				const fieldInput: CreateFieldInput = {
-					category_id: category.id,
+					category_id: cat.id,
 					name: field.name,
 					field_type: field.field_type,
 					options: field.options ?? null,
 					field_order: field.field_order
 				};
-				createField(fieldInput, db);
+				await createField(fieldInput, tx);
 			}
 		}
 
-		return category;
+		return cat;
 	});
-
-	const category = applyTemplateTransaction();
 
 	return json(
 		{

@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	}
 
 	const { username, password } = parsed.data;
-	const user = getUserByUsername(username);
+	const user = await getUserByUsername(username);
 	if (!user) {
 		logger.info('login failed (unknown user)', { username });
 		return json({ error: 'Invalid username or password' }, { status: 401 });

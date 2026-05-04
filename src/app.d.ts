@@ -13,7 +13,7 @@ declare global {
 				fresh?: boolean;
 			} | null;
 			/** Injected in unit tests to override `getDb()` */
-			db?: import('better-sqlite3').Database;
+			db?: import('postgres').Sql;
 		}
 		// interface PageData {}
 		// interface PageState {}

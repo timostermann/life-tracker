@@ -1,13 +1,13 @@
 import type { Handle } from '@sveltejs/kit';
 
-import { getDb } from '$lib/server/db';
+import { dbReady } from '$lib/server/db';
 import { lucia, clearLuciaSessionCookie, setLuciaSessionCookie } from '$lib/server/auth';
 import { ensureSeedUsers } from '$lib/server/auth/seed';
 import { redirect } from '@sveltejs/kit';
 import { getUserById, resolveUserFromBearerToken } from '$lib/server/db/queries';
 
-// Initialize DB + run migrations when the server module loads.
-getDb();
+// Wait for migrations to complete before serving any requests.
+await dbReady;
 // Seed initial users (idempotent) on server startup.
 if (!process.env.VITEST) {
 	await ensureSeedUsers();
@@ -35,7 +35,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.session = session ?? null;
 		if (session && user) {
 			const userId = Number(session.userId);
-			const dbUser = getUserById(userId);
+			const dbUser = await getUserById(userId);
 			if (dbUser) {
 				event.locals.user = { id: dbUser.id, username: dbUser.username };
 			} else {
@@ -54,7 +54,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		if (authHeader?.startsWith('Bearer ')) {
 			const raw = authHeader.slice(7).trim();
 			if (raw) {
-				const tokenUser = resolveUserFromBearerToken(raw);
+				const tokenUser = await resolveUserFromBearerToken(raw);
 				if (tokenUser) {
 					event.locals.user = tokenUser;
 				}
