@@ -100,14 +100,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  NULL,
-  NULL,
-  NULL,
+  ), NULL::INTEGER,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
+  NULL::INTEGER,
   FALSE,
-  NULL,
-  0,{"frequency":"weekly","interval":1}',
-  date('now', '+7 days'),
+  NULL::TIMESTAMPTZ,
+  '{"frequency":"weekly","interval":1}'::TEXT,
+  (NOW() + INTERVAL '7 days')::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -132,14 +132,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  NULL,
-  NULL,
-  NULL,
+  ), NULL::INTEGER,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
+  NULL::INTEGER,
   FALSE,
-  NULL,
-  0,{"frequency":"weekly","interval":2}',
-  date('now', '+14 days'),
+  NULL::TIMESTAMPTZ,
+  '{"frequency":"weekly","interval":2}'::TEXT,
+  (NOW() + INTERVAL '14 days')::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -164,14 +164,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  NULL,
-  NULL,
-  NULL,
+  ), NULL::INTEGER,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
+  NULL::INTEGER,
   FALSE,
-  NULL,
-  0,{"frequency":"monthly","interval":1}',
-  date('now', '+1 month'),
+  NULL::TIMESTAMPTZ,
+  '{"frequency":"monthly","interval":1}'::TEXT,
+  (NOW() + INTERVAL '1 month')::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -196,14 +196,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  NULL,
-  NULL,
-  NULL,
+  ), NULL::INTEGER,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
+  NULL::INTEGER,
   FALSE,
-  NULL,
-  0,{"frequency":"daily","interval":1}',
-  date('now', '+1 day'),
+  NULL::TIMESTAMPTZ,
+  '{"frequency":"daily","interval":1}'::TEXT,
+  (NOW() + INTERVAL '1 day')::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -228,14 +228,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  NULL,
-  NULL,
-  NULL,
+  ), NULL::INTEGER,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
+  NULL::INTEGER,
   FALSE,
-  NULL,
-  0,{"frequency":"monthly","interval":3}',
-  date('now', '+3 months'),
+  NULL::TIMESTAMPTZ,
+  '{"frequency":"monthly","interval":3}'::TEXT,
+  (NOW() + INTERVAL '3 months')::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat

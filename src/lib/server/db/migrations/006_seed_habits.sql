@@ -120,14 +120,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  NULL,
-  NULL,
-  NULL,
+  ), NULL::INTEGER,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
+  NULL::INTEGER,
   FALSE,
-  NULL,
-  0,,
-  NULL,
+  NULL::TIMESTAMPTZ,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -438,14 +438,11 @@ LIMIT 1;
 -- Create entries for the last 30 days with some gaps to test streak calculation
 INSERT INTO habit_entries (item_id, logged_date, status, notes, created_at)
 SELECT i.id,
-  date(
-    'now',
-    '-' || (
+  CURRENT_DATE - (
       30 - row_number() OVER (
         ORDER BY random()
       )
-    ) || ' days'
-  ),
+    )::INTEGER,
   CASE
     WHEN random() < 0.7 THEN 'done'
     WHEN random() < 0.9 THEN 'skipped'
@@ -477,14 +474,11 @@ LIMIT 25;
 -- Insert sample entries for "Drink Water" habit (more consistent)
 INSERT INTO habit_entries (item_id, logged_date, status, notes, created_at)
 SELECT i.id,
-  date(
-    'now',
-    '-' || (
+  CURRENT_DATE - (
       20 - row_number() OVER (
         ORDER BY random()
       )
-    ) || ' days'
-  ),
+    )::INTEGER,
   CASE
     WHEN random() < 0.85 THEN 'done'
     WHEN random() < 0.95 THEN 'skipped'

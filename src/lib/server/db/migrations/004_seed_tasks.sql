@@ -101,14 +101,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'urgent',
-  NOW() + INTERVAL '2 days',
+  ), NULL::INTEGER,
+  'urgent'::TEXT,
+  (NOW() + INTERVAL '2 days')::TIMESTAMPTZ,
   30,
   FALSE,
-  NULL,
-  NULL,
-  NULL,
+  NULL::TIMESTAMPTZ,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -132,14 +132,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'high',
-  NOW() + INTERVAL '5 days',
+  ), NULL::INTEGER,
+  'high'::TEXT,
+  (NOW() + INTERVAL '5 days')::TIMESTAMPTZ,
   60,
   FALSE,
-  NULL,
-  NULL,
-  NULL,
+  NULL::TIMESTAMPTZ,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -163,14 +163,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'medium',
-  NOW() + INTERVAL '3 days',
+  ), NULL::INTEGER,
+  'medium'::TEXT,
+  (NOW() + INTERVAL '3 days')::TIMESTAMPTZ,
   90,
   FALSE,
-  NULL,
-  '{"frequency":"weekly","interval":1}',
-  NULL,
+  NULL::TIMESTAMPTZ,
+  '{"frequency":"weekly","interval":1}'::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -194,14 +194,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'low',
-  NOW() + INTERVAL '14 days',
+  ), NULL::INTEGER,
+  'low'::TEXT,
+  (NOW() + INTERVAL '14 days')::TIMESTAMPTZ,
   120,
   FALSE,
-  NULL,
-  NULL,
-  NULL,
+  NULL::TIMESTAMPTZ,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -225,14 +225,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'high',
-  NOW() + INTERVAL '25 days',
+  ), NULL::INTEGER,
+  'high'::TEXT,
+  (NOW() + INTERVAL '25 days')::TIMESTAMPTZ,
   15,
   FALSE,
-  NULL,
-  '{"frequency":"monthly","interval":1}',
-  NULL,
+  NULL::TIMESTAMPTZ,
+  '{"frequency":"monthly","interval":1}'::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -256,14 +256,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'medium',
-  NOW() + INTERVAL '10 days',
+  ), NULL::INTEGER,
+  'medium'::TEXT,
+  (NOW() + INTERVAL '10 days')::TIMESTAMPTZ,
   45,
   FALSE,
-  NULL,
-  NULL,
-  NULL,
+  NULL::TIMESTAMPTZ,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -287,14 +287,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'urgent',
-  NOW() + INTERVAL '7 days',
+  ), NULL::INTEGER,
+  'urgent'::TEXT,
+  (NOW() + INTERVAL '7 days')::TIMESTAMPTZ,
   180,
   FALSE,
-  NULL,
-  NULL,
-  NULL,
+  NULL::TIMESTAMPTZ,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -318,14 +318,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'low',
-  NULL,
+  ), NULL::INTEGER,
+  'low'::TEXT,
+  NULL::TIMESTAMPTZ,
   60,
   FALSE,
-  NULL,
-  NULL,
-  NULL,
+  NULL::TIMESTAMPTZ,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -349,16 +349,16 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL,
-  'high',
-  NOW() - INTERVAL '2 days',
+  ), NULL::INTEGER,
+  'high'::TEXT,
+  (NOW() - INTERVAL '2 days')::TIMESTAMPTZ,
   30,
   TRUE,
-  NOW() - INTERVAL '1 days',
-  NULL,
-  NULL,
-  NOW() - INTERVAL '5 days',
-  NOW() - INTERVAL '1 days'
+  (NOW() - INTERVAL '1 days')::TIMESTAMPTZ,
+  NULL::TEXT,
+  NULL::TIMESTAMPTZ,
+  (NOW() - INTERVAL '5 days')::TIMESTAMPTZ,
+  (NOW() - INTERVAL '1 days')::TIMESTAMPTZ
 FROM categories cat
 WHERE cat.name = 'Work Tasks'
   AND cat.user_id = (
