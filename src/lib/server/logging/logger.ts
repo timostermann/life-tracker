@@ -22,21 +22,20 @@ function isLevelEnabled(current: Level, target: Level): boolean {
 }
 
 function resolveEnabled(scope: string, envFlag?: string): boolean {
-	if (envFlag && parseBool(env[envFlag])) return true;
+	if (envFlag && parseBool(env[envFlag] ?? process.env[envFlag])) return true;
 
-	// Global flag: LOG=true
-	if (parseBool(env.LOG)) return true;
+	if (parseBool(env.LOG ?? process.env.LOG)) return true;
 
-	// Scoped list: LOG_SCOPES=db,auth,api
 	const scopes =
-		env.LOG_SCOPES?.split(',')
+		(env.LOG_SCOPES ?? process.env.LOG_SCOPES)
+			?.split(',')
 			.map((s) => s.trim())
 			.filter(Boolean) ?? [];
 	return scopes.includes(scope);
 }
 
 function resolveLevel(): Level {
-	const raw = env.LOG_LEVEL?.trim().toLowerCase();
+	const raw = (env.LOG_LEVEL ?? process.env.LOG_LEVEL)?.trim().toLowerCase();
 	if (raw === 'debug' || raw === 'info' || raw === 'warn' || raw === 'error') return raw;
 	return 'info';
 }

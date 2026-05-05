@@ -23,7 +23,9 @@ function parseBool(v: string | undefined): boolean {
 }
 
 function getSeedPassword(envVar: string, username: string): string {
-	const value = (env as Record<string, string | undefined>)[envVar]?.trim();
+	const value = (
+		(env as Record<string, string | undefined>)[envVar] ?? process.env[envVar]
+	)?.trim();
 	if (value) return value;
 
 	if (import.meta.env.PROD) return '';
@@ -34,7 +36,9 @@ function getSeedPassword(envVar: string, username: string): string {
 
 export async function ensureSeedUsers(opts?: { db?: Db }) {
 	const sql = opts?.db ?? getDb();
-	const force = parseBool((env as Record<string, string | undefined>).AUTH_SEED_FORCE);
+	const force = parseBool(
+		(env as Record<string, string | undefined>).AUTH_SEED_FORCE ?? process.env.AUTH_SEED_FORCE
+	);
 	const missingUsers: string[] = [];
 
 	for (const u of seedUsers) {
@@ -75,7 +79,14 @@ export async function ensureSeedUsers(opts?: { db?: Db }) {
 	}
 
 	if (missingUsers.length > 0) {
-		throw new Error(`Missing required seed users: ${missingUsers.join(', ')}`);
+		const visibleSeedEnvVars = seedUsers
+			.filter((u) =>
+				Boolean((env as Record<string, string | undefined>)[u.envVar] ?? process.env[u.envVar])
+			)
+			.map((u) => u.envVar);
+		throw new Error(
+			`Missing required seed users: ${missingUsers.join(', ')}; visible seed env vars: ${visibleSeedEnvVars.join(', ') || 'none'}`
+		);
 	}
 
 	logger.info('seed users ready', { users: rows.map((row) => row.username) });
