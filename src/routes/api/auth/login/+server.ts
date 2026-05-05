@@ -35,9 +35,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ error: 'Invalid username or password' }, { status: 401 });
 	}
 
-	const session = await lucia.createSession(String(user.id), {});
-	setLuciaSessionCookie(cookies, session.id);
-	logger.info('login success', { userId: user.id, username: user.username });
+	try {
+		const session = await lucia.createSession(String(user.id), {});
+		setLuciaSessionCookie(cookies, session.id);
+		logger.info('login success', { userId: user.id, username: user.username });
+	} catch (error) {
+		logger.error('login failed (session creation error)', { username, error });
+		return json({ error: 'Internal Error' }, { status: 500 });
+	}
 
 	return json({ ok: true });
 };
