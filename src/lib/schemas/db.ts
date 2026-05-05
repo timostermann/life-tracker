@@ -11,8 +11,18 @@ const sqliteBool = z
  * SQLite CURRENT_TIMESTAMP is typically `YYYY-MM-DD HH:MM:SS`.
  * We keep this permissive to avoid coupling to a specific format.
  */
-const sqliteDateTime = z.string().min(1);
-const sqliteDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const sqliteDateTime = z.union([z.string().min(1), z.date()]).transform((v) => {
+	if (v instanceof Date) return v.toISOString();
+	return v;
+});
+const sqliteDate = z.union([z.string(), z.date()]).transform((v, ctx) => {
+	const value = v instanceof Date ? v.toISOString().slice(0, 10) : v;
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+		ctx.addIssue({ code: 'custom', message: 'Invalid date format' });
+		return z.NEVER;
+	}
+	return value;
+});
 
 export const templateTypeSchema = z.enum(['task', 'chore', 'habit']);
 export const fieldTypeSchema = z.enum(['text', 'number', 'date', 'boolean', 'select']);
