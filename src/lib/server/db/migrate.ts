@@ -69,3 +69,16 @@ export async function migrate(sql: Sql, opts?: { log?: Logger }) {
 		}
 	});
 }
+
+export async function backfillSeedData(sql: Sql, opts?: { log?: Logger }) {
+	const log = opts?.log;
+	const seedFiles = ['004_seed_tasks.sql', '005_seed_chores.sql', '006_seed_habits.sql'];
+
+	await sql.begin(async (tx) => {
+		log?.('seed data: backfilling', seedFiles.join(', '));
+		for (const filename of seedFiles) {
+			await tx.unsafe(readMigrationSql(filename));
+			log?.('seed data: backfilled', filename);
+		}
+	});
+}

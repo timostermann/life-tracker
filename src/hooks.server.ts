@@ -1,6 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 
-import { dbReady } from '$lib/server/db';
+import { dbReady, getDb } from '$lib/server/db';
+import { backfillSeedData } from '$lib/server/db/migrate';
 import { lucia, clearLuciaSessionCookie, setLuciaSessionCookie } from '$lib/server/auth';
 import { ensureSeedUsers } from '$lib/server/auth/seed';
 import { redirect } from '@sveltejs/kit';
@@ -11,6 +12,7 @@ await dbReady;
 // Seed initial users (idempotent) on server startup.
 if (!process.env.VITEST) {
 	await ensureSeedUsers();
+	await backfillSeedData(getDb());
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
