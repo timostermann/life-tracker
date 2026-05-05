@@ -25,12 +25,17 @@ coverage
 .nyc_output
 *.test.js
 *.spec.js
+*.test.ts
+*.spec.ts
+*.test.svelte
+*.spec.svelte
 **/__tests__
 **/__mocks__
 e2e
 tests
 playwright-report
 test-results
+.vitest-debug.log
 
 # Documentation
 README.md
@@ -40,6 +45,8 @@ docs
 # Logs
 logs
 *.log
+.eslintcache
+*.tsbuildinfo
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
