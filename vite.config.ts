@@ -2,6 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { sentrySvelteKit } from '@sentry/sveltekit';
 import type { Plugin } from 'vite';
 
 function stripViteBaseDuringVitest(): Plugin {
@@ -16,7 +17,12 @@ function stripViteBaseDuringVitest(): Plugin {
 }
 
 export default defineConfig({
-	plugins: [stripViteBaseDuringVitest(), sveltekit(), tailwindcss()],
+	plugins: [
+		sentrySvelteKit({ autoUploadSourceMaps: false }),
+		stripViteBaseDuringVitest(),
+		sveltekit(),
+		tailwindcss()
+	],
 
 	test: {
 		expect: { requireAssertions: true },

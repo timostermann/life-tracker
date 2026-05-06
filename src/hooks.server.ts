@@ -1,11 +1,19 @@
+import * as Sentry from '@sentry/sveltekit';
+import { handleErrorWithSentry, sentryHandle } from '@sentry/sveltekit';
 import type { Handle } from '@sveltejs/kit';
-
-import { dbReady, getDb } from '$lib/server/db';
+import { sequence } from '@sveltejs/kit/hooks';
+import { redirect } from '@sveltejs/kit';
 import { backfillSeedData } from '$lib/server/db/migrate';
+import { dbReady, getDb } from '$lib/server/db';
 import { lucia, clearLuciaSessionCookie, setLuciaSessionCookie } from '$lib/server/auth';
 import { ensureSeedUsers } from '$lib/server/auth/seed';
-import { redirect } from '@sveltejs/kit';
 import { getUserById, resolveUserFromBearerToken } from '$lib/server/db/queries';
+
+Sentry.init({
+	dsn: process.env.PUBLIC_SENTRY_DSN,
+	tracesSampleRate: 0.05,
+	environment: process.env.NODE_ENV
+});
 
 // Wait for migrations to complete before serving any requests.
 await dbReady;
@@ -15,7 +23,7 @@ if (!process.env.VITEST) {
 	await backfillSeedData(getDb());
 }
 
-export const handle: Handle = async ({ event, resolve }) => {
+const appHandle: Handle = async ({ event, resolve }) => {
 	const sessionId = event.cookies.get(lucia.sessionCookieName);
 
 	if (!sessionId) {
@@ -90,3 +98,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	return resolve(event);
 };
+
+export const handle = sequence(sentryHandle(), appHandle);
+export const handleError = handleErrorWithSentry();
