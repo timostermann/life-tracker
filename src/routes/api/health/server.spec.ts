@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from './+server';
 import * as dbModule from '$lib/server/db';
+import type { Database } from 'better-sqlite3';
 
 vi.mock('$lib/server/db', () => ({
 	getDb: vi.fn()
@@ -12,10 +13,12 @@ describe('GET /api/health', () => {
 	});
 
 	it('returns 200 when database is connected', async () => {
-		const mockDb = vi.fn().mockResolvedValue([{ result: 1 }]);
-		vi.mocked(dbModule.getDb).mockReturnValue(
-			mockDb as unknown as ReturnType<typeof dbModule.getDb>
-		);
+		const mockDb: Partial<Database> = {
+			prepare: vi.fn().mockReturnValue({
+				get: vi.fn().mockReturnValue({ result: 1 })
+			})
+		};
+		vi.mocked(dbModule.getDb).mockReturnValue(mockDb as Database);
 
 		const response = await GET(
 			{} as Partial<Parameters<typeof GET>[0]> as Parameters<typeof GET>[0]
@@ -26,7 +29,7 @@ describe('GET /api/health', () => {
 		expect(data.status).toBe('ok');
 		expect(data.database).toBe('connected');
 		expect(data.timestamp).toBeDefined();
-		expect(mockDb).toHaveBeenCalledWith(['SELECT 1']);
+		expect(mockDb.prepare).toHaveBeenCalledWith('SELECT 1');
 	});
 
 	it('returns 503 when database fails', async () => {
@@ -46,10 +49,14 @@ describe('GET /api/health', () => {
 	});
 
 	it('returns 503 when query fails', async () => {
-		const mockDb = vi.fn().mockRejectedValue(new Error('Query failed'));
-		vi.mocked(dbModule.getDb).mockReturnValue(
-			mockDb as unknown as ReturnType<typeof dbModule.getDb>
-		);
+		const mockDb: Partial<Database> = {
+			prepare: vi.fn().mockReturnValue({
+				get: vi.fn().mockImplementation(() => {
+					throw new Error('Query failed');
+				})
+			})
+		};
+		vi.mocked(dbModule.getDb).mockReturnValue(mockDb as Database);
 
 		const response = await GET(
 			{} as Partial<Parameters<typeof GET>[0]> as Parameters<typeof GET>[0]

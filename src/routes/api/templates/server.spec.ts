@@ -7,7 +7,6 @@ vi.mock('$lib/server/db/queries', () => ({
 }));
 
 describe('GET /api/templates', () => {
-	const mockDb = vi.fn();
 	const mockTemplates = [
 		{
 			id: 1,
@@ -63,13 +62,13 @@ describe('GET /api/templates', () => {
 		const url = new URL('http://localhost/api/templates');
 		const response = await GET({
 			url,
-			locals: { user: { id: 1, username: 'test' }, db: mockDb }
+			locals: { user: { id: 1, username: 'test' } }
 		} as Parameters<typeof GET>[0]);
 
 		const data = await response.json();
 		expect(response.status).toBe(200);
 		expect(data.templates).toHaveLength(2);
-		expect(queries.listTemplates).toHaveBeenCalledWith(undefined, expect.any(Function));
+		expect(queries.listTemplates).toHaveBeenCalledWith(undefined);
 	});
 
 	it('should filter templates by task type', async () => {
@@ -79,13 +78,13 @@ describe('GET /api/templates', () => {
 		const url = new URL('http://localhost/api/templates?type=task');
 		const response = await GET({
 			url,
-			locals: { user: { id: 1, username: 'test' }, db: mockDb }
+			locals: { user: { id: 1, username: 'test' } }
 		} as Parameters<typeof GET>[0]);
 
 		const data = await response.json();
 		expect(response.status).toBe(200);
 		expect(data.templates).toHaveLength(1);
-		expect(queries.listTemplates).toHaveBeenCalledWith('task', expect.any(Function));
+		expect(queries.listTemplates).toHaveBeenCalledWith('task');
 	});
 
 	it('should filter templates by chore type', async () => {
@@ -95,13 +94,13 @@ describe('GET /api/templates', () => {
 		const url = new URL('http://localhost/api/templates?type=chore');
 		const response = await GET({
 			url,
-			locals: { user: { id: 1, username: 'test' }, db: mockDb }
+			locals: { user: { id: 1, username: 'test' } }
 		} as Parameters<typeof GET>[0]);
 
 		const data = await response.json();
 		expect(response.status).toBe(200);
 		expect(data.templates).toHaveLength(1);
-		expect(queries.listTemplates).toHaveBeenCalledWith('chore', expect.any(Function));
+		expect(queries.listTemplates).toHaveBeenCalledWith('chore');
 	});
 
 	it('should filter templates by habit type', async () => {
@@ -110,18 +109,18 @@ describe('GET /api/templates', () => {
 		const url = new URL('http://localhost/api/templates?type=habit');
 		const response = await GET({
 			url,
-			locals: { user: { id: 1, username: 'test' }, db: mockDb }
+			locals: { user: { id: 1, username: 'test' } }
 		} as Parameters<typeof GET>[0]);
 
 		expect(response.status).toBe(200);
-		expect(queries.listTemplates).toHaveBeenCalledWith('habit', expect.any(Function));
+		expect(queries.listTemplates).toHaveBeenCalledWith('habit');
 	});
 
 	it('should return 400 for invalid type parameter', async () => {
 		const url = new URL('http://localhost/api/templates?type=invalid');
 		const response = await GET({
 			url,
-			locals: { user: { id: 1, username: 'test' }, db: mockDb }
+			locals: { user: { id: 1, username: 'test' } }
 		} as Parameters<typeof GET>[0]);
 
 		const data = await response.json();

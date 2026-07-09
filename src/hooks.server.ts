@@ -3,8 +3,7 @@ import { handleErrorWithSentry, sentryHandle } from '@sentry/sveltekit';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { redirect } from '@sveltejs/kit';
-import { backfillSeedData } from '$lib/server/db/migrate';
-import { dbReady, getDb } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 import { lucia, clearLuciaSessionCookie, setLuciaSessionCookie } from '$lib/server/auth';
 import { ensureSeedUsers } from '$lib/server/auth/seed';
 import { getUserById, resolveUserFromBearerToken } from '$lib/server/db/queries';
@@ -15,12 +14,11 @@ Sentry.init({
 	environment: process.env.NODE_ENV
 });
 
-// Wait for migrations to complete before serving any requests.
-await dbReady;
+// Initialize DB + run migrations when the server module loads.
+getDb();
 // Seed initial users (idempotent) on server startup.
 if (!process.env.VITEST) {
 	await ensureSeedUsers();
-	await backfillSeedData(getDb());
 }
 
 const appHandle: Handle = async ({ event, resolve }) => {
@@ -45,7 +43,7 @@ const appHandle: Handle = async ({ event, resolve }) => {
 		event.locals.session = session ?? null;
 		if (session && user) {
 			const userId = Number(session.userId);
-			const dbUser = await getUserById(userId);
+			const dbUser = getUserById(userId);
 			if (dbUser) {
 				event.locals.user = { id: dbUser.id, username: dbUser.username };
 			} else {
@@ -64,7 +62,7 @@ const appHandle: Handle = async ({ event, resolve }) => {
 		if (authHeader?.startsWith('Bearer ')) {
 			const raw = authHeader.slice(7).trim();
 			if (raw) {
-				const tokenUser = await resolveUserFromBearerToken(raw);
+				const tokenUser = resolveUserFromBearerToken(raw);
 				if (tokenUser) {
 					event.locals.user = tokenUser;
 				}

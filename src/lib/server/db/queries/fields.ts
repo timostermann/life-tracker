@@ -1,64 +1,59 @@
 import { getDb } from '../../db';
 import { dbSchemas, type CreateFieldInput, type UpdateFieldInput, type Field } from './types';
 import type { Db } from './utils';
-import { parseRow } from './utils';
+import { buildSqlUpdates, parseRow } from './utils';
 
-export async function listFieldsForCategory(
-	categoryId: number,
-	sql: Db = getDb()
-): Promise<Field[]> {
-	const rows =
-		await sql`SELECT * FROM fields WHERE category_id = ${categoryId} ORDER BY field_order ASC`;
+export function listFieldsForCategory(categoryId: number, db: Db = getDb()): Field[] {
+	const rows = db
+		.prepare('SELECT * FROM fields WHERE category_id = ? ORDER BY field_order ASC')
+		.all(categoryId);
 	return rows.map((r) => parseRow(dbSchemas.fieldSchema, r));
 }
 
-export async function createField(input: CreateFieldInput, sql: Db = getDb()): Promise<Field> {
-	const [row] = await sql`
-		INSERT INTO fields (category_id, name, field_type, options, field_order)
-		VALUES (${input.category_id}, ${input.name}, ${input.field_type}, ${input.options ?? null}, ${input.field_order})
-		RETURNING *
-	`;
+export function createField(input: CreateFieldInput, db: Db = getDb()): Field {
+	const res = db
+		.prepare(
+			`INSERT INTO fields (category_id, name, field_type, options, field_order)
+       VALUES (?, ?, ?, ?, ?)`
+		)
+		.run(input.category_id, input.name, input.field_type, input.options ?? null, input.field_order);
+
+	const row = db.prepare('SELECT * FROM fields WHERE id = ?').get(Number(res.lastInsertRowid));
 	return parseRow(dbSchemas.fieldSchema, row);
 }
 
-export async function createFields(input: CreateFieldInput[], sql: Db = getDb()): Promise<void> {
-	if (!input.length) return;
-	const rows = input.map((f) => ({
-		category_id: f.category_id,
-		name: f.name,
-		field_type: f.field_type,
-		options: f.options ?? null,
-		field_order: f.field_order
-	}));
-	await sql`INSERT INTO fields ${sql(rows)}`;
+export function createFields(input: CreateFieldInput[], db: Db = getDb()) {
+	const stmt = db.prepare(
+		`INSERT INTO fields (category_id, name, field_type, options, field_order)
+     VALUES (?, ?, ?, ?, ?)`
+	);
+	const insertMany = db.transaction((rows: CreateFieldInput[]) => {
+		for (const row of rows) {
+			stmt.run(row.category_id, row.name, row.field_type, row.options ?? null, row.field_order);
+		}
+	});
+	insertMany(input);
 }
 
-export async function updateField(
-	fieldId: number,
-	input: UpdateFieldInput,
-	sql: Db = getDb()
-): Promise<Field> {
-	const updates: Record<string, unknown> = {};
-	if (input.name !== undefined) updates.name = input.name;
-	if (input.field_type !== undefined) updates.field_type = input.field_type;
-	if (input.options !== undefined) updates.options = input.options;
-	if (input.field_order !== undefined) updates.field_order = input.field_order;
+export function updateField(fieldId: number, input: UpdateFieldInput, db: Db = getDb()): Field {
+	const { updates, values } = buildSqlUpdates(input);
 
-	if (Object.keys(updates).length > 0) {
-		await sql`UPDATE fields SET ${sql(updates)} WHERE id = ${fieldId}`;
+	if (updates.length === 0) {
+		const row = db.prepare('SELECT * FROM fields WHERE id = ?').get(fieldId);
+		return parseRow(dbSchemas.fieldSchema, row);
 	}
 
-	const [row] = await sql`SELECT * FROM fields WHERE id = ${fieldId}`;
+	values.push(fieldId);
+	db.prepare(`UPDATE fields SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+
+	const row = db.prepare('SELECT * FROM fields WHERE id = ?').get(fieldId);
 	return parseRow(dbSchemas.fieldSchema, row);
 }
 
-export async function deleteField(fieldId: number, sql: Db = getDb()): Promise<void> {
-	await sql`DELETE FROM fields WHERE id = ${fieldId}`;
+export function deleteField(fieldId: number, db: Db = getDb()): void {
+	db.prepare('DELETE FROM fields WHERE id = ?').run(fieldId);
 }
 
-export async function deleteFieldsForCategory(
-	categoryId: number,
-	sql: Db = getDb()
-): Promise<void> {
-	await sql`DELETE FROM fields WHERE category_id = ${categoryId}`;
+export function deleteFieldsForCategory(categoryId: number, db: Db = getDb()): void {
+	db.prepare('DELETE FROM fields WHERE category_id = ?').run(categoryId);
 }

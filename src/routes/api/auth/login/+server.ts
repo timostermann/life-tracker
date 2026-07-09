@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	}
 
 	const { username, password } = parsed.data;
-	const user = await getUserByUsername(username);
+	const user = getUserByUsername(username);
 	if (!user) {
 		logger.info('login failed (unknown user)', { username });
 		return json({ error: 'Invalid username or password' }, { status: 401 });
@@ -35,14 +35,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ error: 'Invalid username or password' }, { status: 401 });
 	}
 
-	try {
-		const session = await lucia.createSession(String(user.id), {});
-		setLuciaSessionCookie(cookies, session.id);
-		logger.info('login success', { userId: user.id, username: user.username });
-	} catch (error) {
-		logger.error('login failed (session creation error)', { username, error });
-		return json({ error: 'Internal Error' }, { status: 500 });
-	}
+	const session = await lucia.createSession(String(user.id), {});
+	setLuciaSessionCookie(cookies, session.id);
+	logger.info('login success', { userId: user.id, username: user.username });
 
 	return json({ ok: true });
 };

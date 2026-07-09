@@ -17,7 +17,7 @@ SELECT u.id,
   'habit',
   '🏃',
   'purple',
-  FALSE,
+  0,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM users u
@@ -120,14 +120,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
-  NULL::INTEGER,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
+  ), NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -438,11 +438,14 @@ LIMIT 1;
 -- Create entries for the last 30 days with some gaps to test streak calculation
 INSERT INTO habit_entries (item_id, logged_date, status, notes, created_at)
 SELECT i.id,
-  CURRENT_DATE - (
+  date(
+    'now',
+    '-' || (
       30 - row_number() OVER (
         ORDER BY random()
       )
-    )::INTEGER,
+    ) || ' days'
+  ),
   CASE
     WHEN random() < 0.7 THEN 'done'
     WHEN random() < 0.9 THEN 'skipped'
@@ -474,11 +477,14 @@ LIMIT 25;
 -- Insert sample entries for "Drink Water" habit (more consistent)
 INSERT INTO habit_entries (item_id, logged_date, status, notes, created_at)
 SELECT i.id,
-  CURRENT_DATE - (
+  date(
+    'now',
+    '-' || (
       20 - row_number() OVER (
         ORDER BY random()
       )
-    )::INTEGER,
+    ) || ' days'
+  ),
   CASE
     WHEN random() < 0.85 THEN 'done'
     WHEN random() < 0.95 THEN 'skipped'

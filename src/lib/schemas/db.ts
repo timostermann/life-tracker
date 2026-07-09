@@ -126,10 +126,14 @@ export const templateSchema = z.object({
 });
 export type Template = z.infer<typeof templateSchema>;
 
+/**
+ * Lucia v3 session row as stored by @lucia-auth/adapter-sqlite.
+ * (Adapter uses `user_id` and `expires_at` unix seconds.)
+ */
 export const sessionSchema = z.object({
 	id: z.string().min(1),
 	user_id: z.number().int().positive(),
-	expires_at: sqliteDateTime
+	expires_at: z.number().int().positive()
 });
 export type DbSession = z.infer<typeof sessionSchema>;
 

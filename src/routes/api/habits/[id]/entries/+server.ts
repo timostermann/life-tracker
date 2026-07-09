@@ -9,6 +9,7 @@ import {
 	getHabitStats
 } from '$lib/server/db/queries';
 import { getDb } from '$lib/server/db';
+import type { Db } from '$lib/server/db/queries/utils';
 
 export const GET: RequestHandler = async ({ params, url, locals }) => {
 	const user = locals.user;
@@ -21,14 +22,14 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 		return json({ error: 'Invalid habit ID' }, { status: 400 });
 	}
 
-	const sql = getDb();
+	const db = (locals as { db?: Db }).db ?? getDb();
 
-	const item = await getItemById(itemId, sql);
+	const item = getItemById(itemId, db);
 	if (!item) {
 		return json({ error: 'Habit not found' }, { status: 404 });
 	}
 
-	const canView = await checkCategoryAccess(user.id, item.category_id, 'view', sql);
+	const canView = checkCategoryAccess(user.id, item.category_id, 'view', db);
 	if (!canView) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
@@ -54,12 +55,12 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 	const fromDate = parsed.data.from_date ?? oneYearAgo.toISOString().split('T')[0];
 	const toDate = parsed.data.to_date ?? today.toISOString().split('T')[0];
 
-	const entries = await listHabitEntries(
+	const entries = listHabitEntries(
 		itemId,
 		{ from_date: fromDate, to_date: toDate, limit: 365 },
-		sql
+		db
 	);
-	const stats = await getHabitStats(itemId, sql);
+	const stats = getHabitStats(itemId, db);
 
 	return json({ entries, stats });
 };
@@ -75,14 +76,14 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid habit ID' }, { status: 400 });
 	}
 
-	const sql = getDb();
+	const db = (locals as { db?: Db }).db ?? getDb();
 
-	const item = await getItemById(itemId, sql);
+	const item = getItemById(itemId, db);
 	if (!item) {
 		return json({ error: 'Habit not found' }, { status: 404 });
 	}
 
-	const canEdit = await checkCategoryAccess(user.id, item.category_id, 'edit', sql);
+	const canEdit = checkCategoryAccess(user.id, item.category_id, 'edit', db);
 	if (!canEdit) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
@@ -107,17 +108,17 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	const entry = await upsertHabitEntry(
+	const entry = upsertHabitEntry(
 		{
 			item_id: itemId,
 			logged_date: parsed.data.logged_date,
 			status: parsed.data.status,
 			notes: parsed.data.notes ?? null
 		},
-		sql
+		db
 	);
 
-	const updatedStats = await getHabitStats(itemId, sql);
+	const updatedStats = getHabitStats(itemId, db);
 
 	return json({
 		entry,

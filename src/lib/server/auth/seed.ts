@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/private';
 
 import { createLogger } from '$lib/server/logging';
 import { getDb } from '$lib/server/db';
-import { getUserByUsername } from '$lib/server/db/queries';
+import { createUser, getUserByUsername } from '$lib/server/db/queries';
 import type { Db } from '$lib/server/db/queries/utils';
 
 import { hashPassword } from './password';
@@ -28,21 +28,30 @@ function getSeedPassword(envVar: string, username: string): string {
 	)?.trim();
 	if (value) return value;
 
+	// In production builds, only seed if explicit passwords are provided.
+	// This avoids creating default accounts when running `npm run preview` or in real deployments.
 	if (import.meta.env.PROD) return '';
 
+	// Dev-friendly default.
 	logger.warn('seeding user with default password (dev only)', { username, envVar });
 	return username;
 }
 
+/**
+ * Seed initial user accounts (idempotent).
+ * - Creates `tim` and `jule` if they don't exist.
+ * - Passwords come from env vars (required in PROD) or default to username in dev.
+ * - If AUTH_SEED_FORCE=true, also updates existing users' password_hash (dev recovery).
+ */
 export async function ensureSeedUsers(opts?: { db?: Db }) {
-	const sql = opts?.db ?? getDb();
+	const db = opts?.db ?? getDb();
 	const force = parseBool(
 		(env as Record<string, string | undefined>).AUTH_SEED_FORCE ?? process.env.AUTH_SEED_FORCE
 	);
 	const missingUsers: string[] = [];
 
 	for (const u of seedUsers) {
-		const existing = await getUserByUsername(u.username, sql);
+		const existing = getUserByUsername(u.username, db);
 		const password = getSeedPassword(u.envVar, u.username);
 		if (!password) {
 			logger.warn('skipping seed user (missing password env var)', {
@@ -53,29 +62,18 @@ export async function ensureSeedUsers(opts?: { db?: Db }) {
 		}
 		const password_hash = await hashPassword(password);
 		if (!existing) {
-			await sql`
-				INSERT INTO users (username, password_hash)
-				VALUES (${u.username}, ${password_hash})
-				ON CONFLICT (username) DO NOTHING
-			`;
+			createUser({ username: u.username, password_hash }, db);
 			logger.info('seeded user', { username: u.username });
 		} else if (force) {
-			await sql`UPDATE users SET password_hash = ${password_hash}, updated_at = NOW() WHERE username = ${u.username}`;
+			// Repair mode: overwrite existing hash when explicitly requested.
+			db.prepare(
+				'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE username = ?'
+			).run(password_hash, u.username);
 			logger.warn('updated seed user password_hash (AUTH_SEED_FORCE)', { username: u.username });
 		}
 
-		const seeded = await getUserByUsername(u.username, sql);
+		const seeded = getUserByUsername(u.username, db);
 		if (!seeded) missingUsers.push(u.username);
-	}
-
-	const rows = await sql<{ username: string }[]>`
-		SELECT username FROM users WHERE username IN ${sql(seedUsers.map((u) => u.username))} ORDER BY username ASC
-	`;
-	const seededUsernames = new Set(rows.map((row) => row.username));
-	for (const u of seedUsers) {
-		if (!seededUsernames.has(u.username) && !missingUsers.includes(u.username)) {
-			missingUsers.push(u.username);
-		}
 	}
 
 	if (missingUsers.length > 0) {
@@ -89,5 +87,5 @@ export async function ensureSeedUsers(opts?: { db?: Db }) {
 		);
 	}
 
-	logger.info('seed users ready', { users: rows.map((row) => row.username) });
+	logger.info('seed users ready', { users: seedUsers.map((u) => u.username) });
 }

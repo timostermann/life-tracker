@@ -8,6 +8,7 @@ import {
 	shareCategory,
 	updateCategory
 } from '$lib/server/db/queries';
+import type { Db } from '$lib/server/db/queries/utils';
 
 export const POST: RequestHandler = async ({ params, request, locals }) => {
 	const user = locals.user;
@@ -20,8 +21,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const sql = getDb();
-	const category = await getCategoryById(categoryId, sql);
+	const db = (locals as { db?: Db }).db ?? getDb();
+	const category = getCategoryById(categoryId, db);
 	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
@@ -57,7 +58,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	const targetUser = await getUserById(parsed.data.user_id, sql);
+	const targetUser = getUserById(parsed.data.user_id, db);
 	if (!targetUser) {
 		return json(
 			{
@@ -70,13 +71,14 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 	}
 
 	try {
-		await sql.begin(async (tx) => {
-			await shareCategory(categoryId, parsed.data.user_id, parsed.data.permission, tx);
-			await updateCategory(categoryId, { is_private: false }, tx);
+		const tx = db.transaction(() => {
+			shareCategory(categoryId, parsed.data.user_id, parsed.data.permission, db);
+			updateCategory(categoryId, { is_private: false }, db);
 		});
+		tx();
 	} catch (err) {
 		const code = (err as { code?: unknown } | null)?.code;
-		if (code === '23505') {
+		if (code === 'SQLITE_CONSTRAINT_UNIQUE') {
 			return json(
 				{
 					error: 'Already shared',

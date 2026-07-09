@@ -10,7 +10,7 @@ import { getFieldValuesForItem } from '$lib/server/db/queries/fieldValues';
 import { getHabitStats } from '$lib/server/db/queries/habits';
 import { listUserApiTokens } from '$lib/server/db/queries/apiTokens';
 import type { Item, Priority } from '$lib/server/db/queries/types';
-import { getDb } from '$lib/server/db';
+import type { Database } from 'better-sqlite3';
 import { DASHBOARD_MAX_CATEGORIES, DASHBOARD_DUE_SOON_DAYS } from '$lib/utils/dashboard';
 
 type ItemWithValues = Item & {
@@ -21,9 +21,8 @@ type HabitWithStreak = ItemWithValues & {
 	current_streak: number;
 };
 
-async function enrichItemWithValues(item: Item): Promise<ItemWithValues> {
-	const sql = getDb();
-	const fieldValues = await getFieldValuesForItem(item.id, sql);
+function enrichItemWithValues(item: Item, db?: Database): ItemWithValues {
+	const fieldValues = getFieldValuesForItem(item.id, db);
 	const values: Record<string, string> = {};
 
 	for (const fv of fieldValues) {
@@ -33,10 +32,9 @@ async function enrichItemWithValues(item: Item): Promise<ItemWithValues> {
 	return { ...item, values };
 }
 
-async function enrichHabitWithStreak(item: Item): Promise<HabitWithStreak> {
-	const sql = getDb();
-	const enriched = await enrichItemWithValues(item);
-	const stats = await getHabitStats(item.id, sql);
+function enrichHabitWithStreak(item: Item, db?: Database): HabitWithStreak {
+	const enriched = enrichItemWithValues(item, db);
+	const stats = getHabitStats(item.id, db);
 
 	return {
 		...enriched,
@@ -77,27 +75,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	const userId = locals.user.id;
-	const sql = getDb();
+	const db = (locals as { db?: Database }).db; // For testing
 
 	// Run all queries in parallel
-	const [categories, assignedItems, dueSoonItems, habitsToday, apiTokens] = await Promise.all([
-		getRecentCategoriesWithCounts(userId, DASHBOARD_MAX_CATEGORIES, sql),
-		getItemsAssignedToUser(userId, sql),
-		getItemsDueSoon(userId, DASHBOARD_DUE_SOON_DAYS, sql),
-		getHabitsNotLoggedToday(userId, sql),
-		listUserApiTokens(userId, sql)
+	const [categories, assignedItems, dueSoonItems, habitsToday] = await Promise.all([
+		getRecentCategoriesWithCounts(userId, DASHBOARD_MAX_CATEGORIES, db),
+		getItemsAssignedToUser(userId, db),
+		getItemsDueSoon(userId, DASHBOARD_DUE_SOON_DAYS, db),
+		getHabitsNotLoggedToday(userId, db)
 	]);
 
+	const apiTokens = listUserApiTokens(userId, db);
+
 	// Enrich items with field values
-	const enrichedAssignedItems = await Promise.all(
-		assignedItems.map((item) => enrichItemWithValues(item))
-	);
-	const enrichedDueSoonItems = await Promise.all(
-		dueSoonItems.map((item) => enrichItemWithValues(item))
-	);
-	const enrichedHabitsToday = await Promise.all(
-		habitsToday.map((item) => enrichHabitWithStreak(item))
-	);
+	const enrichedAssignedItems = assignedItems.map((item) => enrichItemWithValues(item, db));
+	const enrichedDueSoonItems = dueSoonItems.map((item) => enrichItemWithValues(item, db));
+	const enrichedHabitsToday = habitsToday.map((item) => enrichHabitWithStreak(item, db));
 
 	// Group assigned items by priority
 	const assignedByPriority = groupByPriority(enrichedAssignedItems);

@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { listTemplates } from '$lib/server/db/queries';
-import { getDb } from '$lib/server/db';
 import { templateTypeSchema } from '$lib/schemas/db';
 
 export const GET: RequestHandler = async ({ url, locals }) => {
@@ -29,8 +28,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		templateType = parsed.data;
 	}
 
-	const sql = locals.db ?? getDb();
-	const templates = await listTemplates(templateType, sql);
+	const templates = listTemplates(templateType);
 
 	return json({ templates });
 };

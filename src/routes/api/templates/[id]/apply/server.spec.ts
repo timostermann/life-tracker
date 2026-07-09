@@ -46,17 +46,12 @@ describe('POST /api/templates/:id/apply', () => {
 	};
 
 	let mockTransaction: ReturnType<typeof vi.fn>;
-	let mockDb: {
-		begin: ReturnType<typeof vi.fn>;
-		transaction: ReturnType<typeof vi.fn>;
-		prepare: ReturnType<typeof vi.fn>;
-	};
+	let mockDb: { transaction: ReturnType<typeof vi.fn>; prepare: ReturnType<typeof vi.fn> };
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockTransaction = vi.fn((fn) => fn(mockDb));
+		mockTransaction = vi.fn((fn) => fn);
 		mockDb = {
-			begin: mockTransaction,
 			transaction: mockTransaction,
 			prepare: vi.fn()
 		};

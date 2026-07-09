@@ -2,10 +2,11 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getDb } from '$lib/server/db';
 
-export const GET: RequestHandler = async (event) => {
+export const GET: RequestHandler = async () => {
 	try {
-		const sql = event.locals?.db ?? getDb();
-		await sql`SELECT 1`;
+		// Check database connectivity
+		const db = getDb();
+		db.prepare('SELECT 1').get();
 
 		return json(
 			{

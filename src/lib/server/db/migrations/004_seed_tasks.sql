@@ -17,7 +17,7 @@ SELECT u.id,
   'task',
   '💼',
   'blue',
-  FALSE,
+  0,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM users u
@@ -101,14 +101,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'urgent'::TEXT,
-  (NOW() + INTERVAL '2 days')::TIMESTAMPTZ,
+  ), NULL,
+  'urgent',
+  datetime('now', '+2 days'),
   30,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
+  0,
+  NULL,
+  NULL,
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -132,14 +132,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'high'::TEXT,
-  (NOW() + INTERVAL '5 days')::TIMESTAMPTZ,
+  ), NULL,
+  'high',
+  datetime('now', '+5 days'),
   60,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
+  0,
+  NULL,
+  NULL,
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -163,14 +163,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'medium'::TEXT,
-  (NOW() + INTERVAL '3 days')::TIMESTAMPTZ,
+  ), NULL,
+  'medium',
+  datetime('now', '+3 days'),
   90,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  '{"frequency":"weekly","interval":1}'::TEXT,
-  NULL::TIMESTAMPTZ,
+  0,
+  NULL,
+  '{"frequency":"weekly","interval":1}',
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -194,14 +194,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'low'::TEXT,
-  (NOW() + INTERVAL '14 days')::TIMESTAMPTZ,
+  ), NULL,
+  'low',
+  datetime('now', '+14 days'),
   120,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
+  0,
+  NULL,
+  NULL,
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -225,14 +225,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'high'::TEXT,
-  (NOW() + INTERVAL '25 days')::TIMESTAMPTZ,
+  ), NULL,
+  'high',
+  datetime('now', '+25 days'),
   15,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  '{"frequency":"monthly","interval":1}'::TEXT,
-  NULL::TIMESTAMPTZ,
+  0,
+  NULL,
+  '{"frequency":"monthly","interval":1}',
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -256,14 +256,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'medium'::TEXT,
-  (NOW() + INTERVAL '10 days')::TIMESTAMPTZ,
+  ), NULL,
+  'medium',
+  datetime('now', '+10 days'),
   45,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
+  0,
+  NULL,
+  NULL,
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -287,14 +287,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'urgent'::TEXT,
-  (NOW() + INTERVAL '7 days')::TIMESTAMPTZ,
+  ), NULL,
+  'urgent',
+  datetime('now', '+7 days'),
   180,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
+  0,
+  NULL,
+  NULL,
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -318,14 +318,14 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'low'::TEXT,
-  NULL::TIMESTAMPTZ,
+  ), NULL,
+  'low',
+  NULL,
   60,
-  FALSE,
-  NULL::TIMESTAMPTZ,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
+  0,
+  NULL,
+  NULL,
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM categories cat
@@ -349,16 +349,16 @@ SELECT cat.id,
     FROM users
     WHERE username = 'tim'
     LIMIT 1
-  ), NULL::INTEGER,
-  'high'::TEXT,
-  (NOW() - INTERVAL '2 days')::TIMESTAMPTZ,
+  ), NULL,
+  'high',
+  datetime('now', '-2 days'),
   30,
-  TRUE,
-  (NOW() - INTERVAL '1 days')::TIMESTAMPTZ,
-  NULL::TEXT,
-  NULL::TIMESTAMPTZ,
-  (NOW() - INTERVAL '5 days')::TIMESTAMPTZ,
-  (NOW() - INTERVAL '1 days')::TIMESTAMPTZ
+  1,
+  datetime('now', '-1 days'),
+  NULL,
+  NULL,
+  datetime('now', '-5 days'),
+  datetime('now', '-1 days')
 FROM categories cat
 WHERE cat.name = 'Work Tasks'
   AND cat.user_id = (
@@ -1317,7 +1317,7 @@ FROM categories cat
           )
         LIMIT 1
       )
-      AND is_archived = TRUE
+      AND is_archived = 1
     LIMIT 1
   ) item
   CROSS JOIN (
@@ -1374,7 +1374,7 @@ FROM categories cat
           )
         LIMIT 1
       )
-      AND is_archived = TRUE
+      AND is_archived = 1
     LIMIT 1
   ) item
   CROSS JOIN (

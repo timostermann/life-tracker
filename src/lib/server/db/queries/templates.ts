@@ -3,17 +3,15 @@ import { dbSchemas, type Template, type TemplateType } from './types';
 import type { Db } from './utils';
 import { parseOptionalRow, parseRow } from './utils';
 
-export async function listTemplates(type?: TemplateType, sql: Db = getDb()): Promise<Template[]> {
-	const rows = type
-		? await sql`SELECT * FROM templates WHERE template_type = ${type} ORDER BY id ASC`
-		: await sql`SELECT * FROM templates ORDER BY id ASC`;
+export function listTemplates(type?: TemplateType, db: Db = getDb()): Template[] {
+	const sql = type
+		? 'SELECT * FROM templates WHERE template_type = ? ORDER BY id ASC'
+		: 'SELECT * FROM templates ORDER BY id ASC';
+	const rows = type ? db.prepare(sql).all(type) : db.prepare(sql).all();
 	return rows.map((r) => parseRow(dbSchemas.templateSchema, r));
 }
 
-export async function getTemplateById(
-	id: number,
-	sql: Db = getDb()
-): Promise<Template | undefined> {
-	const [row] = await sql`SELECT * FROM templates WHERE id = ${id}`;
+export function getTemplateById(id: number, db: Db = getDb()): Template | undefined {
+	const row = db.prepare('SELECT * FROM templates WHERE id = ?').get(id);
 	return parseOptionalRow(dbSchemas.templateSchema, row);
 }

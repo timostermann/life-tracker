@@ -12,6 +12,7 @@ import {
 } from '$lib/server/db/queries';
 import { resolveCategoryFieldValues } from '$lib/server/api/resolveCategoryFieldValues';
 import { getDb } from '$lib/server/db';
+import type { Db } from '$lib/server/db/queries/utils';
 import { stringifyRecurringConfig, parseRecurringConfig } from '$lib/utils/recurring';
 
 export const GET: RequestHandler = async ({ params, url, locals }) => {
@@ -25,14 +26,14 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const sql = getDb();
+	const db = (locals as { db?: Db }).db ?? getDb();
 
-	const category = await getCategoryById(categoryId, sql);
+	const category = getCategoryById(categoryId, db);
 	if (!category) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
-	const canView = await checkCategoryAccess(user.id, categoryId, 'view', sql);
+	const canView = checkCategoryAccess(user.id, categoryId, 'view', db);
 	if (!canView) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
@@ -53,7 +54,7 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 
 	const { limit, offset, include_archived, priority, assigned_to_user_id } = parsed.data;
 
-	let items = await listItemsForCategory(categoryId, { limit, offset, include_archived }, sql);
+	let items = listItemsForCategory(categoryId, { limit, offset, include_archived }, db);
 
 	if (priority) {
 		items = items.filter((item) => item.priority === priority);
@@ -62,13 +63,11 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 		items = items.filter((item) => item.assigned_to_user_id === assigned_to_user_id);
 	}
 
-	const enrichedItems = await Promise.all(
-		items.map(async (item) => ({
-			...item,
-			values: await getFieldValuesAsRecord(item.id, sql),
-			recurring_config: parseRecurringConfig(item.recurring_config)
-		}))
-	);
+	const enrichedItems = items.map((item) => ({
+		...item,
+		values: getFieldValuesAsRecord(item.id, db),
+		recurring_config: parseRecurringConfig(item.recurring_config)
+	}));
 
 	return json({
 		items: enrichedItems,
@@ -89,14 +88,14 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid category ID' }, { status: 400 });
 	}
 
-	const sql = getDb();
+	const db = (locals as { db?: Db }).db ?? getDb();
 
-	const category = await getCategoryById(categoryId, sql);
+	const category = getCategoryById(categoryId, db);
 	if (!category) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
-	const canEdit = await checkCategoryAccess(user.id, categoryId, 'edit', sql);
+	const canEdit = checkCategoryAccess(user.id, categoryId, 'edit', db);
 	if (!canEdit) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
@@ -165,7 +164,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				? restData
 				: {};
 
-	const categoryFields = await listFieldsForCategory(categoryId, sql);
+	const categoryFields = listFieldsForCategory(categoryId, db);
 	const resolvedFieldValues = resolveCategoryFieldValues(values, categoryFields);
 	if (!resolvedFieldValues.ok) {
 		const err = resolvedFieldValues.error;
@@ -180,68 +179,73 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	const fieldValues = Object.entries(resolvedFieldValues.resolved).map(([fieldId, value]) => ({
-		field_id: Number(fieldId),
-		value
-	}));
+	const createItemTransaction = db.transaction(() => {
+		const fieldValues = Object.entries(resolvedFieldValues.resolved).map(([fieldId, value]) => ({
+			field_id: Number(fieldId),
+			value
+		}));
 
-	const isChore = category.template_type === 'chore';
-	const isHabit = category.template_type === 'habit';
+		const isChore = category.template_type === 'chore';
+		const isHabit = category.template_type === 'habit';
 
-	let assignedTo: number | null = null;
-	if (
-		!isHabit &&
-		'assigned_to_user_id' in itemData &&
-		typeof itemData.assigned_to_user_id === 'number'
-	) {
-		assignedTo = itemData.assigned_to_user_id;
-	}
-
-	let priority: 'urgent' | 'high' | 'medium' | 'low' | null = null;
-	if (!isChore && !isHabit && 'priority' in itemData) {
-		const p = itemData.priority;
-		if (p === 'urgent' || p === 'high' || p === 'medium' || p === 'low') {
-			priority = p;
+		let assignedTo: number | null = null;
+		if (
+			!isHabit &&
+			'assigned_to_user_id' in itemData &&
+			typeof itemData.assigned_to_user_id === 'number'
+		) {
+			assignedTo = itemData.assigned_to_user_id;
 		}
-	}
 
-	let deadline: string | null = null;
-	if (!isChore && !isHabit && 'deadline' in itemData && typeof itemData.deadline === 'string') {
-		deadline = itemData.deadline;
-	}
+		let priority: 'urgent' | 'high' | 'medium' | 'low' | null = null;
+		if (!isChore && !isHabit && 'priority' in itemData) {
+			const p = itemData.priority;
+			if (p === 'urgent' || p === 'high' || p === 'medium' || p === 'low') {
+				priority = p;
+			}
+		}
 
-	let timeEstimate: number | null = null;
-	if (
-		!isChore &&
-		!isHabit &&
-		'time_estimate' in itemData &&
-		typeof itemData.time_estimate === 'number'
-	) {
-		timeEstimate = itemData.time_estimate;
-	}
+		let deadline: string | null = null;
+		if (!isChore && !isHabit && 'deadline' in itemData && typeof itemData.deadline === 'string') {
+			deadline = itemData.deadline;
+		}
 
-	const itemInput: Parameters<typeof createItem>[0] = {
-		category_id: categoryId,
-		user_id: user.id,
-		assigned_to_user_id: assignedTo,
-		priority,
-		deadline,
-		time_estimate: timeEstimate,
-		recurring_config: isHabit
-			? null
-			: recurring_config
-				? stringifyRecurringConfig(recurring_config)
-				: null,
-		next_show_date: null,
-		field_values: fieldValues
-	};
+		let timeEstimate: number | null = null;
+		if (
+			!isChore &&
+			!isHabit &&
+			'time_estimate' in itemData &&
+			typeof itemData.time_estimate === 'number'
+		) {
+			timeEstimate = itemData.time_estimate;
+		}
 
-	// createItem manages its own transaction internally
-	const item = await createItem(itemInput, sql);
+		const itemInput: Parameters<typeof createItem>[0] = {
+			category_id: categoryId,
+			user_id: user.id,
+			assigned_to_user_id: assignedTo,
+			priority,
+			deadline,
+			time_estimate: timeEstimate,
+			recurring_config: isHabit
+				? null
+				: recurring_config
+					? stringifyRecurringConfig(recurring_config)
+					: null,
+			next_show_date: null,
+			field_values: fieldValues
+		};
+
+		const item = createItem(itemInput, db);
+
+		return item;
+	});
+
+	const item = createItemTransaction();
 
 	const enrichedItem = {
 		...item,
-		values: await getFieldValuesAsRecord(item.id, sql)
+		values: getFieldValuesAsRecord(item.id, db)
 	};
 
 	const itemType =

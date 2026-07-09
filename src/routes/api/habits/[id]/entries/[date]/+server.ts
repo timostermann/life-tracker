@@ -10,6 +10,7 @@ import {
 	getHabitStats
 } from '$lib/server/db/queries';
 import { getDb } from '$lib/server/db';
+import type { Db } from '$lib/server/db/queries/utils';
 import { habitEntryStatusSchema } from '$lib/schemas/db';
 
 const updateEntrySchema = z.object({
@@ -30,19 +31,19 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Invalid habit ID or date' }, { status: 400 });
 	}
 
-	const sql = getDb();
+	const db = (locals as { db?: Db }).db ?? getDb();
 
-	const item = await getItemById(itemId, sql);
+	const item = getItemById(itemId, db);
 	if (!item) {
 		return json({ error: 'Habit not found' }, { status: 404 });
 	}
 
-	const canEdit = await checkCategoryAccess(user.id, item.category_id, 'edit', sql);
+	const canEdit = checkCategoryAccess(user.id, item.category_id, 'edit', db);
 	if (!canEdit) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
-	const existingEntry = await getHabitEntry(itemId, loggedDate, sql);
+	const existingEntry = getHabitEntry(itemId, loggedDate, db);
 	if (!existingEntry) {
 		return json({ error: 'Entry not found' }, { status: 404 });
 	}
@@ -67,7 +68,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		);
 	}
 
-	const entry = await upsertHabitEntry(
+	const entry = upsertHabitEntry(
 		{
 			item_id: itemId,
 			logged_date: loggedDate,
@@ -75,10 +76,10 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 			notes:
 				parsed.data.notes !== undefined ? parsed.data.notes || null : (existingEntry.notes ?? null)
 		},
-		sql
+		db
 	);
 
-	const updatedStats = await getHabitStats(itemId, sql);
+	const updatedStats = getHabitStats(itemId, db);
 
 	return json({
 		entry,
@@ -101,26 +102,26 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid habit ID or date' }, { status: 400 });
 	}
 
-	const sql = getDb();
+	const db = (locals as { db?: Db }).db ?? getDb();
 
-	const item = await getItemById(itemId, sql);
+	const item = getItemById(itemId, db);
 	if (!item) {
 		return json({ error: 'Habit not found' }, { status: 404 });
 	}
 
-	const canEdit = await checkCategoryAccess(user.id, item.category_id, 'edit', sql);
+	const canEdit = checkCategoryAccess(user.id, item.category_id, 'edit', db);
 	if (!canEdit) {
 		return json({ error: 'Forbidden' }, { status: 403 });
 	}
 
-	const existingEntry = await getHabitEntry(itemId, loggedDate, sql);
+	const existingEntry = getHabitEntry(itemId, loggedDate, db);
 	if (!existingEntry) {
 		return json({ error: 'Entry not found' }, { status: 404 });
 	}
 
-	await deleteHabitEntry(itemId, loggedDate, sql);
+	deleteHabitEntry(itemId, loggedDate, db);
 
-	const updatedStats = await getHabitStats(itemId, sql);
+	const updatedStats = getHabitStats(itemId, db);
 
 	return json({
 		success: true,

@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getDb } from '$lib/server/db';
 import { getCategoryById, revokeCategoryShare, getUserById } from '$lib/server/db/queries';
+import type { Db } from '$lib/server/db/queries/utils';
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	const user = locals.user;
@@ -19,14 +20,14 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return json({ error: 'Invalid user ID' }, { status: 400 });
 	}
 
-	const sql = getDb();
-	const category = await getCategoryById(categoryId, sql);
+	const db = (locals as { db?: Db }).db ?? getDb();
+	const category = getCategoryById(categoryId, db);
 	if (!category || category.user_id !== user.id) {
 		return json({ error: 'Category not found' }, { status: 404 });
 	}
 
-	await revokeCategoryShare(categoryId, sharedWithUserId, sql);
-	const targetUser = await getUserById(sharedWithUserId, sql);
+	revokeCategoryShare(categoryId, sharedWithUserId, db);
+	const targetUser = getUserById(sharedWithUserId, db);
 
 	return json({
 		toast: 'success',
